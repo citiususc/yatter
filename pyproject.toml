@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "yatter"
+version = "1.1.4"
+description = "The tool translates mapping rules from YARRRML in a turtle-based serialization of RML or R2RML."
+authors = ["David Chaves <david.chaves@upm.es>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ruamel-yaml = "^0.17.21"
+rdflib = "^6.2.0"
+coloredlogs = "^15.0.1"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.3"
+setuptools = "^75.1.0"
+wheel = "^0.44.0"
+DeepDiff = "^8.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
