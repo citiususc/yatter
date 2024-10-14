@@ -2,7 +2,7 @@
 name = "yatter"
 version = "1.1.4"
 description = "The tool translates mapping rules from YARRRML in a turtle-based serialization of RML or R2RML."
-authors = ["David Chaves <david.chaves@upm.es>"]
+authors = ["David Chaves <david.chaves@usc.es>", "Rubén Buján <ruben.bujan@rai.usc.es>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
