@@ -1,0 +1,7 @@
+mappings:
+  person:
+    predicateobjects:
+      - predicates:
+          - value: foaf:firstName
+        objects:
+          - value: $(firstname)

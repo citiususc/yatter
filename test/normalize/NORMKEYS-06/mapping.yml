@@ -1,0 +1,4 @@
+mappings:
+  person:
+    predicateobjects:
+      - [[foaf:knows, rdfs:label], $(colleague)~iri]

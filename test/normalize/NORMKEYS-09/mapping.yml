@@ -1,0 +1,4 @@
+mappings:
+  person:
+    predicateobjects:
+      - [foaf:firstName, $(firstname), en~lang]

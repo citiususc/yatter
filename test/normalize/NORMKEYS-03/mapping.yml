@@ -1,0 +1,13 @@
+targets:
+  person-target: [data/dump.ttl.gz~void, turtle, gzip]
+
+mappings:
+  person:
+    subjects:
+      - value: http://example.org/{id}
+        targets:
+          - person-target
+          - ["data/dump1.nq~void"]
+          - ["data/dump2.nq~void"]
+          - access: http://localhost/sparql
+            type: sparql

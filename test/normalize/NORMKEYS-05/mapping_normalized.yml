@@ -1,0 +1,15 @@
+mappings:
+  person:
+    predicateobjects:
+      - predicates:
+          - value: foaf:name
+        objects:
+          - value: $(firstname)
+          - value: $(lastname)
+      - predicates:
+          - value: rdfs:label
+        objects:
+          - value: $(firstname)
+          - value: $(lastname)
+
+

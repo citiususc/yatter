@@ -1,0 +1,10 @@
+mappings:
+  person:
+    predicateobjects:
+      - predicates:
+        - value: foaf:firstName
+        objects:
+        - function: ex:toLowerCase
+          parameters:
+           - parameter: ex:input
+             value: $(firstname)

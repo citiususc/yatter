@@ -1,0 +1,8 @@
+mappings:
+  person:
+    predicateobjects:
+      - predicates:
+          - value: foaf:firstName
+        objects:
+          - value: $(firstname)
+            datatype: xsd:string

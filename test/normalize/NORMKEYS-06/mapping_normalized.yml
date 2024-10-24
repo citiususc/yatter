@@ -1,0 +1,13 @@
+mappings:
+  person:
+    predicateobjects:
+      - predicates:
+          - value: foaf:knows
+        objects:
+          - value: $(colleague)
+            type: iri
+      - predicates:
+          - value: rdfs:label
+        objects:
+          - value: $(colleague)
+            type: iri

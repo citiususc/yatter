@@ -1,0 +1,5 @@
+mappings:
+  person:
+    predicateobjects:
+      - predicates: [foaf:name, rdfs:label]
+        objects: [[$(firstname), ex:string], [$(lastname), ex:anotherString]]

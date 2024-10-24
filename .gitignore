@@ -17,6 +17,6 @@ src/yatter/__pycache__/constants.cpython-311.pyc
 src/yatter/__pycache__/__main__.cpython-311.pyc
 src/yatter/__pycache__/__init__.cpython-311.pyc
 src/yatter/__init__.py
-mapping_normalized.yml
-mapping.yml
+test/normalize/NORMKEYS-01/mapping_normalized.yml
+test/normalize/NORMKEYS-01/mapping.yml
 mapping.rml.ttl
