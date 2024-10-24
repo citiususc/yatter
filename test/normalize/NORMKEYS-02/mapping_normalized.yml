@@ -1,0 +1,27 @@
+sources:
+  person-source:
+    access: data/person.json
+    referenceFormulation: jsonpath
+    iterator: $
+
+mappings:
+  person:
+    sources:
+      - person-source
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+      - access: data/person3.json
+        referenceFormulation: jsonpath
+        iterator: "$.persons[*]"
+      - access: http://localhost/example
+        type: mysql
+        credentials:
+          username: root
+          password: root
+        queryFormulation: sql2008
+        query: |
+          SELECT DEPTNO, DNAME, LOC,
+          (SELECT COUNT(*) FROM EMP WHERE EMP.DEPTNO=DEPT.DEPTNO) AS STAFF
+          FROM DEPT;
+        referenceFormulation: csv
