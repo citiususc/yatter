@@ -3,3 +3,11 @@ authors:
   - Jane Doe (https://janedoe.com)
   - Shane Dime <shane@dime.com> (http://shaneD.com)
   - http://quijotedominguez.com/#me
+
+mappings:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://wwww.example.com/person/$(id)

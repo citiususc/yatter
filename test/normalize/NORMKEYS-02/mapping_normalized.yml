@@ -1,13 +1,10 @@
-sources:
-  person-source:
-    access: data/person.json
-    referenceFormulation: jsonpath
-    iterator: $
-
 mappings:
   person:
     sources:
-      - person-source
+      - person-source:
+          access: data/person.json
+          referenceFormulation: jsonpath
+          iterator: $
       - access: data/person2.json
         referenceFormulation: jsonpath
         iterator: $
@@ -25,3 +22,5 @@ mappings:
           (SELECT COUNT(*) FROM EMP WHERE EMP.DEPTNO=DEPT.DEPTNO) AS STAFF
           FROM DEPT;
         referenceFormulation: csv
+    subjects:
+      - value: http://wwww.example.com/person/$(id)

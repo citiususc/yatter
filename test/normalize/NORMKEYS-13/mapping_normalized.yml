@@ -1,0 +1,20 @@
+mappings:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://wwww.example.com/person/$(id)
+        predicateobjects:
+          - predicates:
+              - value: foaf:firstName
+            objects:
+              - value: $(firstname)
+                datatype: xsd:string
+      - value: http://wwww.example.com/person2/$(id)
+        predicateobjects:
+          - predicates:
+              - value: foaf:firstName
+            objects:
+              - value: $(firstname)
+                datatype: xsd:string

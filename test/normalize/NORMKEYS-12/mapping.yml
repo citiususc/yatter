@@ -1,0 +1,6 @@
+mappings:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects: http://wwww.example.com/person/$(id)

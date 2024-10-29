@@ -20,3 +20,5 @@ src/yatter/__init__.py
 test/normalize/NORMKEYS-01/mapping_normalized.yml
 test/normalize/NORMKEYS-01/mapping.yml
 mapping.rml.ttl
+test/rml-io/YARRRMLTC-0036/__pycache__/test_yarrrmltc0036.cpython-311-pytest-8.3.3.pyc
+*.pyc

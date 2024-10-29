@@ -11,7 +11,3 @@ mappings:
       - value: http://example.org/{id}
         targets:
           - person-target
-          - ["data/dump1.nq~void"]
-          - ["data/dump2.nq~void"]
-          - access: http://localhost/sparql
-            type: sparql
