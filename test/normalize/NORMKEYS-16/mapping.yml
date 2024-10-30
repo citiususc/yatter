@@ -1,6 +1,3 @@
-targets:
-  person-target: [data/dump.ttl.gz~void, turtle, gzip]
-
 mappings:
   person:
     sources:
@@ -8,6 +5,7 @@ mappings:
         referenceFormulation: jsonpath
         iterator: $
     subjects:
-      - value: http://example.org/{id}
-        targets:
-          - person-target
+      - value: http://wwww.example.com/person/$(id)
+    predicateobjects:
+      - predicates: [foaf:name, rdfs:label]
+        objects: [[$(firstname), ex:string], [$(lastname), ex:anotherString]]

@@ -16,7 +16,7 @@ def convert_to_dict(data):
         return data
 
 
-def test_normkeys02():
+def test_normkeys15():
     yaml = YAML(typ='safe', pure=True)
 
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping_normalized.yml')) as file:

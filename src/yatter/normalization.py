@@ -108,6 +108,17 @@ def normalize_yaml(data):
 
         return expanded_targets
 
+    def expand_subjects(subjects):
+        expanded_subjects = CommentedSeq()
+        if isinstance(subjects, str):
+            expanded_subjects.append(ordereddict({'value': subjects}))
+        elif isinstance(subjects, list):
+            for subject in subjects:
+                if isinstance(subject, str):
+                    expanded_subjects.append(ordereddict({'value': subject}))
+                elif isinstance(subject, dict):
+                    expanded_subjects.append(subject)
+        return expanded_subjects
     def expand_predicateobjects(predicateobjects):
 
         expanded_predicateobjects = CommentedSeq()
@@ -190,6 +201,8 @@ def normalize_yaml(data):
                 new_data[new_key] = expand_targets(value)
             elif new_key == 'predicateobjects':
                 new_data[new_key] = expand_predicateobjects(value)
+            elif new_key == 'subjects':
+                new_data[new_key] = expand_subjects(value)
             else:
                 new_data[new_key] = normalize_yaml(value)
         return new_data

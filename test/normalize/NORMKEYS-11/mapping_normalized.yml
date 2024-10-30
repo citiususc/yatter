@@ -8,9 +8,14 @@ mappings:
       - value: http://wwww.example.com/person/$(id)
     predicateobjects:
       - predicates:
-        - value: foaf:firstName
+          - value: foaf:name
         objects:
-        - function: ex:toLowerCase
-          parameters:
-           - parameter: ex:input
-             value: $(firstname)
+          - value: $(firstname)
+          - value: $(lastname)
+      - predicates:
+          - value: rdfs:label
+        objects:
+          - value: $(firstname)
+          - value: $(lastname)
+
+

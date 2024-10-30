@@ -30,7 +30,7 @@ def test_normkeys06():
     normalized_mapping = convert_to_dict(normalized_mapping)
 
     ddiff = DeepDiff(expected_mapping, normalized_mapping, ignore_order=True)
-    print(normalized_mapping)
+
     if ddiff:
         assert False
     else:

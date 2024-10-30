@@ -5,6 +5,6 @@ mappings:
         referenceFormulation: jsonpath
         iterator: $
     subjects:
-      - value: http://wwww.example.com/person/$(id)
-    predicateobjects:
-      - [[foaf:knows, rdfs:label], $(colleague)~iri]
+      - value: http://example.org/{id}
+        targets:
+          - ["data/dump1.nq~void"]

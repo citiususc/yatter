@@ -1,17 +1,6 @@
-targets:
-  person-target: [data/dump.ttl.gz~void, turtle, gzip]
-
 mappings:
   person:
     sources:
-      - access: data/person2.json
-        referenceFormulation: jsonpath
-        iterator: $
+      - [ data/person2.json~jsonpath, $ ]
     subjects:
-      - value: http://example.org/{id}
-        targets:
-          - person-target
-          - ["data/dump1.nq~void"]
-          - ["data/dump2.nq~void"]
-          - access: http://localhost/sparql
-            type: sparql
+      - value: http://wwww.example.com/person/$(id)

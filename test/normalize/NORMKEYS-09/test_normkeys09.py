@@ -28,6 +28,7 @@ def test_normkeys09():
 
     expected_mapping = convert_to_dict(expected_mapping)
     normalized_mapping = convert_to_dict(normalized_mapping)
+
     ddiff = DeepDiff(expected_mapping, normalized_mapping, ignore_order=True)
 
     if ddiff:
