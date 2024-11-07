@@ -1,17 +1,19 @@
 import os
 from ruamel.yaml import YAML
 from deepdiff import DeepDiff
-from yatter.normalization import normalize_yaml
+from yatter.normalization import normalize_yaml, switch_mappings
 
 R2RML_URI = 'http://www.w3.org/ns/r2rml#'
 
 
-def convert_to_dict(data):
-    from ruamel.yaml.comments import CommentedMap
-    if isinstance(data, CommentedMap):
-        return {key: convert_to_dict(value) for key, value in data.items()}
+def convert_comment_seq_to_list(data):
+    from ruamel.yaml.comments import CommentedSeq
+    if isinstance(data, CommentedSeq):
+        return [convert_comment_seq_to_list(item) for item in data]
     elif isinstance(data, list):
-        return [convert_to_dict(item) for item in data]
+        return [convert_comment_seq_to_list(item) for item in data]
+    elif isinstance(data, dict):
+        return {key: convert_comment_seq_to_list(value) for key, value in data.items()}
     else:
         return data
 
@@ -26,8 +28,9 @@ def test_normkeys07():
         data = yaml.load(file)
         normalized_mapping = normalize_yaml(data)
 
-    expected_mapping = convert_to_dict(expected_mapping)
-    normalized_mapping = convert_to_dict(normalized_mapping)
+    expected_mapping = convert_comment_seq_to_list(expected_mapping)
+    normalized_mapping = switch_mappings(normalized_mapping)
+    normalized_mapping = convert_comment_seq_to_list(normalized_mapping)
 
     ddiff = DeepDiff(expected_mapping, normalized_mapping, ignore_order=True)
 

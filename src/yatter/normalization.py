@@ -1,3 +1,4 @@
+import sys
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap as ordereddict, CommentedSeq
 
@@ -14,7 +15,8 @@ def normalize_yaml(data):
         'parameters': ['pms'],
         'parameter': ['pm'],
         'value': ['v'],
-        'authors': ['author', 'a']
+        'authors': ['author', 'a'],
+        'targets': ['target', 't']
     }
 
     def get_normalized_key(key):
@@ -33,15 +35,16 @@ def normalize_yaml(data):
                 email = None
                 website = None
                 for part in parts:
-                    if part.startswith("http://") or part.startswith("https://"):
-                        expanded_authors.append(part)
-                        break
-                    elif part.startswith("<") and part.endswith(">"):
-                        email = part.strip("<>")
-                    elif part.startswith("(") and part.endswith(")"):
-                        website = part.strip("()")
-                    else:
-                        name.append(part)
+                    if isinstance(part, str):
+                        if part.startswith("http://") or part.startswith("https://"):
+                            expanded_authors.append(part)
+                            break
+                        elif part.startswith("<") and part.endswith(">"):
+                            email = part.strip("<>")
+                        elif part.startswith("(") and part.endswith(")"):
+                            website = part.strip("()")
+                        else:
+                            name.append(part)
                 if name:
                     expanded_author['name'] = " ".join(name)
                 if email:
@@ -56,32 +59,42 @@ def normalize_yaml(data):
 
     def expand_sources(sources):
         def expand_source_item(source):
-            if isinstance(source, list) and len(source) == 2 and '~' in source[0]:
-                expanded_source = ordereddict()
+            if isinstance(source, list) and len(source) == 2 and isinstance(source[0], str) and '~' in source[0]:
                 access, reference = source[0].split('~')
+                expanded_source = ordereddict()
                 expanded_source['access'] = access
                 expanded_source['referenceFormulation'] = reference
                 expanded_source['iterator'] = source[1]
                 return expanded_source
             elif isinstance(source, dict):
-                return normalize_yaml(source)
-            else:
-                return source
+                for key, val in source.items():
+                    if isinstance(val, list) and len(val) == 2 and '~' in val[0]:
+                        access, reference = val[0].split('~')
+                        expanded_source = ordereddict()
+                        expanded_source[key] = ordereddict({
+                            'access': access,
+                            'referenceFormulation': reference,
+                            'iterator': val[1]
+                        })
+                        return expanded_source
+                    else:
+                        return normalize_yaml(source)
+            return source
 
-        expanded_sources = CommentedSeq() if isinstance(sources, list) else ordereddict()
+        if isinstance(sources, list):
+            return CommentedSeq([expand_source_item(src) for src in sources])
+        elif isinstance(sources, dict):
+            expanded_sources = ordereddict()
+            for key, src in sources.items():
+                expanded_sources[key] = expand_source_item(src)
+            return expanded_sources
+        return sources
 
-        if isinstance(sources, dict):
-            for key, source in sources.items():
-                expanded_sources[key] = expand_source_item(source)
-        elif isinstance(sources, list):
-            for source in sources:
-                expanded_sources.append(expand_source_item(source))
-
-        return expanded_sources
-
-    def expand_targets(targets):
+    def expand_targets(targets, root_targets):
         def expand_target_item(target):
-            if isinstance(target, list) and len(target) >= 1:
+            if isinstance(target, str) and target in root_targets:
+                return root_targets[target]
+            elif isinstance(target, list) and len(target) >= 1:
                 expanded_target = ordereddict()
                 access_type = target[0].split('~')
                 expanded_target['access'] = access_type[0]
@@ -94,36 +107,88 @@ def normalize_yaml(data):
                 return expanded_target
             elif isinstance(target, dict):
                 return normalize_yaml(target)
-            else:
-                return target
+            return target
 
-        expanded_targets = CommentedSeq() if isinstance(targets, list) else ordereddict()
+        if isinstance(targets, list):
+            return CommentedSeq([expand_target_item(t) for t in targets])
+        elif isinstance(targets, dict):
+            expanded_targets = ordereddict()
+            for key, tgt in targets.items():
+                expanded_targets[key] = expand_target_item(tgt)
+            return expanded_targets
+        return targets
 
-        if isinstance(targets, dict):
-            for key, target in targets.items():
-                expanded_targets[key] = expand_target_item(target)
-        elif isinstance(targets, list):
-            for target in targets:
-                expanded_targets.append(expand_target_item(target))
-
-        return expanded_targets
-
-    def expand_subjects(subjects):
+    def expand_subjects(subjects, root_targets):
         expanded_subjects = CommentedSeq()
         if isinstance(subjects, str):
             expanded_subjects.append(ordereddict({'value': subjects}))
         elif isinstance(subjects, list):
             for subject in subjects:
+                expanded_subject = ordereddict()
                 if isinstance(subject, str):
-                    expanded_subjects.append(ordereddict({'value': subject}))
+                    expanded_subject['value'] = subject
                 elif isinstance(subject, dict):
-                    expanded_subjects.append(subject)
+                    expanded_subject['value'] = subject.get('value', '')
+                    if 'targets' in subject:
+                        expanded_subject['targets'] = expand_targets(subject['targets'], root_targets)
+                expanded_subjects.append(expanded_subject)
         return expanded_subjects
-    def expand_predicateobjects(predicateobjects):
 
+    def expand_predicateobjects(predicateobjects):
         expanded_predicateobjects = CommentedSeq()
+
         for po in predicateobjects:
-            if isinstance(po, list):
+            if isinstance(po, list) and len(po) == 3:
+                expanded_po = ordereddict()
+                expanded_po['predicates'] = CommentedSeq([ordereddict({'value': po[0]})])
+                expanded_po['objects'] = CommentedSeq([ordereddict({'value': po[1]})])
+
+                third_value = po[2]
+                if '~' in third_value:
+                    expanded_po['objects'][0]['language'] = third_value.split('~')[0]
+                else:
+                    expanded_po['objects'][0]['datatype'] = third_value
+
+                expanded_predicateobjects.append(expanded_po)
+
+            elif isinstance(po, dict) and 'predicates' in po and 'objects' in po:
+                if isinstance(po['predicates'], str):
+                    po['predicates'] = [po['predicates']]
+                if isinstance(po['objects'], str):
+                    po['objects'] = [po['objects']]
+
+                for pred in po['predicates']:
+                    expanded_po = ordereddict()
+                    if isinstance(pred, dict) and 'value' in pred:
+                        expanded_po['predicates'] =  po['predicates']
+                    else:
+                        expanded_po['predicates'] = CommentedSeq([ordereddict({'value': pred})])
+
+                    expanded_po['objects'] = CommentedSeq()
+                    for obj in po['objects']:
+                        object_expansion = ordereddict()
+                        if isinstance(obj, dict) and 'function' in obj:
+                            object_expansion['function'] = obj['function']
+                            if 'parameters' in obj:
+                                object_expansion['parameters'] = expand_parameters(obj['parameters'])
+                        elif isinstance(obj, dict) and 'value' in obj:
+                            object_expansion['value'] = obj['value']
+                            if 'datatype' in obj:
+                                object_expansion['datatype'] = obj['datatype']
+                        elif isinstance(obj, list) and len(obj) == 2 and '~' in obj[1]:
+                            object_expansion['value'] = obj[0]
+                            object_expansion['language'] = obj[1].split('~')[0]
+                        elif isinstance(obj, list) and len(obj) == 2:
+                            object_expansion['value'] = obj[0]
+                            object_expansion['datatype'] = obj[1]
+                        else:
+                            object_expansion['value'] = obj
+
+                        expanded_po['objects'].append(object_expansion)
+
+                    expanded_predicateobjects.append(expanded_po)
+
+            elif isinstance(po, list) and len(po) >= 2:
                 if isinstance(po[0], str):
                     po[0] = [po[0]]
                 if isinstance(po[1], str):
@@ -149,15 +214,12 @@ def normalize_yaml(data):
                             object_expansion['function'] = obj['function']
                             if 'parameters' in obj:
                                 object_expansion['parameters'] = expand_parameters(obj['parameters'])
-
                         else:
-                            object_expansion['value'] = obj
-                        if len(po) > 2 and isinstance(po[2], str):
-                            if "~" in po[2]:
-                                lang, dtype = po[2].split("~")
-                                object_expansion['language'] = lang
+                            if isinstance(obj, dict) and 'value' in obj:
+                                object_expansion.update(obj)
                             else:
-                                object_expansion['datatype'] = po[2]
+                                object_expansion['value'] = obj
+
                         expanded_po['objects'].append(object_expansion)
 
                     expanded_predicateobjects.append(expanded_po)
@@ -198,11 +260,11 @@ def normalize_yaml(data):
             elif new_key == 'sources':
                 new_data[new_key] = expand_sources(value)
             elif new_key == 'targets':
-                new_data[new_key] = expand_targets(value)
+                new_data[new_key] = expand_targets(value, data.get('targets', {}))
             elif new_key == 'predicateobjects':
                 new_data[new_key] = expand_predicateobjects(value)
             elif new_key == 'subjects':
-                new_data[new_key] = expand_subjects(value)
+                new_data[new_key] = expand_subjects(value, data.get('targets', {}))
             else:
                 new_data[new_key] = normalize_yaml(value)
         return new_data
@@ -211,5 +273,70 @@ def normalize_yaml(data):
         for item in data:
             new_list.append(normalize_yaml(item))
         return new_list
-    else:
-        return data
+    return data
+
+
+def switch_mappings(data):
+    sources_root = data.get('sources', {})
+    targets_root = data.get('targets', {})
+
+    def replace_references(mapping_content):
+        if 'sources' in mapping_content:
+            expanded_sources = CommentedSeq()
+            for source_ref in mapping_content['sources']:
+                if isinstance(source_ref, str) and source_ref in sources_root:
+                    expanded_sources.append(ordereddict({source_ref: sources_root[source_ref]}))
+                else:
+                    expanded_sources.append(source_ref)
+            mapping_content['sources'] = expanded_sources
+
+        if 'subjects' in mapping_content:
+            expanded_subjects = CommentedSeq()
+            for subject in mapping_content['subjects']:
+                expanded_subject = ordereddict()
+                if isinstance(subject, str):
+                    expanded_subject['value'] = subject
+                elif isinstance(subject, dict):
+                    expanded_subject['value'] = subject.get('value', '')
+                    if 'targets' in subject:
+                        expanded_subject['targets'] = expand_targets_with_identifiers(subject['targets'], targets_root)
+                expanded_subjects.append(expanded_subject)
+            mapping_content['subjects'] = expanded_subjects
+
+    if 'mappings' in data:
+        for mapping_name, mapping_content in data['mappings'].items():
+            replace_references(mapping_content)
+
+    if 'sources' in data:
+        del data['sources']
+    if 'targets' in data:
+        del data['targets']
+
+    return data
+
+
+def expand_targets_with_identifiers(targets, root_targets):
+    expanded_targets = CommentedSeq()
+    for target in targets:
+        if isinstance(target, str) and target in root_targets:
+            expanded_targets.append(ordereddict({target: root_targets[target]}))
+        elif isinstance(target, list) and len(target) >= 1:
+            expanded_target = ordereddict()
+            access_type = target[0].split('~')
+            expanded_target['access'] = access_type[0]
+            if len(access_type) > 1:
+                expanded_target['type'] = access_type[1]
+            if len(target) > 1:
+                expanded_target['serialization'] = target[1]
+            if len(target) > 2:
+                expanded_target['compression'] = target[2]
+            expanded_targets.append(expanded_target)
+        elif isinstance(target, dict):
+            expanded_targets.append(target)
+    return expanded_targets
+
+
+def normalize(data):
+    data = normalize_yaml(data)
+    switch_mappings(data)
+    return data

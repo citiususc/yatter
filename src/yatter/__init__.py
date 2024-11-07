@@ -5,22 +5,20 @@ from .subject import add_subject, add_inverse_subject
 from .predicateobject import add_predicate_object_maps, add_inverse_pom
 from .target import add_logical_targets
 from .function import add_functions
-from .normalization import normalize_yaml
+from .normalization import normalize
 import rdflib
 import ruamel.yaml as yaml
 
 
 def translate(yarrrml_data, mapping_format=RML_URI):
     logger.info("Translating YARRRML mapping to [R2]RML")
-    yarrrml_data = normalize_yaml(yarrrml_data)
-    #limpiar codigo de ifs else
+    data = normalize(yarrrml_data)
     list_initial_sources = get_initial_sources(yarrrml_data)
     rml_mapping = [add_prefix(yarrrml_data)]
     rml_mapping.extend(generate_database_connections(yarrrml_data, list_initial_sources))
     rml_mapping.extend(add_logical_targets(yarrrml_data))
     rml_mapping.extend(add_functions(yarrrml_data))
 
-    
     try:
         mappings, mapping_format = get_non_asserted_mappings(yarrrml_data, mapping_format)
         for mapping in yarrrml_data.get(YARRRML_MAPPINGS):
