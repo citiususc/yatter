@@ -7,33 +7,25 @@ import rdflib
 ## Adds a subject or set of subjects to the given TriplesMap
 def add_subject(data, mapping, mapping_format):
     rml_subjects = []
-    only_one = False
 
-    if YARRRML_SUBJECTS_SHORTCUT in data.get(YARRRML_MAPPINGS).get(mapping):
-        subject = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SUBJECTS_SHORTCUT)
-    elif YARRRML_SUBJECTS in data.get(YARRRML_MAPPINGS).get(mapping):
+    if YARRRML_SUBJECTS in data.get(YARRRML_MAPPINGS).get(mapping):
         subject = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SUBJECTS)
-    elif YARRRML_SUBJECT in data.get(YARRRML_MAPPINGS).get(mapping):
-        subject = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SUBJECT)
-        only_one = True
     else:
         raise Exception("ERROR: no subjects in mapping " + mapping)
-
-    if type(subject) == list and only_one:
-        raise Exception("ERROR: Only one subject can be define using keyword 'subject'")
-
-    if type(subject) != list:
-        subject = [subject]
 
     for individual_subject in subject:
         if YARRRML_QUOTED in individual_subject or YARRRML_NON_ASSERTED in individual_subject:
             if YARRRML_CONDITION in individual_subject:
                 from .predicateobject import ref_mapping
                 if YARRRML_NON_ASSERTED in individual_subject:
-                    subject_termmap = ref_mapping(data, mapping, individual_subject, YARRRML_NON_ASSERTED, STAR_QUOTED, mapping_format)
+                    subject_termmap = ref_mapping(data, mapping, individual_subject, YARRRML_NON_ASSERTED, STAR_QUOTED,
+                                                  mapping_format)
                 else:
-                    subject_termmap = ref_mapping(data, mapping, individual_subject, YARRRML_QUOTED, STAR_QUOTED, mapping_format)
-                subject_termmap=subject_termmap.replace(R2RML_REFOBJECT_CLASS,STAR_CLASS).replace(STAR_OBJECT,STAR_SUBJECT).replace("\t\t\t\t","\t\t\t\t\t").replace("\t\t","\t")
+                    subject_termmap = ref_mapping(data, mapping, individual_subject, YARRRML_QUOTED, STAR_QUOTED,
+                                                  mapping_format)
+                subject_termmap = subject_termmap.replace(R2RML_REFOBJECT_CLASS, STAR_CLASS).replace(STAR_OBJECT,
+                                                                                                     STAR_SUBJECT).replace(
+                    "\t\t\t\t", "\t\t\t\t\t").replace("\t\t", "\t")
             else:
                 subject_termmap = generate_rml_termmap(STAR_SUBJECT, STAR_CLASS, individual_subject, "\t\t")
         elif mapping_format == STAR_URI:
@@ -45,32 +37,29 @@ def add_subject(data, mapping, mapping_format):
             elif YARRRML_FUNCTION in individual_subject:
                 subject_value = individual_subject.get(YARRRML_FUNCTION)
 
-            subject_termmap = generate_rml_termmap(R2RML_SUBJECT, R2RML_SUBJECT_CLASS, subject_value, "\t\t", mapping_format)
+            subject_termmap = generate_rml_termmap(R2RML_SUBJECT, R2RML_SUBJECT_CLASS, subject_value, "\t\t",
+                                                   mapping_format)
 
             if YARRRML_FUNCTION in individual_subject:
-                subject_termmap =  subject_termmap.replace(R2RML_CONSTANT+" \""+subject_value + "\"", RML_EXECUTION + " <" + individual_subject.get(
-                    YARRRML_FUNCTION) + ">")
+                subject_termmap = subject_termmap.replace(R2RML_CONSTANT + " \"" + subject_value + "\"",
+                                                          RML_EXECUTION + " <" + individual_subject.get(
+                                                              YARRRML_FUNCTION) + ">")
 
             if YARRRML_TARGETS in individual_subject:
-                subject_termmap = subject_termmap[0:-3]+"\t"+RML_LOGICAL_TARGET+" <"+individual_subject[YARRRML_TARGETS]+">\n\t];\n"
+                subject_termmap = subject_termmap[0:-3] + "\t" + RML_LOGICAL_TARGET + " <" + individual_subject[
+                    YARRRML_TARGETS] + ">\n\t];\n"
 
             if YARRRML_TYPE in individual_subject:
                 if individual_subject.get(YARRRML_TYPE) == YARRRML_BLANK:
-                    subject_termmap = subject_termmap[0:-3] + "\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE +"\n\t];\n"
+                    subject_termmap = subject_termmap[
+                                      0:-3] + "\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t];\n"
 
         rml_subjects.append(subject_termmap)
 
     if YARRRML_GRAPHS in data.get(YARRRML_MAPPINGS).get(mapping):
         graphs = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_GRAPHS)
-    elif YARRRML_GRAPH in data.get(YARRRML_MAPPINGS).get(mapping):
-        graphs = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_GRAPH)
-    elif YARRRML_GRAPH_SHORTCUT in data.get(YARRRML_MAPPINGS).get(mapping):
-        graphs = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_GRAPH_SHORTCUT)
     else:
         graphs = []
-
-    if type(graphs) != list:
-        graphs = [graphs]
 
     for graph in graphs:
         graph_value = graph
@@ -78,10 +67,9 @@ def add_subject(data, mapping, mapping_format):
             graph_value = graph[YARRRML_VALUE]
         graph_termmap = generate_rml_termmap(R2RML_GRAPH_MAP, R2RML_GRAPH_CLASS, graph_value, "\t\t\t")
         if YARRRML_TARGETS in graph:
-            graph_termmap = graph_termmap[0:-3] + "\t" + RML_LOGICAL_TARGET + " <" + graph[YARRRML_TARGETS] + ">\n\t\t];\n"
+            graph_termmap = graph_termmap[0:-3] + "\t" + RML_LOGICAL_TARGET + " <" + graph[
+                YARRRML_TARGETS] + ">\n\t\t];\n"
         rml_subjects = list(map(lambda subject: subject[0:-4] + graph_termmap + "\t];\n", rml_subjects))
-
-
 
     return rml_subjects
 

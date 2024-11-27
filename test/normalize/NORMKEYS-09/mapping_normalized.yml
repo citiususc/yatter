@@ -1,4 +1,5 @@
 mappings:
+  person:
     sources:
       - access: data/person2.json
         referenceFormulation: jsonpath
