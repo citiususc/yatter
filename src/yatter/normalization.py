@@ -272,12 +272,17 @@ def expand_predicateobjects(predicateobjects):
                             if isinstance(o, dict) and 'mapping' in o and 'condition' in o:
                                 object_expansion['mapping'] = o['mapping']
                                 if 'condition' in o:
-                                    object_expansion['condition'] = o['condition']
+                                    condition_temp = o['condition']
+                                    if isinstance(condition_temp, dict):
+                                        condition_temp = [condition_temp]
 
-                                    if 'parameters' in o['condition']:
-                                        object_expansion['condition']['parameters'] = expand_parameters(
-                                            o['condition']['parameters'])
+                                    object_expansion['condition'] = []
 
+                                    for condition in condition_temp:
+                                        normalized_condition = condition.copy()
+                                        if 'parameters' in condition:
+                                            normalized_condition['parameters'] = expand_parameters(condition['parameters'])
+                                        object_expansion['condition'].append(normalized_condition)
                                 expanded_po['objects'].append(object_expansion)
                             else:
                                 expanded_po['objects'].append({'value': o})
