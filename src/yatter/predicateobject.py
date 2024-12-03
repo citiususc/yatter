@@ -8,35 +8,6 @@ from .mapping import prefixes
 from ruamel.yaml import YAML
 
 
-def get_object_access(predicate_object_map):
-    if YARRRML_OBJECTS in predicate_object_map:
-        object_access = YARRRML_OBJECTS
-    else:
-        logger.error(
-            "There isn't a valid object key (object, objects, o) correctly specify in PON " + predicate_object_map)
-        raise Exception("Add or change the key of the object in the indicated POM")
-    return object_access
-
-
-def get_predicate_access(predicate_object_map):
-    if YARRRML_PREDICATES in predicate_object_map:
-        predicate_access = YARRRML_PREDICATES
-    else:
-        logger.error(
-            "There isn't a valid predicate key (predicate, predicates, p) correctly specify in PON " + predicate_object_map)
-        raise Exception("Add or change the key of the predicate in the indicated POM")
-    return predicate_access
-
-
-def get_predicate_object_access(mapping, predicate_object_map):
-    if YARRRML_PREDICATEOBJECT in predicate_object_map:
-        predicate_object_access = YARRRML_PREDICATEOBJECT
-    else:
-        predicate_object_access = None
-        logger.warning("The triples map " + mapping + " does not have predicate object maps defined")
-    return predicate_object_access
-
-
 def get_graph_access(predicate_object_map):
     if YARRRML_GRAPHS in predicate_object_map:
         graph_access = YARRRML_GRAPHS
@@ -48,14 +19,15 @@ def get_graph_access(predicate_object_map):
 def add_predicate_object_maps(data, mapping, mapping_format):
     po_template = ""
     mapping_data = data.get(YARRRML_MAPPINGS).get(mapping)
-    key_access_pom = get_predicate_object_access(mapping, mapping_data)
-    if key_access_pom:
+    if YARRRML_PREDICATEOBJECT in mapping_data:
         pom_text = "\t" + R2RML_PREDICATE_OBJECT_MAP + " [\n"
-        for predicate_object_map in mapping_data.get(key_access_pom):
+        for predicate_object_map in mapping_data.get(YARRRML_PREDICATEOBJECT):
             po_template += pom_text + add_predicate_object(data, mapping, predicate_object_map, mapping_format,
-                                                           get_predicate_access(predicate_object_map),
-                                                           get_object_access(predicate_object_map),
+                                                           YARRRML_PREDICATES,
+                                                           YARRRML_OBJECTS,
                                                            get_graph_access(predicate_object_map)) + "\n"
+    else:
+        logger.warning("The triples map " + mapping + " does not have predicate object maps defined")
     return po_template
 
 

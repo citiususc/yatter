@@ -1,3 +1,4 @@
+from .constants import *
 key_mapping = {
     'mappings': ['mapping', 'm'],
     'subjects': ['subject', 's'],
@@ -33,7 +34,29 @@ def normalize_yaml(data):
                 new_data[new_key] = expand_parameters(value)
             else:
                 new_data[new_key] = normalize_yaml(value)
+
+        if new_data.get(YARRRML_MAPPINGS):
+            for mapping in new_data.get(YARRRML_MAPPINGS):
+
+                mapping_data = data.get(YARRRML_MAPPINGS).get(mapping)
+                if YARRRML_PREDICATEOBJECT in mapping_data:
+                    for predicate_object_map in mapping_data.get(YARRRML_PREDICATEOBJECT):
+                        if YARRRML_OBJECTS in predicate_object_map:
+                            pass
+                        else:
+                            logger.error(
+                                "There isn't a valid object key (object, objects, o) correctly specify in PON " + predicate_object_map)
+                            raise Exception("Add or change the key of the object in the indicated POM")
+
+                        if YARRRML_PREDICATES in predicate_object_map:
+                            pass
+                        else:
+                            logger.error(
+                                "There isn't a valid predicate key (predicate, predicates, p) correctly specify in PON " + predicate_object_map)
+                            raise Exception("Add or change the key of the predicate in the indicated POM")
+
         return new_data
+
     elif isinstance(data, list):
         new_list = list()
         for item in data:
@@ -275,7 +298,6 @@ def expand_predicateobjects(predicateobjects):
                                     condition_temp = o['condition']
                                     if isinstance(condition_temp, dict):
                                         condition_temp = [condition_temp]
-
                                     object_expansion['condition'] = []
 
                                     for condition in condition_temp:
