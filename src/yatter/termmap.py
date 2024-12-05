@@ -54,14 +54,6 @@ def generate_rml_termmap(rml_property, rml_class, text, indentation, mapping_for
     return template
 
 
-def check_type(om):
-    if "~lang" in om:
-        return YARRRML_LANGUAGE
-    elif ":" in om or "$(" in om:
-        return YARRRML_DATATYPE
-    else:
-        return YARRRML_TARGETS
-
 def generate_rml_template(yarrrml_template):
     references = 0
     for i in range(len(yarrrml_template)):
