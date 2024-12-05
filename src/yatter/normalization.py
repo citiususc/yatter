@@ -11,7 +11,8 @@ key_mapping = {
     'parameter': ['pm'],
     'value': ['v'],
     'authors': ['author', 'a'],
-    'targets': ['target', 't']
+    'targets': ['target', 't'],
+    'graphs': ['graph', 'g'],
 }
 
 

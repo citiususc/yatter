@@ -79,7 +79,7 @@ def add_source_full(mapping, source):
 
             source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
                           + ref_formulation_rml + ";\n\t\t" + RML_ITERATOR + " \"" \
-                          + source_iterator + "\"\n\t];\n"
+                          + source_iterator + "\";\n\t];\n"
         else:
             if extension == "csv" or extension == "SQL2008":
                 source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \

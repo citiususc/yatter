@@ -61,6 +61,9 @@ def add_subject(data, mapping, mapping_format):
     else:
         graphs = []
 
+    if type(graphs) != list:
+        graphs = [graphs]
+
     for graph in graphs:
         graph_value = graph
         if YARRRML_VALUE in graph:
