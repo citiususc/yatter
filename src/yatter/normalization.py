@@ -36,25 +36,6 @@ def normalize_yaml(data):
             else:
                 new_data[new_key] = normalize_yaml(value)
 
-        if new_data.get(YARRRML_MAPPINGS):
-            for mapping in new_data.get(YARRRML_MAPPINGS):
-
-                mapping_data = data.get(YARRRML_MAPPINGS).get(mapping)
-                if YARRRML_PREDICATEOBJECT in mapping_data:
-                    for predicate_object_map in mapping_data.get(YARRRML_PREDICATEOBJECT):
-                        if YARRRML_OBJECTS in predicate_object_map:
-                            pass
-                        else:
-                            logger.error(
-                                "There isn't a valid object key (object, objects, o) correctly specify in PON " + predicate_object_map)
-                            raise Exception("Add or change the key of the object in the indicated POM")
-
-                        if YARRRML_PREDICATES in predicate_object_map:
-                            pass
-                        else:
-                            logger.error(
-                                "There isn't a valid predicate key (predicate, predicates, p) correctly specify in PON " + predicate_object_map)
-                            raise Exception("Add or change the key of the predicate in the indicated POM")
 
         return new_data
 
@@ -115,7 +96,7 @@ def expand_sources(sources):
             expanded_source['referenceFormulation'] = reference
             expanded_source['iterator'] = source[1]
             return expanded_source
-        elif len(source) == 1 and isinstance(source[0], str) and '~' in source[0]:
+        elif isinstance(source, list) and len(source) == 1 and isinstance(source[0], str) and '~' in source[0]:
             access, reference = source[0].split('~')
             expanded_source = dict()
             expanded_source['access'] = access
@@ -390,5 +371,26 @@ def expand_targets_with_identifiers(targets, root_targets):
 
 def normalize(data):
     data = normalize_yaml(data)
+
+    if data.get(YARRRML_MAPPINGS):
+        for mapping in data.get(YARRRML_MAPPINGS):
+
+            mapping_data = data.get(YARRRML_MAPPINGS).get(mapping)
+            if YARRRML_PREDICATEOBJECT in mapping_data:
+                for predicate_object_map in mapping_data.get(YARRRML_PREDICATEOBJECT):
+                    if YARRRML_OBJECTS in predicate_object_map:
+                        pass
+                    else:
+                        logger.error(
+                            "There isn't a valid object key (object, objects, o) correctly specify in PON " + predicate_object_map)
+                        raise Exception("Add or change the key of the object in the indicated POM")
+
+                    if YARRRML_PREDICATES in predicate_object_map:
+                        pass
+                    else:
+                        logger.error(
+                            "There isn't a valid predicate key (predicate, predicates, p) correctly specify in PON " + predicate_object_map)
+                        raise Exception("Add or change the key of the predicate in the indicated POM")
+
     switch_mappings(data)
     return data
