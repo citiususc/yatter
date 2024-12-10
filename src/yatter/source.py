@@ -39,7 +39,6 @@ def add_table(data, mapping):
     for source in sources:
         sql_version = False
         db_identifier = mapping
-
         if YARRRML_ACCESS in source and YARRRML_QUERY in source:
             r2rml_access = database_source(mapping, source, db_identifier)
             sql_version = True
@@ -64,8 +63,7 @@ def add_source_full(mapping, source):
     source_rdf = ""
 
     access = str(source.get(YARRRML_ACCESS))
-    extension = access.split(".")[1]
-
+    extension = os.path.splitext(access)[1][1:]
     if YARRRML_REFERENCE_FORMULATION in source:
         reference_formulation = str(source.get(YARRRML_REFERENCE_FORMULATION))
         format_from_reference = switch_in_reference_formulation(reference_formulation.lower())
@@ -83,7 +81,7 @@ def add_source_full(mapping, source):
         else:
             if extension == "csv" or extension == "SQL2008":
                 source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
-                              + ref_formulation_rml + ";\n\n\t];\n"
+                              + ref_formulation_rml + "\n\n\t];\n"
             else:
                 raise Exception("ERROR: source " + access + "in mapping " + mapping + " has no referenceFormulation")
 

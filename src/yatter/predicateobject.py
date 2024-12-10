@@ -54,10 +54,10 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
             if 'datatype' in om:
                 optional_value = om['datatype']
                 rml_map = RML_DATATYPE_MAP
-                rml_map_class = RML_DATATYPE_MAP
+                rml_map_class = RML_DATATYPE_MAP_CLASS
                 r2rml_map = R2RML_DATATYPE
             if 'language' in om:
-                optional_value = om['language']
+                optional_value = '"' + om['language'] + '"'
                 rml_map = RML_LANGUAGE_MAP
                 rml_map_class = RML_LANGUAGE_MAP_CLASS
                 r2rml_map = R2RML_LANGUAGE
@@ -79,6 +79,8 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                     template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_IRI + "\n\t\t];\n"
                 elif om.get('type') == 'blank':
                     template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t\t];\n"
+                elif om.get('type') == 'literal':
+                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_LITERAL + "\n\t\t];\n"
 
         elif YARRRML_MAPPING in om or YARRRML_NON_ASSERTED in om or YARRRML_QUOTED in om:
             if YARRRML_MAPPING in om:
@@ -90,6 +92,44 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                     template += generate_rml_termmap(STAR_OBJECT, STAR_CLASS, om, "\t\t\t", mapping_format)
             else:
                 template += ref_mapping(data, mapping, om, YARRRML_QUOTED, STAR_QUOTED, mapping_format)
+
+        else:
+            object_value = om
+
+            if mapping_format == STAR_URI:
+                template += generate_rml_termmap(STAR_OBJECT, R2RML_OBJECT_CLASS,
+                                                 object_value, "\t\t\t", mapping_format)
+            elif YARRRML_FUNCTION in om:
+                template += generate_rml_termmap(R2RML_OBJECT, R2RML_OBJECT_CLASS, om[YARRRML_FUNCTION], "\t\t\t",
+                                                 mapping_format)
+                template = template.replace(R2RML_CONSTANT + " \"" + om[YARRRML_FUNCTION] + "\"",
+                                            RML_EXECUTION + " <" + om.get(YARRRML_FUNCTION) + ">")
+            else:
+                template += generate_rml_termmap(R2RML_OBJECT, R2RML_OBJECT_CLASS,
+                                                 object_value, "\t\t\t", mapping_format)
+            if type(om) is dict:
+                if YARRRML_DATATYPE in om:
+                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_DATATYPE + " " \
+                               + om.get(YARRRML_DATATYPE) + "\n\t\t];\n"
+                if YARRRML_LANGUAGE in om:
+                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_LANGUAGE + " \"" \
+                               + om.get(YARRRML_LANGUAGE) + "\"\n\t\t];\n"
+                if YARRRML_TYPE in om:
+                    if om.get(YARRRML_TYPE) == "iri":
+                        iri = True
+                    elif om.get(YARRRML_TYPE) == "literal":
+                        template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " \
+                                   + R2RML_LITERAL + "\n\t\t];\n"
+                    elif om.get(YARRRML_TYPE) == YARRRML_BLANK:
+                        template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " \
+                                   + R2RML_BLANK_NODE + "\n\t\t];\n"
+                if YARRRML_TARGETS in om:
+                    template = template[0:len(template) - 5] + "\t\t\t" + RML_LOGICAL_TARGET + " <" + om.get(
+                        YARRRML_TARGETS) + ">\n\t\t];\n"
+
+            if YARRRML_IRI in om:
+                template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " \
+                           + R2RML_IRI + "\n\t\t];\n"
 
     if YARRRML_GRAPHS in predicate_object:
         graph_list = predicate_object.get(YARRRML_GRAPHS)

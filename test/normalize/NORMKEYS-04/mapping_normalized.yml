@@ -1,10 +1,9 @@
 mappings:
   person:
     sources:
-      - person-source:
-          access: data/person.json
-          referenceFormulation: jsonpath
-          iterator: $
+      - access: data/person.json
+        referenceFormulation: jsonpath
+        iterator: $
       - access: data/person2.json
         referenceFormulation: jsonpath
         iterator: $

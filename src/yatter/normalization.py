@@ -13,6 +13,7 @@ key_mapping = {
     'authors': ['author', 'a'],
     'targets': ['target', 't'],
     'graphs': ['graph', 'g'],
+    'sources': ['source', 'src']
 }
 
 
@@ -117,12 +118,17 @@ def expand_sources(sources):
                     return normalize_yaml(source)
         return source
 
+    if isinstance(sources, str):
+        sources = [sources]
     if isinstance(sources, list):
-        return list([expand_source_item(src) for src in sources])
+        return [expand_source_item(src) for src in sources]
     elif isinstance(sources, dict):
         expanded_sources = dict()
-        for key, src in sources.items():
-            expanded_sources[key] = expand_source_item(src)
+        if 'access' in sources:
+            expanded_sources= [sources]
+        else:
+            for key, src in sources.items():
+                expanded_sources[key] = expand_source_item(src)
         return expanded_sources
     return sources
 
@@ -170,6 +176,8 @@ def expand_subjects(subjects, root_targets):
                 if 'targets' in subject:
                     expanded_subject['targets'] = expand_targets(subject['targets'], root_targets)
             expanded_subjects.append(expanded_subject)
+    elif isinstance(subjects, dict):
+        expanded_subjects = [subjects]
     return expanded_subjects
 
 
@@ -179,8 +187,8 @@ def expand_predicateobjects(predicateobjects):
     for po in predicateobjects:
         if isinstance(po, list) and len(po) == 3:
             expanded_po = dict()
-            expanded_po['predicates'] = list([dict({'value': po[0]})])
-            expanded_po['objects'] = list([dict({'value': po[1]})])
+            expanded_po['predicates'] = [{'value': po[0]}]
+            expanded_po['objects'] = [{'value': po[1]}]
 
             third_value = po[2]
             if '~' in third_value:
@@ -201,19 +209,34 @@ def expand_predicateobjects(predicateobjects):
                 if isinstance(pred, dict) and 'value' in pred:
                     expanded_po['predicates'] = po['predicates']
                 else:
-                    expanded_po['predicates'] = list([dict({'value': pred})])
+                    expanded_po['predicates'] = [{'value': pred}]
 
-                expanded_po['objects'] = list()
+                expanded_po['objects'] = []
                 for obj in po['objects']:
-                    object_expansion = dict()
-                    if isinstance(obj, dict) and 'function' in obj:
-                        object_expansion['function'] = obj['function']
-                        if 'parameters' in obj:
+                    object_expansion = {}
+                    if isinstance(obj, dict):
+                        if 'function' in obj and 'parameters' in obj:
+                            object_expansion['function'] = obj['function']
                             object_expansion['parameters'] = expand_parameters(obj['parameters'])
-                    elif isinstance(obj, dict) and 'value' in obj:
-                        object_expansion['value'] = obj['value']
-                        if 'datatype' in obj:
-                            object_expansion['datatype'] = obj['datatype']
+                        elif 'mapping' in obj or 'condition' in obj:
+                            if 'mapping' in obj:
+                                object_expansion['mapping'] = obj['mapping']
+                            if 'condition' in obj:
+                                condition_temp = obj['condition']
+                                if isinstance(condition_temp, dict):
+                                    condition_temp = [condition_temp]
+                                object_expansion['condition'] = [
+                                    {
+                                        **condition,
+                                        'parameters': expand_parameters(condition['parameters'])
+                                    } if 'parameters' in condition else condition
+                                    for condition in condition_temp
+                                ]
+                        else:
+                            if 'value' in obj:
+                                object_expansion['value'] = obj['value']
+                            if 'datatype' in obj:
+                                object_expansion['datatype'] = obj['datatype']
                     elif isinstance(obj, list) and len(obj) == 2 and '~' in obj[1]:
                         object_expansion['value'] = obj[0]
                         object_expansion['language'] = obj[1].split('~')[0]
@@ -236,12 +259,11 @@ def expand_predicateobjects(predicateobjects):
 
             for pred in predicates_list:
                 expanded_po = dict()
-                expanded_po['predicates'] = list()
-                expanded_po['predicates'].append(dict({'value': pred}))
+                expanded_po['predicates'] = [{'value': pred}]
+                expanded_po['objects'] = []
 
-                expanded_po['objects'] = list()
                 for obj in objects_list:
-                    object_expansion = dict()
+                    object_expansion = {}
                     if isinstance(obj, str) and '~' in obj:
                         obj_value, obj_type = obj.split('~')
                         object_expansion['value'] = obj_value
@@ -254,8 +276,9 @@ def expand_predicateobjects(predicateobjects):
                         if 'parameters' in obj:
                             object_expansion['parameters'] = expand_parameters(obj['parameters'])
                     else:
-                        if isinstance(obj, dict) and 'value' in obj:
-                            object_expansion.update(obj)
+                        if isinstance(obj, dict):
+                            if 'value' in obj:
+                                object_expansion.update(obj)
                         else:
                             object_expansion['value'] = obj
 
@@ -264,34 +287,57 @@ def expand_predicateobjects(predicateobjects):
                 expanded_predicateobjects.append(expanded_po)
 
         elif isinstance(po, dict):
-            expanded_po = dict()
-
+            expanded_po = {}
             if 'p' in po and 'o' in po:
-                for key, value in po.items():
-                    if key == 'p':
-                        expanded_po['predicates'] = [{'value': value}]
-                    elif key == 'o':
-                        expanded_po['objects'] = []
-                        for o in value:
-                            object_expansion = dict()
-                            if isinstance(o, dict) and 'mapping' in o and 'condition' in o:
-                                object_expansion['mapping'] = o['mapping']
+                if not isinstance(po['p'], list):
+                    po['p'] = [po['p']]
+
+                objects = po['o'] if isinstance(po['o'], list) else [po['o']]
+
+                for p in po['p']:
+                    expanded_po = {}
+                    if YARRRML_FUNCTION in p:
+                        expanded_po['predicates'] = [{'function': p[YARRRML_FUNCTION]}]
+                        if YARRRML_PARAMETERS in p:
+                            expanded_po['predicates'].append(expand_parameters(p[YARRRML_PARAMETERS]))
+                    else:
+                        expanded_po['predicates'] = [{'value': p}]
+                    expanded_po['objects'] = []
+
+                    for o in objects:
+                        object_expansion = {}
+
+                        if isinstance(o, dict):
+                            if 'function' in o and 'parameters' in o:
+                                object_expansion['function'] = o['function']
+                                object_expansion['parameters'] = expand_parameters(o['parameters'])
+                            elif 'mapping' in o or 'condition' in o:
+                                if 'mapping' in o:
+                                    object_expansion['mapping'] = o['mapping']
                                 if 'condition' in o:
                                     condition_temp = o['condition']
                                     if isinstance(condition_temp, dict):
                                         condition_temp = [condition_temp]
-                                    object_expansion['condition'] = []
-
-                                    for condition in condition_temp:
-                                        normalized_condition = condition.copy()
-                                        if 'parameters' in condition:
-                                            normalized_condition['parameters'] = expand_parameters(condition['parameters'])
-                                        object_expansion['condition'].append(normalized_condition)
-                                expanded_po['objects'].append(object_expansion)
+                                    object_expansion['condition'] = [
+                                        {
+                                            **condition,
+                                            'parameters': expand_parameters(condition['parameters'])
+                                        } if 'parameters' in condition else condition
+                                        for condition in condition_temp
+                                    ]
                             else:
-                                expanded_po['objects'].append({'value': o})
+                                object_expansion.update(o)
+                        else:
+                            object_expansion['value'] = o
 
-            expanded_predicateobjects.append(expanded_po)
+                        expanded_po['objects'].append(object_expansion)
+
+                    expanded_predicateobjects.append(expanded_po)
+
+            if 'graph' in po:
+                expanded_po['graphs'] = [po['graph']]
+            if 'graphs' in po:
+                expanded_po['graphs'] = [po['graphs']]
 
     return expanded_predicateobjects
 
@@ -318,7 +364,8 @@ def switch_mappings(data):
             expanded_sources = list()
             for source_ref in mapping_content['sources']:
                 if isinstance(source_ref, str) and source_ref in sources_root:
-                    expanded_sources.append(dict({source_ref: sources_root[source_ref]}))
+                    source = sources_root[source_ref]
+                    expanded_sources.append(dict(source))
                 else:
                     expanded_sources.append(source_ref)
             mapping_content['sources'] = expanded_sources
@@ -330,7 +377,12 @@ def switch_mappings(data):
                 if isinstance(subject, str):
                     expanded_subject['value'] = subject
                 elif isinstance(subject, dict):
-                    expanded_subject['value'] = subject.get('value', '')
+                    if 'value' in subject:
+                        expanded_subject['value'] = subject['value']
+                    if 'function' in subject:
+                        expanded_subject['function'] = subject['function']
+                        if 'parameters' in subject:
+                            expanded_subject['parameters'] = expand_parameters(subject['parameters'])
                     if 'targets' in subject:
                         expanded_subject['targets'] = expand_targets_with_identifiers(subject['targets'], targets_root)
                 expanded_subjects.append(expanded_subject)
