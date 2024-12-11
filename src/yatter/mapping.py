@@ -107,8 +107,8 @@ def get_non_asserted_mappings(yarrrml_data, mapping_format):
                 for value in yarrrml_data.get(YARRRML_MAPPINGS).get(mapping).get(key):
                     if type(value) is dict:
                         star_data = [value]
-                        if YARRRML_OBJECT_SHORTCUT in value:
-                            star_data = value[YARRRML_OBJECT_SHORTCUT]
+                        if YARRRML_OBJECTS in value:
+                            star_data = value[YARRRML_OBJECTS]
                         for val in star_data:
                             if YARRRML_NON_ASSERTED in val:
                                 mappings[val[YARRRML_NON_ASSERTED]] = "non_asserted"
