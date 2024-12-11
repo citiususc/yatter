@@ -371,22 +371,11 @@ def switch_mappings(data):
             mapping_content['sources'] = expanded_sources
 
         if 'subjects' in mapping_content:
-            expanded_subjects = list()
             for subject in mapping_content['subjects']:
-                expanded_subject = dict()
-                if isinstance(subject, str):
-                    expanded_subject['value'] = subject
-                elif isinstance(subject, dict):
-                    if 'value' in subject:
-                        expanded_subject['value'] = subject['value']
-                    if 'function' in subject:
-                        expanded_subject['function'] = subject['function']
-                        if 'parameters' in subject:
-                            expanded_subject['parameters'] = expand_parameters(subject['parameters'])
+                if isinstance(subject, dict):
                     if 'targets' in subject:
-                        expanded_subject['targets'] = expand_targets_with_identifiers(subject['targets'], targets_root)
-                expanded_subjects.append(expanded_subject)
-            mapping_content['subjects'] = expanded_subjects
+                        subject['targets'] = expand_targets_with_identifiers(subject['targets'], targets_root)
+
 
     if 'mappings' in data:
         for mapping_name, mapping_content in data['mappings'].items():
@@ -402,6 +391,8 @@ def switch_mappings(data):
 
 def expand_targets_with_identifiers(targets, root_targets):
     expanded_targets = list()
+    if isinstance(targets, dict):
+        targets = [targets]
     for target in targets:
         if isinstance(target, str) and target in root_targets:
             expanded_targets.append(dict({target: root_targets[target]}))
