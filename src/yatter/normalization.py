@@ -172,9 +172,12 @@ def expand_subjects(subjects, root_targets):
             if isinstance(subject, str):
                 expanded_subject['value'] = subject
             elif isinstance(subject, dict):
-                expanded_subject['value'] = subject.get('value', '')
+                if 'value' in subject:
+                    expanded_subject['value'] = subject.get('value', '')
                 if 'targets' in subject:
                     expanded_subject['targets'] = expand_targets(subject['targets'], root_targets)
+                if 'quoted' in subject:
+                    expanded_subject['quoted'] = subject.get('quoted', '')
             expanded_subjects.append(expanded_subject)
     elif isinstance(subjects, dict):
         expanded_subjects = [subjects]
