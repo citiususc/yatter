@@ -21,10 +21,8 @@ def get_termmap_type(text, mapping_format):
 def generate_rml_termmap(rml_property, rml_class, text, indentation, mapping_format=RML_URI):
     from .mapping import prefixes
     template = indentation[0:-1] + rml_property + " [\n" + indentation + "a " + rml_class + ";\n" + indentation
-    if isinstance(text, dict):
+    if isinstance(text, dict) and 'value' in text:
         text = text.get('value', '')
-    if text.startswith('"') and text.endswith('"'):
-        text = text[1:-1]
     term_map = get_termmap_type(text, mapping_format)
     if term_map == R2RML_TEMPLATE:
         text = generate_rml_template(text)
