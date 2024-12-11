@@ -17,7 +17,7 @@ def add_internal_logical_target(mapping_id, mapping_data, internal_targets, loca
                 value = mapping_data[key][i]
                 if YARRRML_TARGETS in value:
                     target_value = value[YARRRML_TARGETS]
-                    if type(target_value) is dict:
+                    if type(target_value) is dict or type(target_value) is list:
                         logical_target_id = "logical_target_" + mapping_id + "_" + str(local_target_id)
                         internal_targets.extend(generate_logical_target(target_value, logical_target_id))
                         mapping_data[key][i][YARRRML_TARGETS] = logical_target_id

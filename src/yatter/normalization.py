@@ -376,6 +376,19 @@ def switch_mappings(data):
                     if 'targets' in subject:
                         subject['targets'] = expand_targets_with_identifiers(subject['targets'], targets_root)
 
+        if 'graphs' in mapping_content:
+            for graph in mapping_content['graphs']:
+                if isinstance(graph, dict):
+                    if 'targets' in graph:
+                        graph['targets'] = expand_targets_with_identifiers(graph['targets'], targets_root)
+
+        if 'predicateobjects' in mapping_content:
+            po = mapping_content['predicateobjects'][0]
+            if 'objects' in po:
+                for object in po['objects']:
+                    if isinstance(object, dict):
+                        if 'targets' in object:
+                            object['targets'] = expand_targets_with_identifiers(object['targets'], targets_root)
 
     if 'mappings' in data:
         for mapping_name, mapping_content in data['mappings'].items():
@@ -391,7 +404,7 @@ def switch_mappings(data):
 
 def expand_targets_with_identifiers(targets, root_targets):
     expanded_targets = list()
-    if isinstance(targets, dict):
+    if isinstance(targets, dict) or isinstance(targets,str):
         targets = [targets]
     for target in targets:
         if isinstance(target, str) and target in root_targets:
