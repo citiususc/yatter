@@ -57,7 +57,10 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                 rml_map_class = RML_DATATYPE_MAP_CLASS
                 r2rml_map = R2RML_DATATYPE
             if 'language' in om:
-                optional_value = '"' + om['language'] + '"'
+                if '$(' in om['language']:
+                    optional_value = om['language']
+                else:
+                    optional_value = '"' + om['language'] + '"'
                 rml_map = RML_LANGUAGE_MAP
                 rml_map_class = RML_LANGUAGE_MAP_CLASS
                 r2rml_map = R2RML_LANGUAGE

@@ -178,6 +178,12 @@ def expand_subjects(subjects, root_targets):
                     expanded_subject['targets'] = expand_targets(subject['targets'], root_targets)
                 if 'quoted' in subject:
                     expanded_subject['quoted'] = subject.get('quoted', '')
+                if 'quotedNonAsserted' in subject:
+                    expanded_subject['quotedNonAsserted'] = subject.get('quotedNonAsserted', '')
+                    if 'condition' in subject:
+                        expanded_subject['condition'] = subject.get('condition', '')
+                        if 'parameters' in subject['condition']:
+                            expanded_subject['condition']['parameters'] = expand_parameters(expanded_subject['condition'].get('parameters', ''))
             expanded_subjects.append(expanded_subject)
     elif isinstance(subjects, dict):
         expanded_subjects = [subjects]
