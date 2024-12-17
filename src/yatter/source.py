@@ -3,23 +3,22 @@ import re
 import rdflib
 from .constants import *
 from ruamel.yaml import YAML
+from .constants import added_sources, added_targets
 
 
-def get_sources(data, mapping):
-    if YARRRML_SOURCES in data.get(YARRRML_MAPPINGS).get(mapping):
-        return data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
-    else:
-        raise Exception("ERROR: sources not defined in mapping " + mapping)
 
 
 def add_source(data, mapping):
     source_template = "\t" + RML_LOGICAL_SOURCE + " [\n\t\ta " + RML_LOGICAL_SOURCE_CLASS + \
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
-    sources = get_sources(data, mapping)
+    sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
     for source in sources:
         db_identifier = mapping
-
+        for added_Source in added_sources:
+            external_source = {k: v for k, v in added_sources[added_Source].items() if k != 'mappings'}
+            if source == external_source:
+                db_identifier = added_Source
         if YARRRML_ACCESS in source:
             if YARRRML_QUERY in source:
                 final_list.append(source_template + database_source(mapping, source, db_identifier))
@@ -35,7 +34,7 @@ def add_table(data, mapping):
                      ";\n\t\t"
 
     final_list = []
-    sources = get_sources(data, mapping)
+    sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
     for source in sources:
         sql_version = False
         db_identifier = mapping
@@ -143,13 +142,17 @@ def switch_in_reference_formulation(value, source_extension=None):
     return switcher
 
 
-def generate_database_connections(data):
+def generate_database_connections(data, added_sources):
     database = []
-    sources_ids = set()
     for mapping in data.get(YARRRML_MAPPINGS):
-        sources = get_sources(data, mapping)
+        sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
         for source in sources:
             db_identifier = mapping
+            for added_Source in added_sources:
+                external_source = {k: v for k, v in added_sources[added_Source].items() if k != 'mappings'}
+                if source == external_source:
+                    db_identifier = added_Source
+                    break
             if YARRRML_QUERY in source and YARRRML_ACCESS in source:
                 db_type = source.get(YARRRML_TYPE)
                 if db_type in YARRRML_DATABASES_DRIVER:
@@ -161,16 +164,20 @@ def generate_database_connections(data):
                 password = source.get(YARRRML_CREDENTIALS).get(YARRRML_PASSWORD)
 
                 if driver is None:
-                    database.append("<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t"
-                                    + D2RQ_DSN + " \"" + access + "\";\n\t"
-                                    + D2RQ_USER + " \"" + username + "\";\n\t"
-                                    + D2RQ_PASS + " \"" + password + "\".\n\n")
+                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t" \
+                                        + D2RQ_DSN + " \"" + access + "\";\n\t" \
+                                        + D2RQ_USER + " \"" + username + "\";\n\t" \
+                                        + D2RQ_PASS + " \"" + password + "\".\n\n"
                 else:
-                    database.append("<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t"
-                                    + D2RQ_DSN + " \"" + access + "\";\n\t"
-                                    + D2RQ_DRIVER + " \"" + driver + "\";\n\t"
-                                    + D2RQ_USER + " \"" + username + "\";\n\t"
-                                    + D2RQ_PASS + " \"" + password + "\".\n\n")
+                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t" \
+                                        + D2RQ_DSN + " \"" + access + "\";\n\t" \
+                                        + D2RQ_DRIVER + " \"" + driver + "\";\n\t" \
+                                        + D2RQ_USER + " \"" + username + "\";\n\t" \
+                                        + D2RQ_PASS + " \"" + password + "\".\n\n"
+
+                if connection_string not in database:
+                    database.append(connection_string)
+
     return database
 
 

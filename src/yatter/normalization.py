@@ -1,3 +1,5 @@
+import copy
+
 from .constants import *
 key_mapping = {
     'mappings': ['mapping', 'm'],
@@ -302,46 +304,50 @@ def expand_predicateobjects(predicateobjects):
                     po['p'] = [po['p']]
 
                 objects = po['o'] if isinstance(po['o'], list) else [po['o']]
+                expanded_po['predicates'] = []
 
                 for p in po['p']:
-                    expanded_po = {}
                     if YARRRML_FUNCTION in p:
-                        expanded_po['predicates'] = [{'function': p[YARRRML_FUNCTION]}]
+                        expanded_predicate = {'function': p[YARRRML_FUNCTION]}
                         if YARRRML_PARAMETERS in p:
-                            expanded_po['predicates'].append(expand_parameters(p[YARRRML_PARAMETERS]))
+                            expanded_parameters = expand_parameters(p[YARRRML_PARAMETERS])
+                            expanded_predicate.append(expanded_parameters)
                     else:
-                        expanded_po['predicates'] = [{'value': p}]
-                    expanded_po['objects'] = []
+                        expanded_predicate = {'value': p}
 
-                    for o in objects:
-                        object_expansion = {}
+                    expanded_po['predicates'].append(expanded_predicate)
 
-                        if isinstance(o, dict):
-                            if 'function' in o and 'parameters' in o:
-                                object_expansion['function'] = o['function']
-                                object_expansion['parameters'] = expand_parameters(o['parameters'])
-                            elif 'mapping' in o or 'condition' in o:
-                                if 'mapping' in o:
-                                    object_expansion['mapping'] = o['mapping']
-                                if 'condition' in o:
-                                    condition_temp = o['condition']
-                                    if isinstance(condition_temp, dict):
-                                        condition_temp = [condition_temp]
-                                    object_expansion['condition'] = [
-                                        {
-                                            **condition,
-                                            'parameters': expand_parameters(condition['parameters'])
-                                        } if 'parameters' in condition else condition
-                                        for condition in condition_temp
-                                    ]
-                            else:
-                                object_expansion.update(o)
+                expanded_po['objects'] = []
+
+                for o in objects:
+                    object_expansion = {}
+
+                    if isinstance(o, dict):
+                        if 'function' in o and 'parameters' in o:
+                            object_expansion['function'] = o['function']
+                            object_expansion['parameters'] = expand_parameters(o['parameters'])
+                        elif 'mapping' in o or 'condition' in o:
+                            if 'mapping' in o:
+                                object_expansion['mapping'] = o['mapping']
+                            if 'condition' in o:
+                                condition_temp = o['condition']
+                                if isinstance(condition_temp, dict):
+                                    condition_temp = [condition_temp]
+                                object_expansion['condition'] = [
+                                    {
+                                        **condition,
+                                        'parameters': expand_parameters(condition['parameters'])
+                                    } if 'parameters' in condition else condition
+                                    for condition in condition_temp
+                                ]
                         else:
-                            object_expansion['value'] = o
+                            object_expansion.update(o)
+                    else:
+                        object_expansion['value'] = o
 
-                        expanded_po['objects'].append(object_expansion)
+                    expanded_po['objects'].append(object_expansion)
 
-                    expanded_predicateobjects.append(expanded_po)
+                expanded_predicateobjects.append(expanded_po)
 
             if 'graph' in po:
                 expanded_po['graphs'] = [po['graph']]
@@ -364,19 +370,29 @@ def expand_parameters(parameters):
     return expanded_parameters
 
 
-def switch_mappings(data):
+def switch_mappings(data, added_sources, added_targets):
     sources_root = data.get('sources', {})
+    for source_name, source_value in sources_root.items():
+        if source_name not in added_sources:
+            added_sources[source_name] = copy.deepcopy(source_value)
+        if 'mappings' not in added_sources[source_name]:
+            added_sources[source_name]['mappings'] = []
     targets_root = data.get('targets', {})
 
-    def replace_references(mapping_content):
+    def replace_references(mapping_name, mapping_content):
         if 'sources' in mapping_content:
             expanded_sources = list()
             for source_ref in mapping_content['sources']:
                 if isinstance(source_ref, str) and source_ref in sources_root:
                     source = sources_root[source_ref]
                     expanded_sources.append(dict(source))
+                    if source_ref in added_sources:
+                        if mapping_name not in added_sources[source_ref]['mappings']:
+                            added_sources[source_ref]['mappings'].append(mapping_name)
                 else:
                     expanded_sources.append(source_ref)
+
+
             mapping_content['sources'] = expanded_sources
 
         if 'subjects' in mapping_content:
@@ -401,7 +417,7 @@ def switch_mappings(data):
 
     if 'mappings' in data:
         for mapping_name, mapping_content in data['mappings'].items():
-            replace_references(mapping_content)
+            replace_references(mapping_name, mapping_content)
 
     if 'sources' in data:
         del data['sources']
@@ -434,7 +450,7 @@ def expand_targets_with_identifiers(targets, root_targets):
     return expanded_targets
 
 
-def normalize(data):
+def normalize(data, added_sources, added_targets):
     data = normalize_yaml(data)
 
     if data.get(YARRRML_MAPPINGS):
@@ -457,5 +473,5 @@ def normalize(data):
                             "There isn't a valid predicate key (predicate, predicates, p) correctly specify in PON " + predicate_object_map)
                         raise Exception("Add or change the key of the predicate in the indicated POM")
 
-    switch_mappings(data)
+    switch_mappings(data, added_sources, added_targets)
     return data

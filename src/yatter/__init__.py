@@ -8,13 +8,14 @@ from .function import add_functions
 from .normalization import normalize
 import rdflib
 import ruamel.yaml as yaml
+from .constants import added_sources, added_targets
 
 
 def translate(yarrrml_data, mapping_format=RML_URI):
     logger.info("Translating YARRRML mapping to [R2]RML")
-    yarrrml_data = normalize(yarrrml_data)
+    yarrrml_data = normalize(yarrrml_data, added_sources, added_targets)
     rml_mapping = [add_prefix(yarrrml_data)]
-    rml_mapping.extend(generate_database_connections(yarrrml_data))
+    rml_mapping.extend(generate_database_connections(yarrrml_data, added_sources))
     rml_mapping.extend(add_logical_targets(yarrrml_data))
     rml_mapping.extend(add_functions(yarrrml_data))
 
