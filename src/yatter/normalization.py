@@ -1,5 +1,4 @@
 import copy
-
 from .constants import *
 key_mapping = {
     'mappings': ['mapping', 'm'],
@@ -378,6 +377,9 @@ def switch_mappings(data, added_sources, added_targets):
         if 'mappings' not in added_sources[source_name]:
             added_sources[source_name]['mappings'] = []
     targets_root = data.get('targets', {})
+    for target_name, target_value in targets_root.items():
+        if target_name not in added_targets:
+            added_targets[target_name] = copy.deepcopy(target_value)
 
     def replace_references(mapping_name, mapping_content):
         if 'sources' in mapping_content:

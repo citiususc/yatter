@@ -142,7 +142,7 @@ def switch_in_reference_formulation(value, source_extension=None):
     return switcher
 
 
-def generate_database_connections(data, added_sources):
+def generate_database_connections(data):
     database = []
     for mapping in data.get(YARRRML_MAPPINGS):
         sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
