@@ -91,32 +91,28 @@ def expand_authors(authors):
 
 def expand_sources(sources):
     def expand_source_item(source):
-        if isinstance(source, list) and len(source) == 2 and isinstance(source[0], str) and '~' in source[0]:
-            access, reference = source[0].split('~')
-            expanded_source = dict()
-            expanded_source['access'] = access
-            expanded_source['referenceFormulation'] = reference
-            expanded_source['iterator'] = source[1]
-            return expanded_source
-        elif isinstance(source, list) and len(source) == 1 and isinstance(source[0], str) and '~' in source[0]:
-            access, reference = source[0].split('~')
-            expanded_source = dict()
-            expanded_source['access'] = access
-            expanded_source['referenceFormulation'] = reference
-            return expanded_source
+        if isinstance(source, list):
+            if len(source) == 2 and isinstance(source[0], str) and '~' in source[0]:
+                access, reference = source[0].split('~')
+                return {
+                    'access': access,
+                    'referenceFormulation': reference,
+                    'iterator': source[1]
+                }
+            elif len(source) == 1 and isinstance(source[0], str) and '~' in source[0]:
+                access, reference = source[0].split('~')
+                return {
+                    'access': access,
+                    'referenceFormulation': reference
+                }
         elif isinstance(source, dict):
             for key, val in source.items():
                 if isinstance(val, list) and len(val) == 2 and '~' in val[0]:
                     access, reference = val[0].split('~')
-                    expanded_source = dict()
-                    expanded_source[key] = dict({
-                        'access': access,
-                        'referenceFormulation': reference,
-                        'iterator': val[1]
-                    })
-                    return expanded_source
+                    return {key: {'access': access, 'referenceFormulation': reference, 'iterator': val[1]}}
                 else:
                     return normalize_yaml(source)
+
         return source
 
     if isinstance(sources, str):
@@ -134,7 +130,7 @@ def expand_sources(sources):
     return sources
 
 
-def expand_targets(targets, root_targets):
+def expand_targets(targets, root_targets={}):
     def expand_target_item(target):
         if isinstance(target, str) and target in root_targets:
             return root_targets[target]
@@ -195,110 +191,113 @@ def expand_predicateobjects(predicateobjects):
     expanded_predicateobjects = list()
 
     for po in predicateobjects:
-        if isinstance(po, list) and len(po) == 3:
+        if isinstance(po, list):
             expanded_po = dict()
-            expanded_po['predicates'] = [{'value': po[0]}]
-            expanded_po['objects'] = [{'value': po[1]}]
 
-            third_value = po[2]
-            if '~' in third_value:
-                expanded_po['objects'][0]['language'] = third_value.split('~')[0]
-            else:
-                expanded_po['objects'][0]['datatype'] = third_value
+            if len(po) == 3:
+                expanded_po['predicates'] = [{'value': po[0]}]
+                expanded_po['objects'] = [{'value': po[1]}]
 
-            expanded_predicateobjects.append(expanded_po)
-
-        elif isinstance(po, dict) and 'predicates' in po and 'objects' in po:
-            if isinstance(po['predicates'], str):
-                po['predicates'] = [po['predicates']]
-            if isinstance(po['objects'], str):
-                po['objects'] = [po['objects']]
-
-            for pred in po['predicates']:
-                expanded_po = dict()
-                if isinstance(pred, dict) and 'value' in pred:
-                    expanded_po['predicates'] = po['predicates']
+                third_value = po[2]
+                if '~' in third_value:
+                    expanded_po['objects'][0]['language'] = third_value.split('~')[0]
                 else:
-                    expanded_po['predicates'] = [{'value': pred}]
-
-                expanded_po['objects'] = []
-                for obj in po['objects']:
-                    object_expansion = {}
-                    if isinstance(obj, dict):
-                        if 'function' in obj and 'parameters' in obj:
-                            object_expansion['function'] = obj['function']
-                            object_expansion['parameters'] = expand_parameters(obj['parameters'])
-                        elif 'mapping' in obj or 'condition' in obj:
-                            if 'mapping' in obj:
-                                object_expansion['mapping'] = obj['mapping']
-                            if 'condition' in obj:
-                                condition_temp = obj['condition']
-                                if isinstance(condition_temp, dict):
-                                    condition_temp = [condition_temp]
-                                object_expansion['condition'] = [
-                                    {
-                                        **condition,
-                                        'parameters': expand_parameters(condition['parameters'])
-                                    } if 'parameters' in condition else condition
-                                    for condition in condition_temp
-                                ]
-                        else:
-                            if 'value' in obj:
-                                object_expansion['value'] = obj['value']
-                            if 'datatype' in obj:
-                                object_expansion['datatype'] = obj['datatype']
-                    elif isinstance(obj, list) and len(obj) == 2 and '~' in obj[1]:
-                        object_expansion['value'] = obj[0]
-                        object_expansion['language'] = obj[1].split('~')[0]
-                    elif isinstance(obj, list) and len(obj) == 2:
-                        object_expansion['value'] = obj[0]
-                        object_expansion['datatype'] = obj[1]
-                    else:
-                        object_expansion['value'] = obj
-
-                    expanded_po['objects'].append(object_expansion)
+                    expanded_po['objects'][0]['datatype'] = third_value
 
                 expanded_predicateobjects.append(expanded_po)
 
-        elif isinstance(po, list) and len(po) >= 2:
-            if isinstance(po[0], str):
-                po[0] = [po[0]]
-            if isinstance(po[1], str):
-                po[1] = [po[1]]
-            predicates_list, objects_list = po[0], po[1]
+            elif len(po) >= 2:
+                if isinstance(po[0], str):
+                    po[0] = [po[0]]
+                if isinstance(po[1], str):
+                    po[1] = [po[1]]
 
-            for pred in predicates_list:
-                expanded_po = dict()
-                expanded_po['predicates'] = [{'value': pred}]
-                expanded_po['objects'] = []
+                predicates_list, objects_list = po[0], po[1]
 
-                for obj in objects_list:
-                    object_expansion = {}
-                    if isinstance(obj, str) and '~' in obj:
-                        obj_value, obj_type = obj.split('~')
-                        object_expansion['value'] = obj_value
-                        if obj_type == "lang":
-                            object_expansion['language'] = obj_type
+                for pred in predicates_list:
+                    expanded_po = dict()
+                    expanded_po['predicates'] = [{'value': pred}]
+                    expanded_po['objects'] = []
+
+                    for obj in objects_list:
+                        object_expansion = {}
+                        if isinstance(obj, str) and '~' in obj:
+                            obj_value, obj_type = obj.split('~')
+                            object_expansion['value'] = obj_value
+                            if obj_type == "lang":
+                                object_expansion['language'] = obj_type
+                            else:
+                                object_expansion['type'] = obj_type
+                        elif isinstance(obj, dict) and 'function' in obj:
+                            object_expansion['function'] = obj['function']
+                            if 'parameters' in obj:
+                                object_expansion['parameters'] = expand_parameters(obj['parameters'])
                         else:
-                            object_expansion['type'] = obj_type
-                    elif isinstance(obj, dict) and 'function' in obj:
-                        object_expansion['function'] = obj['function']
-                        if 'parameters' in obj:
-                            object_expansion['parameters'] = expand_parameters(obj['parameters'])
+                            if isinstance(obj, dict):
+                                if 'value' in obj:
+                                    object_expansion.update(obj)
+                            else:
+                                object_expansion['value'] = obj
+
+                        expanded_po['objects'].append(object_expansion)
+
+                    expanded_predicateobjects.append(expanded_po)
+        elif isinstance(po, dict):
+            expanded_po = {}
+
+            if 'predicates' in po and 'objects' in po:
+                if isinstance(po['predicates'], str):
+                    po['predicates'] = [po['predicates']]
+                if isinstance(po['objects'], str):
+                    po['objects'] = [po['objects']]
+
+                for pred in po['predicates']:
+                    expanded_po = dict()
+                    if isinstance(pred, dict) and 'value' in pred:
+                        expanded_po['predicates'] = po['predicates']
                     else:
+                        expanded_po['predicates'] = [{'value': pred}]
+
+                    expanded_po['objects'] = []
+                    for obj in po['objects']:
+                        object_expansion = {}
                         if isinstance(obj, dict):
-                            if 'value' in obj:
-                                object_expansion.update(obj)
+                            if 'function' in obj and 'parameters' in obj:
+                                object_expansion['function'] = obj['function']
+                                object_expansion['parameters'] = expand_parameters(obj['parameters'])
+                            elif 'mapping' in obj or 'condition' in obj:
+                                if 'mapping' in obj:
+                                    object_expansion['mapping'] = obj['mapping']
+                                if 'condition' in obj:
+                                    condition_temp = obj['condition']
+                                    if isinstance(condition_temp, dict):
+                                        condition_temp = [condition_temp]
+                                    object_expansion['condition'] = [
+                                        {
+                                            **condition,
+                                            'parameters': expand_parameters(condition['parameters'])
+                                        } if 'parameters' in condition else condition
+                                        for condition in condition_temp
+                                    ]
+                            else:
+                                if 'value' in obj:
+                                    object_expansion['value'] = obj['value']
+                                if 'datatype' in obj:
+                                    object_expansion['datatype'] = obj['datatype']
+                        elif isinstance(obj, list) and len(obj) == 2 and '~' in obj[1]:
+                            object_expansion['value'] = obj[0]
+                            object_expansion['language'] = obj[1].split('~')[0]
+                        elif isinstance(obj, list) and len(obj) == 2:
+                            object_expansion['value'] = obj[0]
+                            object_expansion['datatype'] = obj[1]
                         else:
                             object_expansion['value'] = obj
 
-                    expanded_po['objects'].append(object_expansion)
+                        expanded_po['objects'].append(object_expansion)
 
-                expanded_predicateobjects.append(expanded_po)
+                    expanded_predicateobjects.append(expanded_po)
 
-        elif isinstance(po, dict):
-            expanded_po = {}
-            if 'p' in po and 'o' in po:
+            elif 'p' in po and 'o' in po:
                 if not isinstance(po['p'], list):
                     po['p'] = [po['p']]
 
@@ -437,16 +436,7 @@ def expand_targets_with_identifiers(targets, root_targets):
         if isinstance(target, str) and target in root_targets:
             expanded_targets.append(dict({target: root_targets[target]}))
         elif isinstance(target, list) and len(target) >= 1:
-            expanded_target = dict()
-            access_type = target[0].split('~')
-            expanded_target['access'] = access_type[0]
-            if len(access_type) > 1:
-                expanded_target['type'] = access_type[1]
-            if len(target) > 1:
-                expanded_target['serialization'] = target[1]
-            if len(target) > 2:
-                expanded_target['compression'] = target[2]
-            expanded_targets.append(expanded_target)
+            expanded_targets.append(expand_targets(target))
         elif isinstance(target, dict):
             expanded_targets.append(target)
     return expanded_targets
