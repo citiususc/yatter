@@ -13,5 +13,5 @@ mappings:
     po:
       - p: ex:with
         o:
-         gather: [ $($.v1.*), $($.v2.*)]
+         gather: [$($.v1.*), $($.v2.*)]
          gatherAs: list

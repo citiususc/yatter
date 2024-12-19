@@ -1,11 +1,11 @@
 @prefix rml: <http://w3id.org/rml/>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix ex:  <http://example.com/ns#>.
-@base        <http://example.com/>.
+@base <http://example.com/ns#>.
 
-<#TM> a rml:TriplesMap;
+<map1> a rml:TriplesMap;
     rml:logicalSource [
-        rml:source _:b738439 ;
+        rml:source "data.json" ;
         rml:referenceFormulation rml:JSONPath ;
         rml:iterator "$.*" ;
     ] ;
@@ -22,6 +22,3 @@
         ] ;
     ] ;
 .
-
-_:b738439 a rml:RelativePathSource ;
-    rml:path "data.json" .
