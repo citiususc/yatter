@@ -3,12 +3,11 @@ import re
 import rdflib
 from .constants import *
 from ruamel.yaml import YAML
-from .constants import added_sources, added_targets
 
 
 
 
-def add_source(data, mapping):
+def add_source(data, mapping, added_sources={}):
     source_template = "\t" + RML_LOGICAL_SOURCE + " [\n\t\ta " + RML_LOGICAL_SOURCE_CLASS + \
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
@@ -142,7 +141,7 @@ def switch_in_reference_formulation(value, source_extension=None):
     return switcher
 
 
-def generate_database_connections(data):
+def generate_database_connections(data, added_sources):
     database = []
     for mapping in data.get(YARRRML_MAPPINGS):
         sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)

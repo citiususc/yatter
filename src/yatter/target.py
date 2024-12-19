@@ -1,17 +1,17 @@
 from .constants import *
 
 
-def add_logical_targets(yarrrml_data):
+def add_logical_targets(yarrrml_data, added_targets):
     logical_targets = []
     for target in added_targets:
         logical_targets.extend(generate_added_logical_target(added_targets.get(target), target))
     for mapping in yarrrml_data.get(YARRRML_MAPPINGS):
         mapping_data = yarrrml_data.get(YARRRML_MAPPINGS).get(mapping)
-        add_internal_logical_target(mapping, mapping_data, logical_targets)
+        add_internal_logical_target(mapping, mapping_data, logical_targets, added_targets)
     return logical_targets
 
 
-def add_internal_logical_target(mapping_id, mapping_data, internal_targets, local_target_id=0):
+def add_internal_logical_target(mapping_id, mapping_data, internal_targets, added_targets, local_target_id=0):
     keys = mapping_data.keys()
     for key in keys:
         if type(mapping_data[key]) is list:
@@ -35,9 +35,9 @@ def add_internal_logical_target(mapping_id, mapping_data, internal_targets, loca
                     if type(value) is list:
                         for v in value:
                             if type(v) is dict:
-                                add_internal_logical_target(mapping_id, v, internal_targets, local_target_id)
+                                add_internal_logical_target(mapping_id, v, internal_targets, added_targets,local_target_id)
                     elif type(value) is dict:
-                        add_internal_logical_target(mapping_id, value, internal_targets, local_target_id)
+                        add_internal_logical_target(mapping_id, value, internal_targets, added_targets,local_target_id)
         elif YARRRML_TARGETS in mapping_data[key]:
             target_value = mapping_data[key][YARRRML_TARGETS]
             logical_target_id = "logical_target_" + mapping_id + "_" + str(local_target_id)
