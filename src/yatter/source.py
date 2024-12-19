@@ -7,17 +7,17 @@ from ruamel.yaml import YAML
 
 
 
-def add_source(data, mapping, added_sources={}):
+def add_source(data, mapping, external_sources={}):
     source_template = "\t" + RML_LOGICAL_SOURCE + " [\n\t\ta " + RML_LOGICAL_SOURCE_CLASS + \
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
     sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
     for source in sources:
         db_identifier = mapping
-        for added_Source in added_sources:
-            external_source = {k: v for k, v in added_sources[added_Source].items() if k != 'mappings'}
+        for external_Source in external_sources:
+            external_source = {k: v for k, v in external_sources[external_Source].items() if k != 'mappings'}
             if source == external_source:
-                db_identifier = added_Source
+                db_identifier = external_Source
         if YARRRML_ACCESS in source:
             if YARRRML_QUERY in source:
                 final_list.append(source_template + database_source(mapping, source, db_identifier))
@@ -141,16 +141,16 @@ def switch_in_reference_formulation(value, source_extension=None):
     return switcher
 
 
-def generate_database_connections(data, added_sources):
+def generate_database_connections(data, external_sources):
     database = []
     for mapping in data.get(YARRRML_MAPPINGS):
         sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
         for source in sources:
             db_identifier = mapping
-            for added_Source in added_sources:
-                external_source = {k: v for k, v in added_sources[added_Source].items() if k != 'mappings'}
+            for external_Source in external_sources:
+                external_source = {k: v for k, v in external_sources[external_Source].items() if k != 'mappings'}
                 if source == external_source:
-                    db_identifier = added_Source
+                    db_identifier = external_Source
                     break
             if YARRRML_QUERY in source and YARRRML_ACCESS in source:
                 db_type = source.get(YARRRML_TYPE)

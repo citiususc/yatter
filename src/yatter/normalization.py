@@ -369,17 +369,17 @@ def expand_parameters(parameters):
     return expanded_parameters
 
 
-def switch_mappings(data, added_sources, added_targets):
+def switch_mappings(data, external_sources, external_targets):
     sources_root = data.get('sources', {})
     for source_name, source_value in sources_root.items():
-        if source_name not in added_sources:
-            added_sources[source_name] = copy.deepcopy(source_value)
-        if 'mappings' not in added_sources[source_name]:
-            added_sources[source_name]['mappings'] = []
+        if source_name not in external_sources:
+            external_sources[source_name] = copy.deepcopy(source_value)
+        if 'mappings' not in external_sources[source_name]:
+            external_sources[source_name]['mappings'] = []
     targets_root = data.get('targets', {})
     for target_name, target_value in targets_root.items():
-        if target_name not in added_targets:
-            added_targets[target_name] = copy.deepcopy(target_value)
+        if target_name not in external_targets:
+            external_targets[target_name] = copy.deepcopy(target_value)
 
     def replace_references(mapping_name, mapping_content):
         if 'sources' in mapping_content:
@@ -388,9 +388,9 @@ def switch_mappings(data, added_sources, added_targets):
                 if isinstance(source_ref, str) and source_ref in sources_root:
                     source = sources_root[source_ref]
                     expanded_sources.append(dict(source))
-                    if source_ref in added_sources:
-                        if mapping_name not in added_sources[source_ref]['mappings']:
-                            added_sources[source_ref]['mappings'].append(mapping_name)
+                    if source_ref in external_sources:
+                        if mapping_name not in external_sources[source_ref]['mappings']:
+                            external_sources[source_ref]['mappings'].append(mapping_name)
                 else:
                     expanded_sources.append(source_ref)
 
@@ -452,7 +452,7 @@ def expand_targets_with_identifiers(targets, root_targets):
     return expanded_targets
 
 
-def normalize(data, added_sources, added_targets):
+def normalize(data, external_sources, external_targets):
     data = normalize_yaml(data)
 
     if data.get(YARRRML_MAPPINGS):
@@ -475,5 +475,5 @@ def normalize(data, added_sources, added_targets):
                             "There isn't a valid predicate key (predicate, predicates, p) correctly specify in PON " + predicate_object_map)
                         raise Exception("Add or change the key of the predicate in the indicated POM")
 
-    switch_mappings(data, added_sources, added_targets)
+    switch_mappings(data, external_sources, external_targets)
     return data

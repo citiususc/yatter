@@ -6,7 +6,7 @@ authors = ["David Chaves <david.chaves@usc.es>", "Rubén Buján <ruben.bujan@rai
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.8"
 ruamel-yaml = "^0.17.21"
 rdflib = "^6.2.0"
 coloredlogs = "^15.0.1"

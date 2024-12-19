@@ -12,12 +12,12 @@ import ruamel.yaml as yaml
 
 def translate(yarrrml_data, mapping_format=RML_URI):
     logger.info("Translating YARRRML mapping to [R2]RML")
-    added_sources = {}
-    added_targets = {}
-    yarrrml_data = normalize(yarrrml_data, added_sources, added_targets)
+    external_sources = {}
+    external_targets = {}
+    yarrrml_data = normalize(yarrrml_data, external_sources, external_targets)
     rml_mapping = [add_prefix(yarrrml_data)]
-    rml_mapping.extend(generate_database_connections(yarrrml_data, added_sources))
-    rml_mapping.extend(add_logical_targets(yarrrml_data, added_targets))
+    rml_mapping.extend(generate_database_connections(yarrrml_data, external_sources))
+    rml_mapping.extend(add_logical_targets(yarrrml_data, external_targets))
     rml_mapping.extend(add_functions(yarrrml_data))
 
     try:
@@ -26,7 +26,7 @@ def translate(yarrrml_data, mapping_format=RML_URI):
             if mapping_format == R2RML_URI:
                 source_list = add_table(yarrrml_data, mapping)
             else:
-                source_list = add_source(yarrrml_data, mapping, added_sources)
+                source_list = add_source(yarrrml_data, mapping, external_sources)
             subject_list = add_subject(yarrrml_data, mapping, mapping_format)
             pred = add_predicate_object_maps(yarrrml_data, mapping, mapping_format)
             it = 0
