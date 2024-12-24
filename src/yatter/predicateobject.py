@@ -41,7 +41,7 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
 
     object_maps = predicate_object.get(YARRRML_OBJECTS)
     for om in object_maps:
-        object_value = om.get('value')
+        object_value = om.get(YARRRML_VALUE)
         if object_value is not None:
             rml_map_class, rml_map, r2rml_map = None, None, None
             if mapping_format == STAR_URI:
@@ -51,16 +51,16 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
             template += generate_rml_termmap(rml_property, R2RML_OBJECT_CLASS, object_value, "\t\t\t", mapping_format)
 
             optional_value = None
-            if 'datatype' in om:
-                optional_value = om['datatype']
+            if YARRRML_DATATYPE in om:
+                optional_value = om[YARRRML_DATATYPE]
                 rml_map = RML_DATATYPE_MAP
                 rml_map_class = RML_DATATYPE_MAP_CLASS
                 r2rml_map = R2RML_DATATYPE
-            if 'language' in om:
-                if '$(' in om['language']:
-                    optional_value = om['language']
+            if YARRRML_LANGUAGE in om:
+                if '$(' in om[YARRRML_LANGUAGE]:
+                    optional_value = om[YARRRML_LANGUAGE]
                 else:
-                    optional_value = '"' + om['language'] + '"'
+                    optional_value = '"' + om[YARRRML_LANGUAGE] + '"'
                 rml_map = RML_LANGUAGE_MAP
                 rml_map_class = RML_LANGUAGE_MAP_CLASS
                 r2rml_map = R2RML_LANGUAGE
@@ -75,14 +75,14 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                 else:
                     template = template[0:len(template) - 5] + "\t\t\t" + r2rml_map + " " + optional_value + "\n\t\t];\n"
 
-            elif 'targets' in om:
-                template = template[0:len(template) - 5] + "\t\t\t" + RML_LOGICAL_TARGET + " <" + om['targets'] + ">\n\t\t];\n"
-            if 'type' in om:
-                if om.get('type') == 'iri':
+            elif YARRRML_TARGETS in om:
+                template = template[0:len(template) - 5] + "\t\t\t" + RML_LOGICAL_TARGET + " <" + om[YARRRML_TARGETS] + ">\n\t\t];\n"
+            if YARRRML_TYPE in om:
+                if om.get(YARRRML_TYPE) == 'iri':
                     template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_IRI + "\n\t\t];\n"
-                elif om.get('type') == 'blank':
+                elif om.get(YARRRML_TYPE) == 'blank':
                     template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t\t];\n"
-                elif om.get('type') == 'literal':
+                elif om.get(YARRRML_TYPE) == 'literal':
                     template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_LITERAL + "\n\t\t];\n"
 
         elif YARRRML_MAPPING in om or YARRRML_NON_ASSERTED in om or YARRRML_QUOTED in om:
@@ -311,8 +311,8 @@ def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes):
                 yarrrml_pom.append(predicate)
                 yarrrml_pom.append(object)
 
-            if tm['datatype']:
-                datatype = tm['datatype'].toPython()
+            if tm[YARRRML_DATATYPE]:
+                datatype = tm[YARRRML_DATATYPE].toPython()
                 prefix = list({i for i in prefixes if datatype.startswith(prefixes[i])})
                 if prefix:
                     datatype = datatype.replace(prefixes[prefix[0]], prefix[0] + ":")
@@ -322,8 +322,8 @@ def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes):
                     datatype = '$(' + datatype + ')'
                 else:
                     datatype.replace('{', '$(').replace('}', ')')
-            if tm['language']:
-                language = tm['language'].toPython() + "~lang"
+            if tm[YARRRML_LANGUAGE]:
+                language = tm[YARRRML_LANGUAGE].toPython() + "~lang"
             elif tm['languageMapValue']:
                 language = tm['languageMapValue']
                 if not language.startswith("http"):

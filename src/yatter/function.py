@@ -141,12 +141,12 @@ def generate_extended_join(yarrrml_data):
         parameters = []
         conditions = value.replace("(","",1).rsplit(")",1)[0].split(",")
         expanded_param = dict()
-        expanded_param['parameter'] = 'str1'
-        expanded_param['value'] = conditions[0]
+        expanded_param[YARRRML_PARAMETER] = 'str1'
+        expanded_param[YARRRML_VALUE] = conditions[0]
         parameters.append(expanded_param)
         expanded_param = dict()
-        expanded_param['parameter'] = 'str2'
-        expanded_param['value'] = conditions[1]
+        expanded_param[YARRRML_PARAMETER] = 'str2'
+        expanded_param[YARRRML_VALUE] = conditions[1]
         parameters.append(expanded_param)
         extended_join[YARRRML_CONDITION].append({YARRRML_FUNCTION: YARRRML_EQUAL, YARRRML_PARAMETERS: parameters})
 

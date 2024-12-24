@@ -110,7 +110,6 @@ D2RQ_PASS = 'd2rq:password'
 
 YARRRML_PREFIXES = 'prefixes'
 YARRRML_SOURCES = 'sources'
-YARRRML_SOURCE = 'source'
 YARRRML_TABLE = 'table'
 YARRRML_ACCESS = 'access'
 YARRRML_QUERY = 'query'
@@ -126,7 +125,7 @@ YARRRML_MAPPINGS = 'mappings' # used for mappings in conditions and mappings mai
 YARRRML_MAPPING = 'mapping'
 
 YARRRML_SUBJECTS = 'subjects'
-
+YARRRML_AUTHORS = 'authors'
 YARRRML_GRAPHS = 'graphs'
 
 YARRRML_PREDICATEOBJECT = 'predicateobjects'
