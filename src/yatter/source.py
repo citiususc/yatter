@@ -230,8 +230,7 @@ def get_logical_source(logical_source_id, rdf_mapping):
         raise Exception()
 
     if source and reference_formulation and iterator:
-        yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_URI, '').lower(),
-                          iterator.value]
+        yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_URI, '').lower(), iterator.value]
     elif source and sql_query:
         # this means a database source
         source_dict = {"query": sql_query.value, "source": source.value}

@@ -6,7 +6,7 @@ key_mapping = {
     YARRRML_PREDICATES: ['predicate', 'p'],
     'inversepredicates': ['inversepredicate', 'i'],
     YARRRML_OBJECTS: ['object', 'o'],
-    YARRRML_PREDICATEOBJECT: [YARRRML_PREDICATEOBJECT_SHORTCUT],
+    YARRRML_PREDICATEOBJECT: ['po'],
     YARRRML_FUNCTION: ['fn', 'f'],
     YARRRML_PARAMETERS: ['pms'],
     YARRRML_PARAMETER: ['pm'],

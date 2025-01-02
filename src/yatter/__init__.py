@@ -76,7 +76,7 @@ def inverse_translation(rdf_mapping, mapping_format=RML_URI):
         yarrrml_tm = {YARRRML_SOURCES: [add_inverse_source(tm, rdf_mapping, mapping_format)]}
         subject, classes = add_inverse_subject(tm, rdf_mapping)
         yarrrml_tm.update(subject)
-        yarrrml_tm[YARRRML_PREDICATEOBJECT_SHORTCUT] = add_inverse_pom(tm, rdf_mapping, classes, yarrrml_mapping[YARRRML_PREFIXES])
+        yarrrml_tm['po'] = add_inverse_pom(tm, rdf_mapping, classes, yarrrml_mapping[YARRRML_PREFIXES])
         yarrrml_mapping[YARRRML_MAPPINGS][tm_name] = yarrrml_tm
 
     logger.info("Translation has finished successfully.")

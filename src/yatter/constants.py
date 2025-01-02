@@ -52,6 +52,9 @@ RML_PARAMETER = 'fnml:parameter'
 RML_VALUE_MAP = 'fnml:valueMap'
 RML_VALUE_MAP_CLASS = 'fnml:ValueMap'
 
+RML_CC_GATHER = 'rml:gather'
+RML_CC_GATHER_AS = 'rml:gatherAs'
+RML_CC_EMPTY = 'rml:allowEmptyListAndContainer'
 STAR_CLASS = 'rml:StarMap'
 STAR_NON_ASSERTED_CLASS = 'rml:NonAssertedTriplesMap'
 STAR_QUOTED = 'rml:quotedTriplesMap'
@@ -129,7 +132,6 @@ YARRRML_AUTHORS = 'authors'
 YARRRML_GRAPHS = 'graphs'
 
 YARRRML_PREDICATEOBJECT = 'predicateobjects'
-YARRRML_PREDICATEOBJECT_SHORTCUT = 'po' #eliminar
 
 YARRRML_PREDICATES = 'predicates'
 YARRRML_OBJECTS = 'objects'
@@ -158,6 +160,10 @@ YARRRML_FUNCTION = 'function'
 
 YARRRML_PARAMETER = 'parameter'
 
+YARRRML_GATHER = 'gather'
+YARRRML_GATHER_AS = 'gatherAs'
+YARRRML_GATHER_AS_OPTIONS = ["alt","bag","seq","list"]
+YARRRML_EMPTY = 'empty'
 YARRRML_MAPPING_KEYS = [YARRRML_MAPPINGS, YARRRML_MAPPING]
 YARRRML_SUBJECT_KEYS = [YARRRML_SUBJECTS]
 YARRRML_POM_KEYS = [YARRRML_PREDICATEOBJECT]
