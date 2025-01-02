@@ -1,29 +1,32 @@
 from .constants import *
 from .mapping import add_prefix, add_mapping, add_inverse_prefix, get_non_asserted_mappings, merge_mapping_section_by_key
-from .source import get_initial_sources, add_source, generate_database_connections, add_table, add_inverse_source
+from .source import add_source, generate_database_connections, add_table, add_inverse_source
 from .subject import add_subject, add_inverse_subject
 from .predicateobject import add_predicate_object_maps, add_inverse_pom
 from .target import add_logical_targets
 from .function import add_functions
+from .normalization import normalize
 import rdflib
 import ruamel.yaml as yaml
 
 
 def translate(yarrrml_data, mapping_format=RML_URI):
     logger.info("Translating YARRRML mapping to [R2]RML")
-
-    list_initial_sources = get_initial_sources(yarrrml_data)
+    external_sources = {}
+    external_targets = {}
+    yarrrml_data = normalize(yarrrml_data, external_sources, external_targets)
     rml_mapping = [add_prefix(yarrrml_data)]
-    rml_mapping.extend(generate_database_connections(yarrrml_data, list_initial_sources))
-    rml_mapping.extend(add_logical_targets(yarrrml_data))
+    rml_mapping.extend(generate_database_connections(yarrrml_data, external_sources))
+    rml_mapping.extend(add_logical_targets(yarrrml_data, external_targets))
     rml_mapping.extend(add_functions(yarrrml_data))
+
     try:
         mappings, mapping_format = get_non_asserted_mappings(yarrrml_data, mapping_format)
         for mapping in yarrrml_data.get(YARRRML_MAPPINGS):
             if mapping_format == R2RML_URI:
-                source_list = add_table(yarrrml_data, mapping, list_initial_sources)
+                source_list = add_table(yarrrml_data, mapping)
             else:
-                source_list = add_source(yarrrml_data, mapping, list_initial_sources)
+                source_list = add_source(yarrrml_data, mapping, external_sources)
             subject_list = add_subject(yarrrml_data, mapping, mapping_format)
             pred = add_predicate_object_maps(yarrrml_data, mapping, mapping_format)
             it = 0
@@ -73,7 +76,7 @@ def inverse_translation(rdf_mapping, mapping_format=RML_URI):
         yarrrml_tm = {YARRRML_SOURCES: [add_inverse_source(tm, rdf_mapping, mapping_format)]}
         subject, classes = add_inverse_subject(tm, rdf_mapping)
         yarrrml_tm.update(subject)
-        yarrrml_tm[YARRRML_PREDICATEOBJECT_SHORTCUT] = add_inverse_pom(tm, rdf_mapping, classes, yarrrml_mapping[YARRRML_PREFIXES])
+        yarrrml_tm['po'] = add_inverse_pom(tm, rdf_mapping, classes, yarrrml_mapping[YARRRML_PREFIXES])
         yarrrml_mapping[YARRRML_MAPPINGS][tm_name] = yarrrml_tm
 
     logger.info("Translation has finished successfully.")

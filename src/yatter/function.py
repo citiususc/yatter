@@ -139,10 +139,15 @@ def generate_extended_join(yarrrml_data):
 
     for value in equals:
         parameters = []
-        conditions = value.replace("(","",1).rsplit(")",1)[0].split(",")
-        parameters.append(['str1',conditions[0]])
-        parameters.append(['str2', conditions[1]])
-        extended_join[YARRRML_CONDITION].append({YARRRML_FUNCTION: YARRRML_EQUAL, YARRRML_PARAMETERS: parameters})
+        for param_name, condition in zip(['str1', 'str2'], value.replace("(", "", 1).rsplit(")", 1)[0].split(",")):
+            parameters.append({
+                YARRRML_PARAMETER: param_name,
+                YARRRML_VALUE: condition
+            })
+        extended_join[YARRRML_CONDITION].append({
+            YARRRML_FUNCTION: YARRRML_EQUAL,
+            YARRRML_PARAMETERS: parameters
+        })
 
     return extended_join
 

@@ -2,4 +2,5 @@
 lib/__pychache__
 .idea
 venv
-.pytest_cache
+src/yatter/__pycache__
+*.pyc

@@ -1,0 +1,20 @@
+prefixes:
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  xsd: "http://www.w3.org/2001/XMLSchema#"
+  rml: "http://w3id.org/rml/"
+  ex: "http://example.com/ns#"
+  base: "http://example.com/"
+
+mappings:
+  TriplesMap1:
+    sources:
+      - ["data.json~jsonpath","$.*"]
+    s: http://example.com/Student/$(ID)/$(Name)
+    po:
+      - p: ex:sameSportAs
+        o:
+          value: $(id)
+          type: bn
+          gather:
+            - mapping: TriplesMap1
+          gatherAs: list
