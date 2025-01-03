@@ -18,7 +18,8 @@
         rml:graphMap [ rml:template "g/{$.graph}" ; ] ;
         rml:predicate ex:with ;
         rml:objectMap [
-            rml:template "l/{$.id}" ; rml:termType rml:BlankNode ;
+            rml:template "l/{$.id}" ;
+            rml:termType rml:IRI ;
             rml:gather ( [ rml:reference "$.values.*" ; ] ) ;
             rml:gatherAs rdf:List ;
         ] ;
