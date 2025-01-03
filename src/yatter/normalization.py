@@ -382,23 +382,24 @@ def expand_predicateobjects(predicateobjects):
                                         object_expansion[YARRRML_GATHER].append(gather_entry)
                                     elif isinstance(gather_value, dict):
                                         gather_entry = {}
-                                        if YARRRML_MAPPING in gather_value:
-                                            gather_entry[YARRRML_MAPPING] = gather_value[YARRRML_MAPPING]
-                                        if YARRRML_CONDITION in gather_value:
-                                            condition_temp = gather_value[YARRRML_CONDITION]
-                                            if isinstance(condition_temp, dict):
-                                                condition_temp = [condition_temp]
-                                            gather_entry[YARRRML_CONDITION] = [
-                                                {
-                                                    **condition,
-                                                    YARRRML_PARAMETERS: expand_parameters(condition[YARRRML_PARAMETERS])
-                                                } if YARRRML_PARAMETERS in condition else condition
-                                                for condition in condition_temp
-                                            ]
-                                        object_expansion[YARRRML_GATHER].append(gather_entry)
-                                    else:
-                                        raise TypeError(f"Unexpected type for gather_value: {type(gather_value)}")
+                                        if YARRRML_MAPPING in gather_value or YARRRML_CONDITION in gather_value:
+                                            if YARRRML_MAPPING in gather_value:
+                                                gather_entry[YARRRML_MAPPING] = gather_value[YARRRML_MAPPING]
+                                            if YARRRML_CONDITION in gather_value:
+                                                condition_temp = gather_value[YARRRML_CONDITION]
+                                                if isinstance(condition_temp, dict):
+                                                    condition_temp = [condition_temp]
+                                                gather_entry[YARRRML_CONDITION] = [
+                                                    {
+                                                        **condition,
+                                                        YARRRML_PARAMETERS: expand_parameters(condition[YARRRML_PARAMETERS])
+                                                    } if YARRRML_PARAMETERS in condition else condition
+                                                    for condition in condition_temp
+                                                ]
 
+                                            object_expansion[YARRRML_GATHER].append(gather_entry)
+                                        else:
+                                            object_expansion[YARRRML_GATHER].append(gather_value)
 
                             else:
                                 object_expansion[YARRRML_GATHER] = o[YARRRML_GATHER]

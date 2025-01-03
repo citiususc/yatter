@@ -3,7 +3,7 @@ from .constants import *
 from .graph import add_inverse_graph
 from .source import add_source, add_table
 from .subject import add_subject
-from .termmap import generate_rml_termmap, generate_cc_termmap
+from .termmap import generate_rml_termmap, generate_cc_termmap, generate_rml_termmap_text
 from .mapping import prefixes
 from ruamel.yaml import YAML
 
@@ -48,6 +48,27 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                 gather = gather[0]
             if YARRRML_MAPPING in gather or YARRRML_CONDITION in gather:
                 template += ref_cc_mapping(data, mapping, gather, YARRRML_MAPPING, R2RML_PARENT_TRIPLESMAP, mapping_format)
+                if YARRRML_GATHER_AS in om and om[YARRRML_GATHER_AS] in YARRRML_GATHER_AS_OPTIONS:
+                    template += "\t\t\t" + RML_CC_GATHER_AS + " rdf:" + om[YARRRML_GATHER_AS].capitalize() + ";\n"
+                if YARRRML_VALUE in om:
+                    text = om.get('value', '')
+                    term_map, text = generate_rml_termmap_text(text, mapping_format)
+                    if term_map == STAR_QUOTED:
+                        if 'quoted' in text:
+                            template += "\t\t\t" + term_map + " <" + text[YARRRML_QUOTED] + "_0>;\n"
+                        else:
+                            template += "\t\t\t" +  term_map + " <" + text[YARRRML_NON_ASSERTED] + "_0>;\n"
+                    elif term_map != "rr:constant":
+                        template += "\t\t\t" +  term_map + " \"" + text + "\";\n"
+                    else:
+                        if text.startswith("http"):
+                            template += "\t\t\t" +  term_map + " <" + text + ">;\n"
+                        else:
+                            if ":" in text or "<" in text:
+                                template +=  "\t\t\t" + term_map + " " + text + ";\n"
+                            else:
+                                template += "\t\t\t" +  term_map + " \"" + text + "\";\n"
+                template += "\n\t\t];\n"
             else:
                 template += generate_cc_termmap(STAR_OBJECT, om, "\t\t\t", mapping_format) + "\n\t\t];\n"
             if YARRRML_TYPE in om:
@@ -243,8 +264,8 @@ def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_fo
         number_joins_rml = len(subject_list) * len(source_list)
         for i in range(number_joins_rml):
             template += "\t\t" + object + \
-                        " [\n\t\t\ta " + RML_CC_GATHER + \
-                        ";\n\t\t\t" + ref_type_property + " <" + mapping_join + "_" + str(i) + ">;\n"
+                        " [\n\t\t\t" + RML_CC_GATHER + \
+                        " (\n\t\t\t\t[\n\t\t\t\t\t" + ref_type_property + " <" + mapping_join + "_" + str(i) + ">;\n"
             if YARRRML_CONDITION in om:
                 conditions = om.get(YARRRML_CONDITION)
                 if type(conditions) is not list:
@@ -263,20 +284,21 @@ def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_fo
                             except Exception as e:
                                 logger.error("ERROR: Parameters not normalized correctly")
 
-                            template += "\t\t\t" + R2RML_JOIN_CONITION + \
-                                        " [\n\t\t\t\t" + R2RML_CHILD + " " + child + \
-                                        ";\n\t\t\t\t" + R2RML_PARENT + " " + parent + ";\n\t\t\t];\n"
+                            template += "\t\t\t\t\t" + R2RML_JOIN_CONITION + \
+                                        " [\n\t\t\t\t\t\t" + R2RML_CHILD + " " + child + \
+                                        ";\n\t\t\t\t\t\t" + R2RML_PARENT + " " + parent + ";\n\t\t\t\t\t];\n"
 
                         else:
                             logger.error("Error in reference mapping another mapping in mapping " + mapping)
                             raise Exception("Only two parameters can be indicated (child and parent)")
-                template += "\t\t];\n"
+                template += "\t\t\t\t]\n\t\t\t);\n"
             else:
-                template += "\n\t\t]\n"
+                template += "\t\t\t\t]\n\t\t\t);\n"
 
     else:
         logger.error("Error in reference another mapping in mapping " + mapping)
         raise Exception("Review how is defined the reference to other mappings")
+
 
     return template
 
