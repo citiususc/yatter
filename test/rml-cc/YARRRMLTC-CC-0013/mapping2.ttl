@@ -36,16 +36,9 @@
 			rr:constant ex:with;
 		];
 		rml:objectMap [
-			rr:template "c/{$.id}";
 			rml:gather (
-				[
-					rml:gather ( [ rml:reference "$.v1.*"; ] ) ;
-					rml:gatherAs rdf:Bag;
-				]
-				[
-					rml:gather ( [ rml:reference "$.v2.*"; ] ) ;
-					rml:gatherAs rdf:Bag;
-				]
+			 [ rml:reference "$.v1.*"; ]
+			 [ rml:reference "$.v2.*"; ]
 			) ;
 			rml:gatherAs rdf:List;
 

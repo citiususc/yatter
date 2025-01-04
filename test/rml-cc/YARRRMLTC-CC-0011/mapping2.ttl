@@ -26,7 +26,7 @@
 		rml:referenceFormulation ql:JSONPath;
 		rml:iterator "$.*";
 	];
-		rml:objectMap [
+		rml:subjectMap [
 			rml:gather ( [ rml:reference "$.values.*"; ] ) ;
 			rml:gatherAs rdf:List;
 

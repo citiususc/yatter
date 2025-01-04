@@ -380,6 +380,11 @@ def expand_predicateobjects(predicateobjects):
                                             YARRRML_GATHER_AS: gather_value.split('~')[1]
                                         }
                                         object_expansion[YARRRML_GATHER].append(gather_entry)
+                                    elif isinstance(gather_value, str):
+                                        gather_entry = {
+                                            YARRRML_GATHER: gather_value
+                                        }
+                                        object_expansion[YARRRML_GATHER].append(gather_entry)
                                     elif isinstance(gather_value, dict):
                                         gather_entry = {}
                                         if YARRRML_MAPPING in gather_value or YARRRML_CONDITION in gather_value:
@@ -410,7 +415,8 @@ def expand_predicateobjects(predicateobjects):
                                 object_expansion[YARRRML_TYPE] = o[YARRRML_TYPE]
                             if YARRRML_EMPTY in o:
                                 object_expansion[YARRRML_EMPTY] = o[YARRRML_EMPTY]
-
+                            if YARRRML_STRATEGY in o:
+                                object_expansion[YARRRML_STRATEGY] = o[YARRRML_STRATEGY]
                         else:
                             object_expansion.update(o)
                     else:

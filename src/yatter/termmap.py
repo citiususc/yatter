@@ -86,13 +86,19 @@ def generate_cc_termmap(rml_property, content, indentation, mapping_format=RML_U
         template += indentation + RML_CC_GATHER + " (\n"
         for gather_item in content[YARRRML_GATHER]:
             term_map, text = generate_cc_termmap_text(gather_item, mapping_format)
-            template += indentation + "\t" + "[\n" + indentation + "\t\t" + RML_CC_GATHER + " ( [ " + term_map + " " + text + "; ] ) ;\n"
-            template += indentation + "\t\t" + RML_CC_GATHER_AS + " rdf:" + content[YARRRML_GATHER_AS].capitalize() + ";\n" + indentation + "\t]\n"
+            if YARRRML_GATHER_AS in gather_item:
+                template += indentation + "\t" + "[\n" + indentation + "\t\t" + RML_CC_GATHER + " ( [ " + term_map + " " + text + "; ] ) ;\n"
+                template += indentation + "\t\t" + RML_CC_GATHER_AS + " rdf:" + gather_item[YARRRML_GATHER_AS].capitalize() + ";\n"
+                template += indentation + "\t]\n"
+            else:
+                template += indentation + " [ " + term_map + " " + text + "; ] \n"
+
         template += indentation + ") ;\n"
 
         if YARRRML_GATHER_AS in content and content[YARRRML_GATHER_AS] in YARRRML_GATHER_AS_OPTIONS:
             template += indentation + RML_CC_GATHER_AS + " rdf:" + content[YARRRML_GATHER_AS].capitalize() + ";\n"
-
+        if YARRRML_STRATEGY in content and content[YARRRML_STRATEGY] in ['append','cartesianProduct']:
+            template += indentation + RML_CC_STRATEGY + " rml:" + content[YARRRML_STRATEGY] + ";\n"
     return template
 
 

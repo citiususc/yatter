@@ -71,6 +71,7 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                 template += "\n\t\t];\n"
             else:
                 template += generate_cc_termmap(STAR_OBJECT, om, "\t\t\t", mapping_format) + "\n\t\t];\n"
+
             if YARRRML_TYPE in om:
                 if om.get(YARRRML_TYPE) == 'iri':
                     template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_IRI + "\n\t\t];\n"
