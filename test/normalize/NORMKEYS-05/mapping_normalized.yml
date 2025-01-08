@@ -1,0 +1,14 @@
+mappings:
+  person:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://example.org/{id}
+        targets:
+          - person-target:
+              access: data/dump.ttl.gz
+              type: void
+              serialization: turtle
+              compression: gzip
