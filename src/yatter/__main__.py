@@ -5,8 +5,8 @@ from rdflib import Graph
 from . import translate, inverse_translation, merge_mappings
 from .constants import *
 
-def write_results(mapping):
 
+def write_results(mapping):
     if type(mapping) is str:
         output_file = open(args.output_mapping_path, "w")
         output_file.write(mapping)
@@ -18,6 +18,7 @@ def write_results(mapping):
             yaml.default_flow_style = False
             yaml.dump(mapping, f)
 
+
 def parse_inputs():
     input_format = RML_URI
     yaml = YAML(typ='safe', pure=True)
@@ -25,7 +26,8 @@ def parse_inputs():
         if args.input_mapping_path.endswith('.yml') or args.input_mapping_path.endswith('.yaml'):
             with open(args.input_mapping_path) as f:
                 input_data = yaml.load(f)
-        elif args.input_mapping_path.endswith('.ttl') or args.input_mapping_path.endswith('.rml') or args.input_mapping_path.endswith('.r2rml'):
+        elif args.input_mapping_path.endswith('.ttl') or args.input_mapping_path.endswith(
+                '.rml') or args.input_mapping_path.endswith('.r2rml'):
             input_data = Graph()
             input_data.parse(args.input_mapping_path, format="turtle")
         else:

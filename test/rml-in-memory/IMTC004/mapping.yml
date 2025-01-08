@@ -6,13 +6,18 @@ prefixes:
   rdfs: "http://www.w3.org/2000/01/rdf-schema#"
   xsd: "http://www.w3.org/2001/XMLSchema#"
   foaf: "http://xmlns.com/foaf/0.1/"
-  sd: "https://w3id.org/okn/o/sd/"
+  sd: "https://w3id.org/okn/o/sd#"
   kg4di: "https://w3id.org/kg4di/"
 
 mappings:
-  df_map:
+  dict_map:
     sources:
-      - [$(output_dataframe)~Pandas-DataFrame]
-    s: http://instagram.com/data/user{Id}
+      access: $(output_dict)
+      referenceFormulation: Dictionary
+      structureDefiner: Python
+      iterator: $.users[*]
+      softwareSpecification:
+        programmingLanguage: Python3.9
+    s: http://instagram.com/data/user$(id)
     po:
        - [a, insta:User]

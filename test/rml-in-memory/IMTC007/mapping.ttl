@@ -4,29 +4,30 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-@prefix sd: <https://w3id.org/okn/o/sd/>.
-@prefix kg4di: <https://w3id.org/kg4di/definedBy>.
+@prefix sd: <https://w3id.org/okn/o/sd#>.
+@prefix kg4di: <https://w3id.org/kg4di/>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@base <http://example.com/ns#>.
 
-
-<people_0> a rr:TriplesMap;
+<df_map_0> a rr:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
 		rml:source [
 			a sd:DatasetSpecification;
 			sd:name "variable1";
-			sd:hasDataTransformation [
-				sd:hasSourceCode [
+			sd:hasDataTransformation[
+				sd:hasSourceCode[
 					sd:programmingLanguage "Python3.9";
 				];
 			];
 		];
-		rml:referenceFormulation ql:Dictionary;
 		rml:iterator "$.users[*]";
+		rml:referenceFormulation ql:Dictionary;
 	];
 	rr:subjectMap [
 		a rr:SubjectMap;
-		rr:template "http://instagram.com/data/user{Id}";
+		rr:template "http://instagram.com/data/user{id}";
 	];
 	rr:predicateObjectMap [
 		rr:predicateMap [
@@ -56,22 +57,7 @@
 		rr:objectMap [
 			a rr:ObjectMap;
 			rr:template "{Name} {Surname}";
-			rr:datatype rdfs:Literal
 		];
-	].
-
-
-<followers_0> a rr:TriplesMap;
-
-	rml:logicalSource [
-		a rml:LogicalSource;
-		rml:source "followers.json";
-		rml:referenceFormulation ql:JSONPath;
-		rml:iterator "$.followers[*]";
-	];
-	rr:subjectMap [
-		a rr:SubjectMap;
-		rr:template "http://instagram.com/data/user{Id}";
 	];
 	rr:predicateObjectMap [
 		rr:predicateMap [
@@ -84,6 +70,70 @@
 			rr:termType rr:IRI
 		];
 	].
+
+
+<df_map_1> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source [
+			a sd:DatasetSpecification;
+			sd:name "variable2";
+			sd:hasDataTransformation[
+				sd:hasSourceCode[
+					sd:programmingLanguage "Python3.9";
+				];
+			];
+		];
+		rml:iterator "$.followers[*]";
+		rml:referenceFormulation ql:Dictionary;
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://instagram.com/data/user{id}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant insta:User;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant insta:username;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "Username";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant insta:name;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:template "{Name} {Surname}";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant insta:follows;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:template "http://instagram.com/data/user{Follows}";
+			rr:termType rr:IRI
+		];
+	].
+
 
 ql:Dictionary a rml:ReferenceFormulation;
 	kg4di:definedBy "Python".

@@ -21,6 +21,7 @@ FORMATS_URI = 'http://www.w3.org/ns/formats/'
 VOID_URI = 'http://rdfs.org/ns/void#'
 FNML_URI = 'http://semweb.mmlab.be/ns/fnml#'
 GREL_URI = 'http://users.ugent.be/~bjdmeest/function/grel.ttl#'
+SD_URI = 'https://w3id.org/okn/o/sd#'
 
 RML_PREFIX = '@prefix'
 RML_BASE = '@base'
@@ -28,6 +29,7 @@ RML_LOGICAL_SOURCE_CLASS = 'rml:LogicalSource'
 RML_LOGICAL_SOURCE = 'rml:logicalSource'
 RML_SOURCE = 'rml:source'
 RML_REFERENCE_FORMULATION = 'rml:referenceFormulation'
+RML_REFERENCE_FORMULATION_CLASS = 'rml:ReferenceFormulation'
 RML_ITERATOR = 'rml:iterator'
 RML_REFERENCE = 'rml:reference'
 RML_LANGUAGE_MAP = 'rml:languageMap'
@@ -108,7 +110,16 @@ D2RQ_DRIVER = 'd2rq:jdbcDriver'
 D2RQ_USER = 'd2rq:username'
 D2RQ_PASS = 'd2rq:password'
 
-
+##############################################################################
+#############################   SD CONSTANTS  ###########################
+##############################################################################
+SD_DATASET_SPEC = 'sd:DatasetSpecification'
+SD_NAME = 'sd:name'
+SD_HAS_DATA_TRANSFORMATION = 'sd:hasDataTransformation'
+SD_HAS_SOFTWARE_REQUIREMENTS = 'sd:hasSoftwareRequirements'
+SD_HAS_SOURCE_CODE= 'sd:hasSourceCode'
+SD_PROGRAMMING_LANGUAGE =  'sd:programmingLanguage'
+KG4DI_DEFINED_BY = 'kg4di:definedBy'
 ##############################################################################
 #############################   YARRRML CONSTANTS  ###########################
 ##############################################################################
@@ -125,6 +136,11 @@ YARRRML_CREDENTIALS = 'credentials'
 YARRRML_TYPE = 'type'
 YARRRML_USERNAME = 'username'
 YARRRML_PASSWORD = 'password'
+
+YARRRML_STRUCTURE_DEFINER = 'structureDefiner'
+YARRRML_SOFTWARE_SPECIFICATION = 'softwareSpecification'
+YARRRML_PROGRAMMING_LANGUAGE = 'programmingLanguage'
+YARRRML_SOFTWARE_REQUIREMENTS = 'softwareRequirements'
 
 YARRRML_MAPPINGS = 'mappings' # used for mappings in conditions and mappings main key
 YARRRML_MAPPING = 'mapping'

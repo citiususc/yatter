@@ -2,5 +2,11 @@
 lib/__pychache__
 .idea
 venv
+.pytest_cache
+src/build
+src/dist
+src/yatter.egg-info
+api
+.coverage
 src/yatter/__pycache__
 *.pyc

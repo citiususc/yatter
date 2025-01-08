@@ -94,17 +94,34 @@ def expand_sources(sources):
         if isinstance(source, list):
             if len(source) == 2 and isinstance(source[0], str) and '~' in source[0]:
                 access, reference = source[0].split('~')
-                return {
-                    YARRRML_ACCESS: access,
-                    YARRRML_REFERENCE_FORMULATION: reference,
-                    YARRRML_ITERATOR: source[1]
-                }
+                if '-' in reference:
+                    reference = reference.split('-')
+                    return {
+                        YARRRML_ACCESS: access,
+                        YARRRML_REFERENCE_FORMULATION: reference[1],
+                        YARRRML_STRUCTURE_DEFINER: reference[0],
+                        YARRRML_ITERATOR: source[1]
+                    }
+                else:
+                    return {
+                        YARRRML_ACCESS: access,
+                        YARRRML_REFERENCE_FORMULATION: reference,
+                        YARRRML_ITERATOR: source[1]
+                    }
             elif len(source) == 1 and isinstance(source[0], str) and '~' in source[0]:
                 access, reference = source[0].split('~')
-                return {
-                    YARRRML_ACCESS: access,
-                    YARRRML_REFERENCE_FORMULATION: reference
-                }
+                if '-' in reference:
+                    reference = reference.split('-')
+                    return {
+                        YARRRML_ACCESS: access,
+                        YARRRML_REFERENCE_FORMULATION: reference[1] ,
+                        YARRRML_STRUCTURE_DEFINER: reference[0],
+                    }
+                else:
+                    return {
+                        YARRRML_ACCESS: access,
+                        YARRRML_REFERENCE_FORMULATION: reference,
+                    }
         elif isinstance(source, dict):
             for key, val in source.items():
                 if isinstance(val, list) and len(val) == 2 and '~' in val[0]:

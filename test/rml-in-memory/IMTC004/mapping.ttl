@@ -4,23 +4,30 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-@prefix sd: <https://w3id.org/okn/o/sd/>.
-@prefix kg4di: <https://w3id.org/kg4di/definedBy>.
+@prefix sd: <https://w3id.org/okn/o/sd#>.
+@prefix kg4di: <https://w3id.org/kg4di/>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@base <http://example.com/ns#>.
 
-
-<df_map> a rr:TriplesMap;
+<dict_map_0> a rr:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
 		rml:source [
 			a sd:DatasetSpecification;
-			sd:name "output_dataframe";
+			sd:name "output_dict";
+			sd:hasDataTransformation [
+				sd:hasSourceCode [
+					sd:programmingLanguage "Python3.9";
+				];
+			];
 		];
-		rml:referenceFormulation ql:DataFrame;
+		rml:referenceFormulation ql:Dictionary;
+		rml:iterator "$.users[*]";
 	];
 	rr:subjectMap [
 		a rr:SubjectMap;
-		rr:template "http://instagram.com/data/user{Id}";
+		rr:template "http://instagram.com/data/user{id}";
 	];
 	rr:predicateObjectMap [
 		rr:predicateMap [
@@ -33,5 +40,5 @@
 		];
 	].
 
-ql:DataFrame a rml:ReferenceFormulation;
-	kg4di:definedBy "Pandas".
+ql:Dictionary a rml:ReferenceFormulation;
+	kg4di:definedBy "Python".

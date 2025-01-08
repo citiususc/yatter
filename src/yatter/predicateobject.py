@@ -201,7 +201,7 @@ def ref_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_forma
         else:
             if mapping_format == STAR_URI:
                 object = STAR_OBJECT
-            source_list = add_source(data, mapping_join)
+            source_list, external_references = add_source(data, mapping_join)
 
         number_joins_rml = len(subject_list) * len(source_list)
         for i in range(number_joins_rml):
@@ -259,7 +259,7 @@ def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_fo
         else:
             if mapping_format == STAR_URI:
                 object = STAR_OBJECT
-            source_list = add_source(data, mapping_join)
+            source_list, external_references = add_source(data, mapping_join)
 
         number_joins_rml = len(subject_list) * len(source_list)
         for i in range(number_joins_rml):
@@ -351,13 +351,12 @@ def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes):
             logger.error("ERROR: There is POM without predicate map defined")
             raise Exception("Review your mapping " + str(mapping_id))
 
-        prefix = list({i for i in prefixes if predicate.startswith(prefixes[i])})
-        if not predicate.startswith("http") and "{" not in predicate:
+        if not predicate.startswith("http"):
             predicate = '$(' + predicate + ')'
-        elif "{" in predicate and "}" in predicate:
+        elif predicate.startswith("http") and "{" not in predicate:
+            predicate = find_prefixes(predicate, prefixes)
+        else:
             predicate = predicate.replace('{', '$(').replace('}', ')')
-        elif prefix:
-            predicate = tm['predicateValue'].toPython().replace(prefixes[prefix[0]], prefix[0] + ":")
 
         predicate = find_prefixes(predicate, prefixes)
 

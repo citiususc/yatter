@@ -12,6 +12,7 @@ def add_source(data, mapping, external_sources={}):
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
     sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
+    external_references_list = []
     for source in sources:
         db_identifier = mapping
         for external_Source in external_sources:
@@ -21,11 +22,24 @@ def add_source(data, mapping, external_sources={}):
         if YARRRML_ACCESS in source:
             if YARRRML_QUERY in source:
                 final_list.append(source_template + database_source(mapping, source, db_identifier))
+            elif YARRRML_STRUCTURE_DEFINER in source:
+                source, external_references = add_in_memory_source(mapping,source)
+                final_list.append(source_template + source)
+                if external_references is not None:
+                    external_references_list.append(external_references)
             else:
                 final_list.append(source_template + add_source_full(mapping, source))
+        elif type(source) is list: # ToDo: review for in_memory sources
+            if "$(" in source[0]:
+                source, external_references = add_in_memory_source(mapping, source)
+                final_list.append(source_template + source)
+                if external_references is not None:
+                    external_references_list.append(external_references)
+            else:
+                final_list.append(source_template + add_source_simplified(mapping, source)) # this probably needs to be removed
         else:
             raise Exception("ERROR: source " + source + " in mapping " + mapping + " not valid")
-    return final_list
+    return final_list, external_references_list
 
 
 def add_table(data, mapping):
@@ -55,6 +69,79 @@ def add_table(data, mapping):
             r2rml_access += "\n\t];\n"
         final_list.append(table_template + r2rml_access)
     return final_list
+
+
+
+def add_source_simplified(mapping, source):
+    source_rdf = ""
+    file_path = re.sub("~.*", "", source[0])
+    reference_formulation = source[0].split('~')[1]
+    source_extension = os.path.splitext(file_path)[1].replace(".","")
+    ref_formulation_rml = YARRRML_REFERENCE_FORMULATIONS[reference_formulation]
+
+    if switch_in_reference_formulation(reference_formulation, source_extension) != source_extension:
+        raise Exception(
+            "ERROR: mismatch extension and referenceFormulation in source " + source + " in mapping " + mapping)
+    else:
+        if len(source) == 1:  # do not have iterator
+            if source_extension == "csv" or source_extension == "SQL2008" or source_extension == "xlsx":
+                source_rdf += '"' + file_path + '"' + ";\n" + "\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
+                              + ref_formulation_rml + "\n" + "\t];\n"
+            else:
+                raise Exception("ERROR: source " + source + " in mapping " + mapping + " has no iterator")
+        else:  # source[1] is the iterator for json and xml
+            source_rdf += "\"" + file_path + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
+                          + ref_formulation_rml + ";\n\t\t" + RML_ITERATOR + " \"" \
+                          + source[1] + "\";\n\t];\n"
+    return source_rdf
+
+def add_in_memory_source(mapping, source):
+    external_reference_formulation = None
+    if type(source) is list:
+        source = extend_in_memory(source)
+    source_rdf = "[\n\t\t\ta " + SD_DATASET_SPEC + ";\n\t\t\t"
+
+    access = str(source.get(YARRRML_ACCESS)).replace("$(","").replace(")","")
+    source_rdf += SD_NAME + " \"" + access + "\";\n"
+
+    if YARRRML_SOFTWARE_SPECIFICATION in source:
+        source_rdf += "\t\t\t" + SD_HAS_DATA_TRANSFORMATION + "[\n\t\t\t\t"
+
+        if YARRRML_SOFTWARE_REQUIREMENTS in source.get(YARRRML_SOFTWARE_SPECIFICATION):
+            software_requirements = str(source.get(YARRRML_SOFTWARE_SPECIFICATION)[YARRRML_SOFTWARE_REQUIREMENTS])
+            source_rdf += SD_HAS_SOFTWARE_REQUIREMENTS + " \""+ software_requirements +"\";\n\t\t\t\t"
+
+        if YARRRML_PROGRAMMING_LANGUAGE in source.get(YARRRML_SOFTWARE_SPECIFICATION):
+            programming_language = str(source.get(YARRRML_SOFTWARE_SPECIFICATION)[YARRRML_PROGRAMMING_LANGUAGE])
+            source_rdf += SD_HAS_SOURCE_CODE +"[\n\t\t\t\t\t" + SD_PROGRAMMING_LANGUAGE + " \"" + programming_language + "\";"
+            source_rdf +="\n\t\t\t\t];\n"
+
+        source_rdf += "\t\t\t];\n"
+    source_rdf += "\t\t];\n"
+
+    if YARRRML_ITERATOR in source:
+        source_rdf += "\t\t" + RML_ITERATOR + " \"" + source.get(YARRRML_ITERATOR) + "\";\n"
+
+    if YARRRML_REFERENCE_FORMULATION in source:
+        reference_formulation = str(source.get(YARRRML_REFERENCE_FORMULATION))
+        source_rdf += "\t\t" + RML_REFERENCE_FORMULATION + " ql:"+ reference_formulation + ";\n"
+        external_reference_formulation = "ql:" + reference_formulation + " a " + RML_REFERENCE_FORMULATION_CLASS +";\n"
+        external_reference_formulation +="\t" + KG4DI_DEFINED_BY +" \""+source.get(YARRRML_STRUCTURE_DEFINER) +"\"."
+    source_rdf += "\t];\n"
+
+
+
+    return source_rdf, external_reference_formulation
+
+def extend_in_memory(source):
+    features = source[0].split("~")
+    access = features[0]
+    defined_by = features[1].split("-")[0]
+    reference_formulation = features[1].split("-")[1]
+    extended_source = {"access": access, "structureDefiner": defined_by, "referenceFormulation": reference_formulation}
+    if len(source) == 2:
+        extended_source["iterator"] = source[1]
+    return extended_source
 
 
 def add_source_full(mapping, source):

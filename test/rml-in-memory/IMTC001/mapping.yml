@@ -6,7 +6,7 @@ prefixes:
   rdfs: "http://www.w3.org/2000/01/rdf-schema#"
   xsd: "http://www.w3.org/2001/XMLSchema#"
   foaf: "http://xmlns.com/foaf/0.1/"
-  sd: "https://w3id.org/okn/o/sd/"
+  sd: "https://w3id.org/okn/o/sd#"
   kg4di: "https://w3id.org/kg4di/"
 
 mappings:
@@ -14,7 +14,10 @@ mappings:
     sources:
       access: $(output_dataframe)
       referenceFormulation: DataFrame
-			structureDefiner: Pandas
-    s: http://instagram.com/data/user{Id}
+      structureDefiner: Pandas
+      softwareSpecification:
+        programmingLanguage: Python3.9
+        softwareRequirements: pandas>=1.1.0
+    s: http://instagram.com/data/user$(Id)
     po:
        - [a, insta:User]
