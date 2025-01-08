@@ -73,10 +73,11 @@ These are the following specifications used by the translation process:
 - RML-star: https://w3id.org/rml/star/spec
 - RML-IO: https://w3id.org/rml/io/spec
 - RML-FNML: https://w3id.org/rml/fnml/spec
+- RML-CC: https://w3id.org/rml/cc/spec
 
 To be implemented soon:
 - RML-core: https://w3id.org/rml/core/spec 
-- RML-CC: https://w3id.org/rml/cc/spec
+
 
 ## Cite this work:
 If you used Yatter in your work, please cite the [ICWE2023](https://icwe2023.webengineering.org/program/) [paper](http://davidchavesfraga.com/outcomes/papers/2023/iglesias2023yatter.pdf):
@@ -96,6 +97,7 @@ If you used Yatter in your work, please cite the [ICWE2023](https://icwe2023.web
 ## Authors
 Ontology Engineering Group:
 - [David Chaves-Fraga](mailto:david.chaves@upm.es)
+- Rubén Buján Vide (Final bachelor thesis - Mapping normalization, collection and containers and library management)
 - Marino González García (Final bachelor thesis - Systematic Testing)
 - Luis López Piñero (Final bachelor thesis - v0.1)
 
