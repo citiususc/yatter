@@ -12,6 +12,7 @@ def add_source(data, mapping, external_sources={}):
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
     sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
+    external_references_list = []
     for source in sources:
         db_identifier = mapping
         for external_Source in external_sources:

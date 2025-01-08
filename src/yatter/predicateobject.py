@@ -201,7 +201,7 @@ def ref_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_forma
         else:
             if mapping_format == STAR_URI:
                 object = STAR_OBJECT
-            source_list = add_source(data, mapping_join)
+            source_list, external_references = add_source(data, mapping_join)
 
         number_joins_rml = len(subject_list) * len(source_list)
         for i in range(number_joins_rml):
@@ -259,7 +259,7 @@ def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_fo
         else:
             if mapping_format == STAR_URI:
                 object = STAR_OBJECT
-            source_list = add_source(data, mapping_join)
+            source_list, external_references = add_source(data, mapping_join)
 
         number_joins_rml = len(subject_list) * len(source_list)
         for i in range(number_joins_rml):
