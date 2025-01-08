@@ -4,40 +4,20 @@ import rdflib
 from .constants import *
 from ruamel.yaml import YAML
 
-def get_initial_sources(data):
-    list_initial_sources = []
-    if YARRRML_SOURCES in data:
-        for y in data.get(YARRRML_SOURCES):
-            list_initial_sources.append(y)
-    return list_initial_sources
 
 
-def get_sources(data, mapping):
-    if YARRRML_SOURCES in data.get(YARRRML_MAPPINGS).get(mapping):
-        sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
-    elif YARRRML_SOURCE in data.get(YARRRML_MAPPINGS).get(mapping):
-        sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCE)
-    else:
-        raise Exception("ERROR: sources not defined in mapping " + mapping)
 
-    if type(sources) is not list:
-        sources = [sources]
-
-    return sources
-
-
-def add_source(data, mapping, list_initial_sources):
+def add_source(data, mapping, external_sources={}):
     source_template = "\t" + RML_LOGICAL_SOURCE + " [\n\t\ta " + RML_LOGICAL_SOURCE_CLASS + \
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
-    external_references_list = []
-    sources = get_sources(data, mapping)
+    sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
     for source in sources:
         db_identifier = mapping
-        if source in list_initial_sources:
-            db_identifier = source
-            source = data.get(YARRRML_SOURCES).get(source)
-
+        for external_Source in external_sources:
+            external_source = {k: v for k, v in external_sources[external_Source].items() if k != 'mappings'}
+            if source == external_source:
+                db_identifier = external_Source
         if YARRRML_ACCESS in source:
             if YARRRML_QUERY in source:
                 final_list.append(source_template + database_source(mapping, source, db_identifier))
@@ -48,32 +28,28 @@ def add_source(data, mapping, list_initial_sources):
                     external_references_list.append(external_references)
             else:
                 final_list.append(source_template + add_source_full(mapping, source))
-        elif type(source) is list:
+        elif type(source) is list: # ToDo: review for in_memory sources
             if "$(" in source[0]:
                 source, external_references = add_in_memory_source(mapping, source)
                 final_list.append(source_template + source)
                 if external_references is not None:
                     external_references_list.append(external_references)
             else:
-                final_list.append(source_template + add_source_simplified(mapping, source))
+                final_list.append(source_template + add_source_simplified(mapping, source)) # this probably needs to be removed
         else:
             raise Exception("ERROR: source " + source + " in mapping " + mapping + " not valid")
     return final_list, external_references_list
 
 
-def add_table(data, mapping, list_initial_sources):
+def add_table(data, mapping):
     table_template = "\t" + R2RML_LOGICAL_TABLE + " [\n\t\ta " + R2RML_LOGICAL_TABLE_CLASS + \
                      ";\n\t\t"
 
     final_list = []
-    sources = get_sources(data, mapping)
+    sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
     for source in sources:
         sql_version = False
         db_identifier = mapping
-        if source in list_initial_sources:
-            db_identifier = source
-            source = data.get(YARRRML_SOURCES).get(source)
-
         if YARRRML_ACCESS in source and YARRRML_QUERY in source:
             r2rml_access = database_source(mapping, source, db_identifier)
             sql_version = True
@@ -92,6 +68,7 @@ def add_table(data, mapping, list_initial_sources):
             r2rml_access += "\n\t];\n"
         final_list.append(table_template + r2rml_access)
     return final_list
+
 
 
 def add_source_simplified(mapping, source):
@@ -165,12 +142,12 @@ def extend_in_memory(source):
         extended_source["iterator"] = source[1]
     return extended_source
 
+
 def add_source_full(mapping, source):
     source_rdf = ""
 
     access = str(source.get(YARRRML_ACCESS))
-    extension = access.split(".")[1]
-
+    extension = os.path.splitext(access)[1][1:]
     if YARRRML_REFERENCE_FORMULATION in source:
         reference_formulation = str(source.get(YARRRML_REFERENCE_FORMULATION))
         format_from_reference = switch_in_reference_formulation(reference_formulation.lower())
@@ -184,11 +161,11 @@ def add_source_full(mapping, source):
 
             source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
                           + ref_formulation_rml + ";\n\t\t" + RML_ITERATOR + " \"" \
-                          + source_iterator + "\"\n\t];\n"
+                          + source_iterator + "\";\n\t];\n"
         else:
             if extension == "csv" or extension == "SQL2008":
                 source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
-                              + ref_formulation_rml + ";\n\n\t];\n"
+                              + ref_formulation_rml + "\n\n\t];\n"
             else:
                 raise Exception("ERROR: source " + access + "in mapping " + mapping + " has no referenceFormulation")
 
@@ -209,7 +186,7 @@ def database_source(mapping, source, db_identifier):
                 source_rdf += "<DataSource_" + str(db_identifier) + ">;\n\t\t"
                 if YARRRML_QUERY in source:
                     source_rdf += RML_QUERY + " \"" + source.get(YARRRML_QUERY).replace("\n", " ").replace("\"",
-                                                                                                          "\\\"") + "\""
+                                                                                                           "\\\"") + "\""
                 elif YARRRML_TABLE in source:
                     source_rdf += R2RML_TABLE_NAME + " \"" + source.get(YARRRML_TABLE) + "\""
                 if YARRRML_REFERENCE_FORMULATION in source:
@@ -250,43 +227,42 @@ def switch_in_reference_formulation(value, source_extension=None):
     return switcher
 
 
-def generate_database_connections(data, list_initial_sources):
+def generate_database_connections(data, external_sources):
     database = []
-    sources_ids = set()
     for mapping in data.get(YARRRML_MAPPINGS):
-        sources = get_sources(data, mapping)
+        sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
         for source in sources:
             db_identifier = mapping
-            external = False
-            number_external_sources = len(sources_ids)
-            if source in list_initial_sources:
-                external = True
-                db_identifier = source
-                sources_ids.add(source)
-                source = data.get(YARRRML_SOURCES).get(source)
-            if (external and len(sources_ids) > number_external_sources) or not external:
-                if YARRRML_QUERY in source and YARRRML_ACCESS in source:
-                    db_type = source.get(YARRRML_TYPE)
-                    if db_type in YARRRML_DATABASES_DRIVER:
-                        driver = YARRRML_DATABASES_DRIVER[db_type]
-                    else:
-                        driver = None
-                    access = source.get(YARRRML_ACCESS)
-                    username = source.get(YARRRML_CREDENTIALS).get(YARRRML_USERNAME)
-                    password = source.get(YARRRML_CREDENTIALS).get(YARRRML_PASSWORD)
+            for external_Source in external_sources:
+                external_source = {k: v for k, v in external_sources[external_Source].items() if k != 'mappings'}
+                if source == external_source:
+                    db_identifier = external_Source
+                    break
+            if YARRRML_QUERY in source and YARRRML_ACCESS in source:
+                db_type = source.get(YARRRML_TYPE)
+                if db_type in YARRRML_DATABASES_DRIVER:
+                    driver = YARRRML_DATABASES_DRIVER[db_type]
+                else:
+                    driver = None
+                access = source.get(YARRRML_ACCESS)
+                username = source.get(YARRRML_CREDENTIALS).get(YARRRML_USERNAME)
+                password = source.get(YARRRML_CREDENTIALS).get(YARRRML_PASSWORD)
 
+                if driver is None:
+                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t" \
+                                        + D2RQ_DSN + " \"" + access + "\";\n\t" \
+                                        + D2RQ_USER + " \"" + username + "\";\n\t" \
+                                        + D2RQ_PASS + " \"" + password + "\".\n\n"
+                else:
+                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t" \
+                                        + D2RQ_DSN + " \"" + access + "\";\n\t" \
+                                        + D2RQ_DRIVER + " \"" + driver + "\";\n\t" \
+                                        + D2RQ_USER + " \"" + username + "\";\n\t" \
+                                        + D2RQ_PASS + " \"" + password + "\".\n\n"
 
-                    if driver is None:
-                        database.append("<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t"
-                                        + D2RQ_DSN + " \"" + access + "\";\n\t"
-                                        + D2RQ_USER + " \"" + username + "\";\n\t"
-                                        + D2RQ_PASS + " \"" + password + "\".\n\n")
-                    else:
-                        database.append("<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t"
-                                        + D2RQ_DSN + " \"" + access + "\";\n\t"
-                                        + D2RQ_DRIVER + " \"" + driver + "\";\n\t"
-                                        + D2RQ_USER + " \"" + username + "\";\n\t"
-                                        + D2RQ_PASS + " \"" + password + "\".\n\n")
+                if connection_string not in database:
+                    database.append(connection_string)
+
     return database
 
 
@@ -297,7 +273,6 @@ def add_inverse_source(tm, rdf_mapping, mapping_format):
     except Exception as e:
         logger.error("Logical Source or Logical Table is not defined in the mapping")
         logger.error(str(e))
-
 
     if mapping_format == R2RML_URI:
         yarrrml_source = get_logical_table(source, rdf_mapping)

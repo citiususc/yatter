@@ -1,0 +1,20 @@
+mappings:
+  person:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://example.org/{id}
+        targets:
+          - person-target:
+              access: data/dump.ttl.gz
+              type: void
+              serialization: turtle
+              compression: gzip
+          - access: data/dump1.nq
+            type: void
+          - access: data/dump2.nq
+            type: void
+          - access: http://localhost/sparql
+            type: sparql

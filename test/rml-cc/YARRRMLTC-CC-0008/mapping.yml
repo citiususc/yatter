@@ -1,0 +1,14 @@
+prefixes:
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  xsd: "http://www.w3.org/2001/XMLSchema#"
+  rml: "http://w3id.org/rml/"
+  ex: "http://example.com/ns#"
+  base: "http://example.com/"
+
+mappings:
+  map1:
+    sources:
+      - ["data.json~jsonpath","$.*"]
+    s: e/$($.id)
+    po:
+      - [ ex:with, $($.values.*)~list, "true"] # ToDO: "true" or just true?
