@@ -70,7 +70,7 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                                 template += "\t\t\t" +  term_map + " \"" + text + "\";\n"
                 template += "\n\t\t];\n"
             else:
-                template += generate_cc_termmap(STAR_OBJECT, om, "\t\t\t", mapping_format) + "\n\t\t];\n"
+                template += generate_cc_termmap(STAR_OBJECT, R2RML_OBJECT_CLASS, om, "\t\t\t", mapping_format) + "\n\t\t];\n"
 
             if YARRRML_TYPE in om:
                 if om.get(YARRRML_TYPE) == 'iri':
@@ -79,7 +79,6 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                     template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t\t];\n"
                 elif om.get(YARRRML_TYPE) == 'literal':
                     template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_LITERAL + "\n\t\t];\n"
-
         elif object_value is not None:
             rml_map_class, rml_map, r2rml_map = None, None, None
             if mapping_format == STAR_URI:
@@ -265,7 +264,7 @@ def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_fo
         number_joins_rml = len(subject_list) * len(source_list)
         for i in range(number_joins_rml):
             template += "\t\t" + object + \
-                        " [\n\t\t\t" + RML_CC_GATHER + \
+                        " [\n\t\t\ta " + R2RML_OBJECT_CLASS + ";\n\t\t\t" + RML_CC_GATHER + \
                         " (\n\t\t\t\t[\n\t\t\t\t\t" + ref_type_property + " <" + mapping_join + "_" + str(i) + ">;\n"
             if YARRRML_CONDITION in om:
                 conditions = om.get(YARRRML_CONDITION)

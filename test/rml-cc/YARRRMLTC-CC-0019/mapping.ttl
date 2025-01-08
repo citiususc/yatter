@@ -8,7 +8,7 @@
     rml:logicalSource [ a rml:LogicalSource ;
             rml:referenceFormulation rml:CSV ;
             rml:source "data.json";
-            
+    ] ;
     rml:predicateObjectMap [ 
         rml:objectMap [
                 rml:reference "ID" ;

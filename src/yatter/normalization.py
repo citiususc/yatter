@@ -191,6 +191,8 @@ def expand_subjects(subjects, root_targets):
                     expanded_subject[YARRRML_GATHER] = subject.get(YARRRML_GATHER, '')
                     if YARRRML_GATHER_AS in subject:
                         expanded_subject[YARRRML_GATHER_AS] = subject.get(YARRRML_GATHER_AS, '')
+                if YARRRML_STRATEGY in subject:
+                    expanded_subject[YARRRML_STRATEGY] = subject.get(YARRRML_STRATEGY, '')
             expanded_subjects.append(expanded_subject)
     elif isinstance(subjects, dict):
         expanded_subjects = [subjects]
@@ -424,9 +426,9 @@ def expand_predicateobjects(predicateobjects):
 
                     if YARRRML_EMPTY in object_expansion:
                         if object_expansion[YARRRML_EMPTY] is True:
-                            object_expansion[YARRRML_EMPTY] = "\"" + "true" + "\""
+                            object_expansion[YARRRML_EMPTY] = "\"true\""
                         elif object_expansion[YARRRML_EMPTY] is False:
-                            object_expansion[YARRRML_EMPTY] = "\"" + "true" + "\""
+                            object_expansion[YARRRML_EMPTY] = "\"false\""
                     expanded_po[YARRRML_OBJECTS].append(object_expansion)
 
                 expanded_predicateobjects.append(expanded_po)

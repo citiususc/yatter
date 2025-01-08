@@ -36,6 +36,7 @@
 			rr:constant ex:sameSportAs;
 		];
 		rr:objectMap [
+			a rr:ObjectMap;
 			rml:gather (
 				[
 					rr:parentTriplesMap <TriplesMap1_0>;

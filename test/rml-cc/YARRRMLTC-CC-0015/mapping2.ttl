@@ -36,6 +36,7 @@
 			rr:constant ex:with;
 		];
 		rml:objectMap [
+			a rr:ObjectMap;
 			rml:gather (
 			 [ rml:reference "$.v1.*"; ]
 			 [ rml:reference "$.v2.*"; ]

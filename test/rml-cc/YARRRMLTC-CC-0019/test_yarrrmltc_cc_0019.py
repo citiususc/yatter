@@ -5,7 +5,7 @@ from rdflib.graph import Graph
 from rdflib import compare
 RML_URI = 'http://semweb.mmlab.be/ns/rml#'
 
-def test_yarrrmltc_cc_0022():
+def test_yarrrmltc_cc_0019():
     expected_mapping = Graph()
     expected_mapping.parse(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping2.ttl'), format="ttl")
 

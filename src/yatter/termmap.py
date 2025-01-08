@@ -52,8 +52,8 @@ def generate_rml_termmap_text(text, mapping_format=RML_URI):
         text = RDF_TYPE
     return term_map, text
 
-def generate_cc_termmap(rml_property, content, indentation, mapping_format=RML_URI):
-    template = indentation[0:-1] + rml_property + " [\n"
+def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_format=RML_URI):
+    template = indentation[0:-1] + rml_property + " [\n" + indentation + "a " + rml_class + ";\n"
     if isinstance(content, dict) and 'value' in content:
         value_text = content.get('value', '')
         term_map, value_text = generate_rml_termmap_text(value_text, mapping_format)

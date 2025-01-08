@@ -27,6 +27,7 @@
 		rml:iterator "$.*";
 	];
 		rml:subjectMap [
+			a rr:SubjectMap;
 			rml:gather ( [ rml:reference "$.values.*"; ] ) ;
 			rml:gatherAs rdf:Bag;
 

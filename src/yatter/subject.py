@@ -31,7 +31,7 @@ def add_subject(data, mapping, mapping_format):
         elif mapping_format == STAR_URI:
             subject_termmap = generate_rml_termmap(STAR_SUBJECT, R2RML_SUBJECT_CLASS, individual_subject, "\t\t")
         elif YARRRML_GATHER in individual_subject:
-            subject_termmap = generate_cc_termmap(STAR_SUBJECT, individual_subject, "\t\t\t", mapping_format) + "\n\t\t];\n"
+            subject_termmap = generate_cc_termmap(STAR_SUBJECT, R2RML_SUBJECT_CLASS, individual_subject, "\t\t\t", mapping_format) + "\n\t\t];\n"
 
         else:
             subject_value = individual_subject
