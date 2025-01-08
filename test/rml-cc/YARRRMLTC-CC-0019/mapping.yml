@@ -14,7 +14,7 @@ mappings:
       - p: ex:sameSportAs
         o:
           value: $(id)
-          type: bn
+          type: blank
           gather:
             - mapping: TriplesMap1
               condition:

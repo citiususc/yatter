@@ -55,6 +55,8 @@ RML_VALUE_MAP_CLASS = 'fnml:ValueMap'
 RML_CC_GATHER = 'rml:gather'
 RML_CC_GATHER_AS = 'rml:gatherAs'
 RML_CC_EMPTY = 'rml:allowEmptyListAndContainer'
+RML_CC_STRATEGY = 'rml:strategy'
+
 STAR_CLASS = 'rml:StarMap'
 STAR_NON_ASSERTED_CLASS = 'rml:NonAssertedTriplesMap'
 STAR_QUOTED = 'rml:quotedTriplesMap'
@@ -164,6 +166,8 @@ YARRRML_GATHER = 'gather'
 YARRRML_GATHER_AS = 'gatherAs'
 YARRRML_GATHER_AS_OPTIONS = ["alt","bag","seq","list"]
 YARRRML_EMPTY = 'empty'
+YARRRML_STRATEGY = 'strategy'
+
 YARRRML_MAPPING_KEYS = [YARRRML_MAPPINGS, YARRRML_MAPPING]
 YARRRML_SUBJECT_KEYS = [YARRRML_SUBJECTS]
 YARRRML_POM_KEYS = [YARRRML_PREDICATEOBJECT]

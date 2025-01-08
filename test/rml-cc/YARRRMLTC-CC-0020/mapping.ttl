@@ -12,7 +12,8 @@
             
     rml:predicateObjectMap [
         rml:objectMap [
-            rml:reference "ID" ; rml:termType rml:BlankNode ;
+            rml:reference "ID" ;
+            rml:termType rml:BlankNode ;
             rml:gather ( 
                 [ 
                     rml:parentTriplesMap <TriplesMap1> ;
