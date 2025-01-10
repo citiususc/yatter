@@ -95,9 +95,12 @@ If you used Yatter in your work, please cite the [ICWE2023](https://icwe2023.web
 ```
 
 ## Authors
-Ontology Engineering Group:
-- [David Chaves-Fraga](mailto:david.chaves@upm.es)
-- Rubén Buján Vide (Final bachelor thesis - Mapping normalization, collection and containers and library management)
+CiTIUS - Universidade de Santiago de Compostela (2023-now):
+- [David Chaves-Fraga](mailto:david.chaves@usc.es)
+- Rubén Buján Vide (Final bachelor thesis - Mapping normalization, RML-cc and library management)
+
+Ontology Engineering Group - Universidad Politécnica de Madrid (2021-2023):
+- David Chaves-Fraga
 - Marino González García (Final bachelor thesis - Systematic Testing)
 - Luis López Piñero (Final bachelor thesis - v0.1)
 
