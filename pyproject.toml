@@ -6,16 +6,18 @@ authors = ["David Chaves <david.chaves@usc.es>", "Rubén Buján <ruben.bujan@rai
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-ruamel-yaml = "^0.17.21"
-rdflib = "^6.2.0"
+python = "^3.9"
+ruamel-yaml = "^0.18.10"
+rdflib = "^7.1.1"
 coloredlogs = "^15.0.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
-setuptools = "^75.1.0"
-wheel = "^0.44.0"
-DeepDiff = "^8.0.1"
+setuptools = "^75.8.0"
+wheel = "^0.45.1"
+DeepDiff = "^8.1.1"
+pytest-cov = "^6.0.0"
+coverage =  "^7.6.10"
 
 [build-system]
 requires = ["poetry-core"]
