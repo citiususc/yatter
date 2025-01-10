@@ -1,14 +1,14 @@
 # YATTER
 <p align="center">
-  <img title="logo" alt="YATTER" src="/logo/logo.png"  width="300" height="300"/>
+  <img title="logo" alt="YATTER" src="https://raw.githubusercontent.com/citiususc/yatter/main/logo/logo.png"  width="300" height="300"/>
 </p>
 
 
-![GitHub](https://img.shields.io/github/license/oeg-upm/yatter?style=flat)
+![GitHub](https://img.shields.io/github/license/citiususc/yatter?style=flat)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7024501.svg)](https://doi.org/10.5281/zenodo.7024501)
 [![PyPI](https://img.shields.io/pypi/v/yatter?style=flat)](https://pypi.org/project/yatter)
-![GitHub Release Date](https://img.shields.io/github/release-date/oeg-upm/yatter)
-[![codecov](https://codecov.io/gh/oeg-upm/yatter/branch/dev/graph/badge.svg?token=QUWCG214SG)](https://codecov.io/gh/oeg-upm/yatter)
+![GitHub Release Date](https://img.shields.io/github/release-date/citiususc/yatter)
+[![codecov](https://codecov.io/gh/oeg-upm/yatter/branch/dev/graph/badge.svg?token=QUWCG214SG)](https://codecov.io/gh/citiususc/yatter)
 
 The tool translates mapping rules from YARRRML in a turtle-based serialization of RML or R2RML.
 
