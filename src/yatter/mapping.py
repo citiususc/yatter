@@ -1,5 +1,7 @@
-from .import *
+from . import *
+
 prefixes = {}
+
 
 def add_mapping(mapping, mappings, it):
     map_template = "<" + mapping + "_" + str(it) + "> a "
@@ -58,7 +60,6 @@ def add_prefix(data):
 
 
 def check_common_prefixes(prefix_uri, common_prefixes):
-
     if prefix_uri == R2RML_URI:
         common_prefixes.append("r2rml")
     elif prefix_uri == RML_URI:
@@ -106,8 +107,8 @@ def get_non_asserted_mappings(yarrrml_data, mapping_format):
                 for value in yarrrml_data.get(YARRRML_MAPPINGS).get(mapping).get(key):
                     if type(value) is dict:
                         star_data = [value]
-                        if YARRRML_OBJECT_SHORTCUT in value:
-                            star_data = value[YARRRML_OBJECT_SHORTCUT]
+                        if YARRRML_OBJECTS in value:
+                            star_data = value[YARRRML_OBJECTS]
                         for val in star_data:
                             if YARRRML_NON_ASSERTED in val:
                                 mappings[val[YARRRML_NON_ASSERTED]] = "non_asserted"
@@ -118,9 +119,8 @@ def get_non_asserted_mappings(yarrrml_data, mapping_format):
     return mappings, mapping_format
 
 
-
-def merge_mapping_section_by_key(key,yarrrml_list):
-    output = {key:{}}
+def merge_mapping_section_by_key(key, yarrrml_list):
+    output = {key: {}}
     for yarrrml_mapping in yarrrml_list:
         output[key] = output[key] | yarrrml_mapping
     return output

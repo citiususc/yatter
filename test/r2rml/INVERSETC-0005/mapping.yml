@@ -46,5 +46,5 @@ mappings:
     s: http://example.com/Patient/$(ID)
     po:
     - [rdf:type, foaf:Person]
-    - [http://example.com/$(last_name), $(LastName), xsd:string]
+    - [ex:$(last_name), $(LastName), xsd:string]
     - [ex:height, http://example.com/$(Height)]

@@ -1,0 +1,11 @@
+mappings:
+  person:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://example.org/{id}
+        targets:
+          - access: data/dump1.nq
+            type: void

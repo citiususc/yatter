@@ -1,0 +1,10 @@
+mappings:
+  person:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://wwww.example.com/person/$(id)
+    predicateobjects:
+      - [[foaf:name, rdfs:label], [$(firstname), $(lastname)]]

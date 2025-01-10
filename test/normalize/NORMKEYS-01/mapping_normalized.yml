@@ -1,0 +1,18 @@
+authors:
+  - name: John Doe
+    email: john@doe.com
+  - name: Jane Doe
+    website: https://janedoe.com
+  - name: Shane Dime
+    email: shane@dime.com
+    website: http://shaneD.com
+  - http://quijotedominguez.com/#me
+
+mappings:
+  person:
+    sources:
+      - access: data/person2.json
+        referenceFormulation: jsonpath
+        iterator: $
+    subjects:
+      - value: http://wwww.example.com/person/$(id)
