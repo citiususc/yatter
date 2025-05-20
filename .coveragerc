@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = src/yatter
+
+[report]
+show_missing = True
