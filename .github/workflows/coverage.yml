@@ -19,7 +19,7 @@ jobs:
     - name: Build yatter
       run: poetry install --with test
     - name: Run tests and collect coverage
-      run:
+      run: |
         poetry run coverage run -m pytest
         poetry run coverage xml
     - name: Upload coverage reports to Codecov with GitHub Action
