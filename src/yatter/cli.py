@@ -6,7 +6,7 @@ from . import translate, inverse_translation, merge_mappings
 from .constants import *
 
 
-def write_results(mapping):
+def write_results(args, mapping):
     if type(mapping) is str:
         output_file = open(args.output_mapping_path, "w")
         output_file.write(mapping)
@@ -19,7 +19,7 @@ def write_results(mapping):
             yaml.dump(mapping, f)
 
 
-def parse_inputs():
+def parse_inputs(args):
     input_format = RML_URI
     yaml = YAML(typ='safe', pure=True)
     if args.input_mapping_path and args.output_mapping_path:
@@ -60,13 +60,15 @@ def define_args():
     return parser
 
 
-if __name__ == "__main__":
+def main():
     args = define_args().parse_args()
-    mapping_format, mapping_data = parse_inputs()
+    mapping_format, mapping_data = parse_inputs(args)
     if type(mapping_data) is Graph:
         mapping_content = inverse_translation(mapping_data, mapping_format)
     elif args.merge_mapping:
         mapping_content = merge_mappings(mapping_data)
     else:
         mapping_content = translate(mapping_data, mapping_format)
-    write_results(mapping_content)
+    write_results(args, mapping_content)
+
+
