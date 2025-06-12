@@ -1,6 +1,6 @@
 [project]
 name = "yatter"
-version = "2.0"
+version = "2.0.1"
 description = "The tool translates mapping rules from YARRRML in a turtle-based serialization of RML or R2RML."
 authors = [
     { name = "David Chaves", email = "david.chaves@usc.es" },
