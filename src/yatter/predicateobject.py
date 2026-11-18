@@ -185,121 +185,88 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
     return template + "\t];"
 
 
+def _resolve_mapping_join(data, mapping, mapping_join):
+    if mapping_join not in data.get(YARRRML_MAPPINGS, {}):
+        logger.error("Error in reference another mapping in mapping " + mapping)
+        raise Exception("Review how is defined the reference to other mappings")
+
+    return mapping_join
+
+
+def _get_mapping_join_cardinality(data, mapping_join, mapping_format):
+    subject_list = add_subject(data, mapping_join, mapping_format)
+    if mapping_format == R2RML_URI:
+        source_list = add_table(data, mapping_join)
+    else:
+        source_list, _ = add_source(data, mapping_join)
+    return len(subject_list) * len(source_list)
+
+
+def _format_join_conditions(om, mapping, indentation):
+    if YARRRML_CONDITION not in om:
+        return ""
+
+    conditions = om[YARRRML_CONDITION]
+    if not isinstance(conditions, list):
+        conditions = [conditions]
+
+    template = ""
+    for condition in conditions:
+        if YARRRML_PARAMETERS not in condition:
+            continue
+        parameters = condition[YARRRML_PARAMETERS]
+        if len(parameters) != 2:
+            logger.error("Error in reference mapping another mapping in mapping " + mapping)
+            raise Exception("Only two parameters can be indicated (child and parent)")
+
+        try:
+            child = parameters[0]['value'].replace('"', r'\"').replace("$(", '"').replace(")", '"')
+            parent = parameters[1]['value'].replace('"', r'\"').replace("$(", '"').replace(")", '"')
+        except (KeyError, AttributeError, TypeError):
+            logger.error("ERROR: Parameters not normalized correctly")
+            raise
+
+        template += indentation + R2RML_JOIN_CONITION + \
+                    " [\n" + indentation + "\t" + R2RML_CHILD + " " + child + \
+                    ";\n" + indentation + "\t" + R2RML_PARENT + " " + parent + \
+                    ";\n" + indentation + "];\n"
+    return template
+
+
 def ref_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_format):
-    list_mappings = []
     template = ""
     object = R2RML_OBJECT
-    for mappings in data.get(YARRRML_MAPPINGS):
-        list_mappings.append(mappings)
+    mapping_join = _resolve_mapping_join(data, mapping, om.get(yarrrml_key))
+    number_joins_rml = _get_mapping_join_cardinality(data, mapping_join, mapping_format)
+    if mapping_format == STAR_URI:
+        object = STAR_OBJECT
 
-    mapping_join = om.get(yarrrml_key)
-
-    if mapping_join in list_mappings:
-        subject_list = add_subject(data, mapping_join, mapping_format)
-        if mapping_format == R2RML_URI:
-            source_list = add_table(data, mapping_join)
-        else:
-            if mapping_format == STAR_URI:
-                object = STAR_OBJECT
-            source_list, external_references = add_source(data, mapping_join)
-
-        number_joins_rml = len(subject_list) * len(source_list)
-        for i in range(number_joins_rml):
+    for i in range(number_joins_rml):
             template += "\t\t" + object + \
                         " [\n\t\t\ta " + R2RML_REFOBJECT_CLASS + \
                         ";\n\t\t\t" + ref_type_property + " <" + mapping_join + "_" + str(i) + ">;\n"
             if YARRRML_CONDITION in om:
-                conditions = om.get(YARRRML_CONDITION)
-                if type(conditions) is not list:
-                    conditions = [conditions]
-                for condition in conditions:
-                    if YARRRML_PARAMETERS in condition:
-                        list_parameters = condition.get(YARRRML_PARAMETERS)
-                        if len(list_parameters) == 2:
-
-                            try:
-                                child = list_parameters[0]['value'].replace('"', r'\"').replace("$(", '"').replace(")",
-                                                                                                                   '"')
-                                parent = list_parameters[1]['value'].replace('"', r'\"').replace("$(", '"').replace(")",
-                                                                                                                    '"')
-
-                            except Exception as e:
-                                logger.error("ERROR: Parameters not normalized correctly")
-
-                            template += "\t\t\t" + R2RML_JOIN_CONITION + \
-                                        " [\n\t\t\t\t" + R2RML_CHILD + " " + child + \
-                                        ";\n\t\t\t\t" + R2RML_PARENT + " " + parent + ";\n\t\t\t];\n"
-
-                        else:
-                            logger.error("Error in reference mapping another mapping in mapping " + mapping)
-                            raise Exception("Only two parameters can be indicated (child and parent)")
+                template += _format_join_conditions(om, mapping, "\t\t\t")
                 template += "\t\t];\n"
             else:
                 template += "\n\t\t]\n"
 
-    else:
-        logger.error("Error in reference another mapping in mapping " + mapping)
-        raise Exception("Review how is defined the reference to other mappings")
-
     return template
 
 def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_format):
-    list_mappings = []
     template = ""
     object = R2RML_OBJECT
-    for mappings in data.get(YARRRML_MAPPINGS):
-        list_mappings.append(mappings)
+    mapping_join = _resolve_mapping_join(data, mapping, om.get(yarrrml_key))
+    number_joins_rml = _get_mapping_join_cardinality(data, mapping_join, mapping_format)
+    if mapping_format == STAR_URI:
+        object = STAR_OBJECT
 
-    mapping_join = om.get(yarrrml_key)
-
-    if mapping_join in list_mappings:
-        subject_list = add_subject(data, mapping_join, mapping_format)
-        if mapping_format == R2RML_URI:
-            source_list = add_table(data, mapping_join)
-        else:
-            if mapping_format == STAR_URI:
-                object = STAR_OBJECT
-            source_list, external_references = add_source(data, mapping_join)
-
-        number_joins_rml = len(subject_list) * len(source_list)
-        for i in range(number_joins_rml):
+    for i in range(number_joins_rml):
             template += "\t\t" + object + \
                         " [\n\t\t\ta " + R2RML_OBJECT_CLASS + ";\n\t\t\t" + RML_CC_GATHER + \
                         " (\n\t\t\t\t[\n\t\t\t\t\t" + ref_type_property + " <" + mapping_join + "_" + str(i) + ">;\n"
-            if YARRRML_CONDITION in om:
-                conditions = om.get(YARRRML_CONDITION)
-                if type(conditions) is not list:
-                    conditions = [conditions]
-                for condition in conditions:
-                    if YARRRML_PARAMETERS in condition:
-                        list_parameters = condition.get(YARRRML_PARAMETERS)
-                        if len(list_parameters) == 2:
-
-                            try:
-                                child = list_parameters[0]['value'].replace('"', r'\"').replace("$(", '"').replace(")",
-                                                                                                                   '"')
-                                parent = list_parameters[1]['value'].replace('"', r'\"').replace("$(", '"').replace(")",
-                                                                                                                    '"')
-
-                            except Exception as e:
-                                logger.error("ERROR: Parameters not normalized correctly")
-
-                            template += "\t\t\t\t\t" + R2RML_JOIN_CONITION + \
-                                        " [\n\t\t\t\t\t\t" + R2RML_CHILD + " " + child + \
-                                        ";\n\t\t\t\t\t\t" + R2RML_PARENT + " " + parent + ";\n\t\t\t\t\t];\n"
-
-                        else:
-                            logger.error("Error in reference mapping another mapping in mapping " + mapping)
-                            raise Exception("Only two parameters can be indicated (child and parent)")
-                template += "\t\t\t\t]\n\t\t\t);\n"
-            else:
-                template += "\t\t\t\t]\n\t\t\t);\n"
-
-    else:
-        logger.error("Error in reference another mapping in mapping " + mapping)
-        raise Exception("Review how is defined the reference to other mappings")
-
-
+            template += _format_join_conditions(om, mapping, "\t\t\t\t\t")
+            template += "\t\t\t\t]\n\t\t\t);\n"
     return template
 
 
