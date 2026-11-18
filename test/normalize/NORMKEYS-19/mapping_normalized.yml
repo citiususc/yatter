@@ -1,0 +1,8 @@
+predicateobjects:
+  - predicates:
+      - function: grel:test
+        parameters:
+          - parameter: param
+            value: $(value)
+    objects:
+      - value: result

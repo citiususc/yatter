@@ -1,0 +1,14 @@
+targets:
+  output:
+    access: output.ttl
+    serialization: turtle
+mappings:
+  person:
+    po:
+      - p: ex:first
+        o: first
+      - p: ex:second
+        o:
+          - value: second
+            targets:
+              - output
