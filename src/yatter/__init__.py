@@ -87,6 +87,11 @@ def inverse_translation(rdf_mapping, mapping_format=RML_URI):
     logger.info("Translation has finished successfully.")
     return yarrrml_mapping
 
+
+def inverse_translate(rdf_mapping, mapping_format=RML_URI):
+    """Compatibility alias for inverse_translation."""
+    return inverse_translation(rdf_mapping, mapping_format)
+
 def merge_mappings(yarrrrml_list):
     combined_mapping = {YARRRML_MAPPINGS:{}}
     prefixes_list = []

@@ -517,9 +517,10 @@ def switch_mappings(data, external_sources, external_targets):
                         graph[YARRRML_TARGETS] = expand_targets_with_identifiers(graph[YARRRML_TARGETS], targets_root)
 
         if YARRRML_PREDICATEOBJECT in mapping_content:
-            po = mapping_content[YARRRML_PREDICATEOBJECT][0]
-            if YARRRML_OBJECTS in po:
-                for object in po[YARRRML_OBJECTS]:
+            for predicate_object in mapping_content[YARRRML_PREDICATEOBJECT]:
+                if YARRRML_OBJECTS not in predicate_object:
+                    continue
+                for object in predicate_object[YARRRML_OBJECTS]:
                     if isinstance(object, dict):
                         if YARRRML_TARGETS in object:
                             object[YARRRML_TARGETS] = expand_targets_with_identifiers(object[YARRRML_TARGETS], targets_root)

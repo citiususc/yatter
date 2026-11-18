@@ -329,7 +329,7 @@ def get_logical_source(logical_source_id, rdf_mapping):
     elif source and reference_formulation:
         yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_URI, '').lower()]
     else:
-        if source.endsWith(".csv"):
+        if source.value.endswith(".csv"):
             yarrrml_source = [source.value + '~csv']
         else:
             yarrrml_source = [source.value]
