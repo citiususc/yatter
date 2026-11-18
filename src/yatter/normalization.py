@@ -360,7 +360,7 @@ def expand_predicateobjects(predicateobjects):
                         expanded_predicate = {YARRRML_FUNCTION: p[YARRRML_FUNCTION]}
                         if YARRRML_PARAMETERS in p:
                             expanded_parameters = expand_parameters(p[YARRRML_PARAMETERS])
-                            expanded_predicate.append(expanded_parameters)
+                            expanded_predicate[YARRRML_PARAMETERS] = expanded_parameters
                     else:
                         expanded_predicate = {YARRRML_VALUE: p}
 
