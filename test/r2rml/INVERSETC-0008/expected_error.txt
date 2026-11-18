@@ -1,0 +1,1 @@
+Logical Source or Logical Table is not defined in the mapping

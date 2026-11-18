@@ -1,11 +1,11 @@
-from . import *
 from contextvars import ContextVar
+from .constants import *
 
-prefixes_context = ContextVar("yatter_prefixes", default={})
+prefixes_context = ContextVar("yatter_prefixes", default=None)
 
 
 def get_prefixes():
-    return prefixes_context.get()
+    return prefixes_context.get() or {}
 
 
 def add_mapping(mapping, mappings, it):

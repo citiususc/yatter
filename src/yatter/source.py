@@ -7,7 +7,10 @@ from ruamel.yaml import YAML
 
 
 
-def add_source(data, mapping, external_sources={}):
+def add_source(data, mapping, external_sources=None):
+    if external_sources is None:
+        external_sources = {}
+
     source_template = "\t" + RML_LOGICAL_SOURCE + " [\n\t\ta " + RML_LOGICAL_SOURCE_CLASS + \
                       ";\n\t\t" + RML_SOURCE + " "
     final_list = []
@@ -268,12 +271,15 @@ def generate_database_connections(data, external_sources):
 
 
 def add_inverse_source(tm, rdf_mapping, mapping_format):
-    try:
-        query = f'SELECT ?source  WHERE {{ <{tm}> {R2RML_LOGICAL_TABLE}|{RML_LOGICAL_SOURCE} ?source . }} '
-        source = [tm[rdflib.Variable('source')] for tm in rdf_mapping.query(query).bindings][0]
-    except Exception as e:
+    query = f'SELECT ?source  WHERE {{ <{tm}> {R2RML_LOGICAL_TABLE}|{RML_LOGICAL_SOURCE} ?source . }} '
+    sources = [
+        result[rdflib.Variable('source')]
+        for result in rdf_mapping.query(query).bindings
+    ]
+    if not sources:
         logger.error("Logical Source or Logical Table is not defined in the mapping")
-        logger.error(str(e))
+        raise ValueError("Logical Source or Logical Table is not defined in the mapping")
+    source = sources[0]
 
     if mapping_format == R2RML_URI:
         yarrrml_source = get_logical_table(source, rdf_mapping)

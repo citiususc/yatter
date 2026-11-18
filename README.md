@@ -39,12 +39,16 @@ If you want to include the module in your implementation:
 - for translating **YARRRML mapping** to **RML mappings** (and inverse):
 ```python
 import yatter
+from rdflib import Graph
 from ruamel.yaml import YAML
 # YARRRML to RML
 yaml = YAML(typ='safe', pure=True)
-rml_content = yatter.translate(yaml.load(open("path-to-yarrrml")))
+with open("path-to-yarrrml.yml") as mapping_file:
+    yarrrml_mapping = yaml.load(mapping_file)
+rml_content = yatter.translate(yarrrml_mapping)
 # RML to YARRRML
-yarrrml_content = yatter.inverse_translate("rdf_mapping_content")
+rml_graph = Graph().parse("path-to-rml-mapping.ttl", format="turtle")
+yarrrml_content = yatter.inverse_translate(rml_graph)
 ```
 - for translating **YARRRML mappings** to **R2RML mappings** (and inverse):
 ```python
@@ -54,14 +58,23 @@ from ruamel.yaml import YAML
 R2RML_URI = 'http://www.w3.org/ns/r2rml#'
 # YARRRML to R2RML
 yaml = YAML(typ='safe', pure=True)
-rml_content = yatter.translate(yaml.load(open("path-to-yarrrml")), mapping_format=R2RML_URI)
+with open("path-to-yarrrml.yml") as mapping_file:
+    yarrrml_mapping = yaml.load(mapping_file)
+rml_content = yatter.translate(yarrrml_mapping, mapping_format=R2RML_URI)
 # R2RML to YARRRML
-yarrrml_content = yatter.inverse_translate("rdf_mapping_content", mapping_format=R2RML_URI)
+r2rml_graph = Graph().parse("path-to-r2rml-mapping.ttl", format="turtle")
+yarrrml_content = yatter.inverse_translate(r2rml_graph, mapping_format=R2RML_URI)
 ```
 - for merging TriplesMap based on id:
 ```python
 import yatter
-list_yarrrml_mappings = ["content_mapping_yarrrml1", "content_mapping_yarrrml1"]
+from ruamel.yaml import YAML
+
+yaml = YAML(typ='safe', pure=True)
+list_yarrrml_mappings = []
+for mapping_path in ["mapping1.yml", "mapping2.yml"]:
+    with open(mapping_path) as mapping_file:
+        list_yarrrml_mappings.append(yaml.load(mapping_file))
 yarrrml_content = yatter.merge_mappings(list_yarrrml_mappings)
 ```
 

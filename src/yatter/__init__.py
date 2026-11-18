@@ -27,7 +27,10 @@ def translate(yarrrml_data, mapping_format=RML_URI):
             if mapping_format == R2RML_URI:
                 source_list = add_table(yarrrml_data, mapping)
             else:
-                source_list, external_references = add_source(yarrrml_data, mapping, external_sources)
+                source_list, mapping_external_references = add_source(
+                    yarrrml_data, mapping, external_sources
+                )
+                external_references.extend(mapping_external_references)
             subject_list = add_subject(yarrrml_data, mapping, mapping_format)
             pred = add_predicate_object_maps(yarrrml_data, mapping, mapping_format)
             it = 0
@@ -42,9 +45,8 @@ def translate(yarrrml_data, mapping_format=RML_URI):
                     rml_mapping.append(".\n\n\n")
                     it = it + 1
 
-            external_refs = list(dict.fromkeys(external_references))
-            for ref in external_refs:
-                rml_mapping.append(ref)
+        for ref in dict.fromkeys(external_references):
+            rml_mapping.append(ref + "\n")
 
         logger.info("RML content is created!")
         rml_mapping_string = "".join(rml_mapping)
@@ -93,10 +95,10 @@ def inverse_translate(rdf_mapping, mapping_format=RML_URI):
     return inverse_translation(rdf_mapping, mapping_format)
 
 def merge_mappings(yarrrrml_list):
-    combined_mapping = {YARRRML_MAPPINGS:{}}
-    prefixes_list = []
-    for mapping in yarrrrml_list:
-            prefixes_list.append(mapping[YARRRML_PREFIXES])
+    combined_mapping = {YARRRML_MAPPINGS: {}}
+    prefixes_list = [
+        mapping.get(YARRRML_PREFIXES, {}) for mapping in yarrrrml_list
+    ]
     combined_mapping = combined_mapping | merge_mapping_section_by_key(YARRRML_PREFIXES, prefixes_list)
 
     triples_map_ids = dict.fromkeys(
@@ -107,8 +109,10 @@ def merge_mappings(yarrrrml_list):
     for individual_id in triples_map_ids:
         mapping_content_list = []
         for mapping in yarrrrml_list:
-            if individual_id in mapping[YARRRML_MAPPINGS]:
-                mapping_content_list.append(mapping[YARRRML_MAPPINGS][individual_id])
+            if individual_id in mapping.get(YARRRML_MAPPINGS, {}):
+                mapping_content_list.append(
+                    mapping[YARRRML_MAPPINGS][individual_id]
+                )
         combined_mapping[YARRRML_MAPPINGS] = combined_mapping[YARRRML_MAPPINGS] | merge_mapping_section_by_key(individual_id, mapping_content_list)
 
     stream = StringIO()

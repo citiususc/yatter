@@ -92,36 +92,18 @@ def expand_authors(authors):
 def expand_sources(sources):
     def expand_source_item(source):
         if isinstance(source, list):
-            if len(source) == 2 and isinstance(source[0], str) and '~' in source[0]:
+            if len(source) in (1, 2) and isinstance(source[0], str) and '~' in source[0]:
                 access, reference = source[0].split('~')
+                expanded_source = {YARRRML_ACCESS: access}
                 if '-' in reference:
                     reference = reference.split('-')
-                    return {
-                        YARRRML_ACCESS: access,
-                        YARRRML_REFERENCE_FORMULATION: reference[1],
-                        YARRRML_STRUCTURE_DEFINER: reference[0],
-                        YARRRML_ITERATOR: source[1]
-                    }
+                    expanded_source[YARRRML_REFERENCE_FORMULATION] = reference[1]
+                    expanded_source[YARRRML_STRUCTURE_DEFINER] = reference[0]
                 else:
-                    return {
-                        YARRRML_ACCESS: access,
-                        YARRRML_REFERENCE_FORMULATION: reference,
-                        YARRRML_ITERATOR: source[1]
-                    }
-            elif len(source) == 1 and isinstance(source[0], str) and '~' in source[0]:
-                access, reference = source[0].split('~')
-                if '-' in reference:
-                    reference = reference.split('-')
-                    return {
-                        YARRRML_ACCESS: access,
-                        YARRRML_REFERENCE_FORMULATION: reference[1] ,
-                        YARRRML_STRUCTURE_DEFINER: reference[0],
-                    }
-                else:
-                    return {
-                        YARRRML_ACCESS: access,
-                        YARRRML_REFERENCE_FORMULATION: reference,
-                    }
+                    expanded_source[YARRRML_REFERENCE_FORMULATION] = reference
+                if len(source) == 2:
+                    expanded_source[YARRRML_ITERATOR] = source[1]
+                return expanded_source
         elif isinstance(source, dict):
             for key, val in source.items():
                 if isinstance(val, list) and len(val) == 2 and '~' in val[0]:
@@ -147,7 +129,10 @@ def expand_sources(sources):
     return sources
 
 
-def expand_targets(targets, root_targets={}):
+def expand_targets(targets, root_targets=None):
+    if root_targets is None:
+        root_targets = {}
+
     def expand_target_item(target):
         if isinstance(target, str) and target in root_targets:
             return root_targets[target]
@@ -216,246 +201,208 @@ def expand_subjects(subjects, root_targets):
     return expanded_subjects
 
 
-def expand_predicateobjects(predicateobjects):
-    expanded_predicateobjects = list()
+def _expand_join_reference(value):
+    expanded = {}
+    if YARRRML_MAPPING in value:
+        expanded[YARRRML_MAPPING] = value[YARRRML_MAPPING]
+    if YARRRML_CONDITION in value:
+        conditions = value[YARRRML_CONDITION]
+        if isinstance(conditions, dict):
+            conditions = [conditions]
+        expanded[YARRRML_CONDITION] = [
+            {
+                **condition,
+                YARRRML_PARAMETERS: expand_parameters(condition[YARRRML_PARAMETERS]),
+            }
+            if YARRRML_PARAMETERS in condition else condition
+            for condition in conditions
+        ]
+    return expanded
 
+
+def _expand_gather_object(obj):
+    gather = obj[YARRRML_GATHER]
+    if isinstance(gather, list):
+        expanded_gather = []
+        for item in gather:
+            if isinstance(item, str):
+                if '~' in item:
+                    parts = item.split('~')
+                    expanded_gather.append({
+                        YARRRML_GATHER: parts[0],
+                        YARRRML_GATHER_AS: parts[1],
+                    })
+                else:
+                    expanded_gather.append({YARRRML_GATHER: item})
+            elif isinstance(item, dict):
+                if YARRRML_MAPPING in item or YARRRML_CONDITION in item:
+                    expanded_gather.append(_expand_join_reference(item))
+                else:
+                    expanded_gather.append(item)
+        gather = expanded_gather
+
+    expanded = {
+        YARRRML_GATHER: gather,
+        YARRRML_GATHER_AS: obj[YARRRML_GATHER_AS],
+    }
+    for key in (YARRRML_VALUE, YARRRML_TYPE, YARRRML_EMPTY, YARRRML_STRATEGY):
+        if key in obj:
+            expanded[key] = obj[key]
+    return expanded
+
+
+def _expand_abbreviated_object(obj):
+    if not isinstance(obj, dict):
+        expanded = {YARRRML_VALUE: obj}
+    elif YARRRML_FUNCTION in obj and YARRRML_PARAMETERS in obj:
+        expanded = {
+            YARRRML_FUNCTION: obj[YARRRML_FUNCTION],
+            YARRRML_PARAMETERS: expand_parameters(obj[YARRRML_PARAMETERS]),
+        }
+    elif YARRRML_MAPPING in obj or YARRRML_CONDITION in obj:
+        expanded = _expand_join_reference(obj)
+    elif YARRRML_GATHER in obj:
+        expanded = _expand_gather_object(obj)
+    else:
+        expanded = dict(obj)
+
+    if expanded.get(YARRRML_EMPTY) is True:
+        expanded[YARRRML_EMPTY] = '"true"'
+    elif expanded.get(YARRRML_EMPTY) is False:
+        expanded[YARRRML_EMPTY] = '"false"'
+    return expanded
+
+
+def _expand_list_object(obj):
+    if isinstance(obj, str) and '~' in obj:
+        value, obj_type = obj.split('~')
+        if obj_type in YARRRML_GATHER_AS_OPTIONS:
+            return {YARRRML_GATHER_AS: obj_type, YARRRML_GATHER: value}
+        if obj_type == "lang":
+            return {YARRRML_LANGUAGE: obj_type, YARRRML_VALUE: value}
+        return {YARRRML_TYPE: obj_type, YARRRML_VALUE: value}
+    if isinstance(obj, dict):
+        if YARRRML_FUNCTION in obj:
+            expanded = {YARRRML_FUNCTION: obj[YARRRML_FUNCTION]}
+            if YARRRML_PARAMETERS in obj:
+                expanded[YARRRML_PARAMETERS] = expand_parameters(obj[YARRRML_PARAMETERS])
+            return expanded
+        return dict(obj) if YARRRML_VALUE in obj else {}
+    return {YARRRML_VALUE: obj}
+
+
+def _expand_explicit_object(obj):
+    if isinstance(obj, dict):
+        if YARRRML_FUNCTION in obj and YARRRML_PARAMETERS in obj:
+            return {
+                YARRRML_FUNCTION: obj[YARRRML_FUNCTION],
+                YARRRML_PARAMETERS: expand_parameters(obj[YARRRML_PARAMETERS]),
+            }
+        if YARRRML_MAPPING in obj or YARRRML_CONDITION in obj:
+            return _expand_join_reference(obj)
+        return {
+            key: obj[key]
+            for key in (YARRRML_VALUE, YARRRML_DATATYPE)
+            if key in obj
+        }
+    if isinstance(obj, list) and len(obj) == 2:
+        if '~' in obj[1]:
+            return {YARRRML_VALUE: obj[0], YARRRML_LANGUAGE: obj[1].split('~')[0]}
+        return {YARRRML_VALUE: obj[0], YARRRML_DATATYPE: obj[1]}
+    return {YARRRML_VALUE: obj}
+
+
+def expand_predicateobjects(predicateobjects):
+    result = []
     for po in predicateobjects:
         if isinstance(po, list):
-            expanded_po = dict()
-            if len(po) == 3:
-
-                second_value = po[1]
-                if '~' in second_value:
-                    expanded_po[YARRRML_PREDICATES] = [{YARRRML_VALUE: po[0]}]
-                    if "\"" in po[2]:
-                        expanded_po[YARRRML_OBJECTS] = [{YARRRML_EMPTY: po[2]}]
-                    else:
-                        third_value = "\"" + po[2] + "\""
-                        expanded_po[YARRRML_OBJECTS] = [{YARRRML_EMPTY: third_value}]
-                    if second_value.split('~')[1] in YARRRML_GATHER_AS_OPTIONS:
-                        expanded_po[YARRRML_OBJECTS][0][YARRRML_GATHER] = second_value.split('~')[0]
-                        expanded_po[YARRRML_OBJECTS][0][YARRRML_GATHER_AS] = second_value.split('~')[1]
-
-                else:
-                    expanded_po[YARRRML_PREDICATES] = [{YARRRML_VALUE: po[0]}]
-                    expanded_po[YARRRML_OBJECTS] = [{YARRRML_VALUE: po[1]}]
-
-                    third_value = po[2]
-                    if '~' in third_value:
-                        if third_value.endswith('lang'):
-                            expanded_po[YARRRML_OBJECTS][0][YARRRML_LANGUAGE] = third_value.split('~')[0]
-                        elif third_value.split('~')[1] in YARRRML_GATHER_AS_OPTIONS:
-                            expanded_po[YARRRML_OBJECTS][0][YARRRML_GATHER] = third_value.split('~')[0]
-                            expanded_po[YARRRML_OBJECTS][0][YARRRML_GATHER_AS] = third_value.split('~')[1]
-                    else:
-                        expanded_po[YARRRML_OBJECTS][0][YARRRML_DATATYPE] = third_value
-
-                expanded_predicateobjects.append(expanded_po)
-
-            elif len(po) == 2:
-                if isinstance(po[0], str):
-                    po[0] = [po[0]]
-                if isinstance(po[1], str):
-                    po[1] = [po[1]]
-
-                predicates_list, objects_list = po[0], po[1]
-
-                for pred in predicates_list:
-                    expanded_po = dict()
-                    expanded_po[YARRRML_PREDICATES] = [{YARRRML_VALUE: pred}]
-                    expanded_po[YARRRML_OBJECTS] = []
-
-                    for obj in objects_list:
-                        object_expansion = {}
-                        if isinstance(obj, str) and '~' in obj:
-                            obj_value, obj_type = obj.split('~')
-
-                            if obj_type in YARRRML_GATHER_AS_OPTIONS:
-                                object_expansion[YARRRML_GATHER_AS] = obj_type
-                                object_expansion[YARRRML_GATHER] = obj_value
-                            elif obj_type == "lang":
-                                object_expansion[YARRRML_LANGUAGE] = obj_type
-                                object_expansion[YARRRML_VALUE] = obj_value
-                            else:
-                                object_expansion[YARRRML_TYPE] = obj_type
-                                object_expansion[YARRRML_VALUE] = obj_value
-                        elif isinstance(obj, dict) and YARRRML_FUNCTION in obj:
-                            object_expansion[YARRRML_FUNCTION] = obj[YARRRML_FUNCTION]
-                            if YARRRML_PARAMETERS in obj:
-                                object_expansion[YARRRML_PARAMETERS] = expand_parameters(obj[YARRRML_PARAMETERS])
-                        else:
-                            if isinstance(obj, dict):
-                                if YARRRML_VALUE in obj:
-                                    object_expansion.update(obj)
-                            else:
-                                object_expansion[YARRRML_VALUE] = obj
-
-                        expanded_po[YARRRML_OBJECTS].append(object_expansion)
-
-                    expanded_predicateobjects.append(expanded_po)
+            result.extend(_expand_list_predicateobject(po))
         elif isinstance(po, dict):
-            expanded_po = {}
+            result.extend(_expand_dict_predicateobject(po))
+    return result
 
-            if YARRRML_PREDICATES in po and YARRRML_OBJECTS in po:
-                if isinstance(po[YARRRML_PREDICATES], str):
-                    po[YARRRML_PREDICATES] = [po[YARRRML_PREDICATES]]
-                if isinstance(po[YARRRML_OBJECTS], str):
-                    po[YARRRML_OBJECTS] = [po[YARRRML_OBJECTS]]
 
-                for pred in po[YARRRML_PREDICATES]:
-                    expanded_po = dict()
-                    if isinstance(pred, dict) and YARRRML_VALUE in pred:
-                        expanded_po[YARRRML_PREDICATES] = po[YARRRML_PREDICATES]
-                    else:
-                        expanded_po[YARRRML_PREDICATES] = [{YARRRML_VALUE: pred}]
+def _expand_list_predicateobject(po):
+    if len(po) == 3:
+        return [_expand_triple_predicateobject(po)]
+    if len(po) != 2:
+        return []
+    if isinstance(po[0], str):
+        po[0] = [po[0]]
+    if isinstance(po[1], str):
+        po[1] = [po[1]]
+    return [
+        {
+            YARRRML_PREDICATES: [{YARRRML_VALUE: predicate}],
+            YARRRML_OBJECTS: [_expand_list_object(obj) for obj in po[1]],
+        }
+        for predicate in po[0]
+    ]
 
-                    expanded_po[YARRRML_OBJECTS] = []
-                    for obj in po[YARRRML_OBJECTS]:
-                        object_expansion = {}
-                        if isinstance(obj, dict):
-                            if YARRRML_FUNCTION in obj and YARRRML_PARAMETERS in obj:
-                                object_expansion[YARRRML_FUNCTION] = obj[YARRRML_FUNCTION]
-                                object_expansion[YARRRML_PARAMETERS] = expand_parameters(obj[YARRRML_PARAMETERS])
-                            elif YARRRML_MAPPING in obj or YARRRML_CONDITION in obj:
-                                if YARRRML_MAPPING in obj:
-                                    object_expansion[YARRRML_MAPPING] = obj[YARRRML_MAPPING]
-                                if YARRRML_CONDITION in obj:
-                                    condition_temp = obj[YARRRML_CONDITION]
-                                    if isinstance(condition_temp, dict):
-                                        condition_temp = [condition_temp]
-                                    object_expansion[YARRRML_CONDITION] = [
-                                        {
-                                            **condition,
-                                            YARRRML_PARAMETERS: expand_parameters(condition[YARRRML_PARAMETERS])
-                                        } if YARRRML_PARAMETERS in condition else condition
-                                        for condition in condition_temp
-                                    ]
-                            else:
-                                if YARRRML_VALUE in obj:
-                                    object_expansion[YARRRML_VALUE] = obj[YARRRML_VALUE]
-                                if YARRRML_DATATYPE in obj:
-                                    object_expansion[YARRRML_DATATYPE] = obj[YARRRML_DATATYPE]
-                        elif isinstance(obj, list) and len(obj) == 2 and '~' in obj[1]:
-                            object_expansion[YARRRML_VALUE] = obj[0]
-                            object_expansion[YARRRML_LANGUAGE] = obj[1].split('~')[0]
-                        elif isinstance(obj, list) and len(obj) == 2:
-                            object_expansion[YARRRML_VALUE] = obj[0]
-                            object_expansion[YARRRML_DATATYPE] = obj[1]
-                        else:
-                            object_expansion[YARRRML_VALUE] = obj
 
-                        expanded_po[YARRRML_OBJECTS].append(object_expansion)
+def _expand_triple_predicateobject(po):
+    predicate, value, qualifier = po
+    if '~' in value:
+        obj = {YARRRML_EMPTY: qualifier if '"' in qualifier else '"' + qualifier + '"'}
+        parts = value.split('~')
+        if parts[1] in YARRRML_GATHER_AS_OPTIONS:
+            obj[YARRRML_GATHER] = parts[0]
+            obj[YARRRML_GATHER_AS] = parts[1]
+    else:
+        obj = {YARRRML_VALUE: value}
+        if '~' not in qualifier:
+            obj[YARRRML_DATATYPE] = qualifier
+        elif qualifier.endswith('lang'):
+            obj[YARRRML_LANGUAGE] = qualifier.split('~')[0]
+        elif qualifier.split('~')[1] in YARRRML_GATHER_AS_OPTIONS:
+            obj[YARRRML_GATHER] = qualifier.split('~')[0]
+            obj[YARRRML_GATHER_AS] = qualifier.split('~')[1]
+    return {YARRRML_PREDICATES: [{YARRRML_VALUE: predicate}], YARRRML_OBJECTS: [obj]}
 
-                    expanded_predicateobjects.append(expanded_po)
 
-            elif 'p' in po and 'o' in po:
-                if not isinstance(po['p'], list):
-                    po['p'] = [po['p']]
-
-                objects = po['o'] if isinstance(po['o'], list) else [po['o']]
-                expanded_po[YARRRML_PREDICATES] = []
-
-                for p in po['p']:
-                    if YARRRML_FUNCTION in p:
-                        expanded_predicate = {YARRRML_FUNCTION: p[YARRRML_FUNCTION]}
-                        if YARRRML_PARAMETERS in p:
-                            expanded_parameters = expand_parameters(p[YARRRML_PARAMETERS])
-                            expanded_predicate[YARRRML_PARAMETERS] = expanded_parameters
-                    else:
-                        expanded_predicate = {YARRRML_VALUE: p}
-
-                    expanded_po[YARRRML_PREDICATES].append(expanded_predicate)
-
-                expanded_po[YARRRML_OBJECTS] = []
-
-                for o in objects:
-                    object_expansion = {}
-
-                    if isinstance(o, dict):
-                        if YARRRML_FUNCTION in o and YARRRML_PARAMETERS in o:
-                            object_expansion[YARRRML_FUNCTION] = o[YARRRML_FUNCTION]
-                            object_expansion[YARRRML_PARAMETERS] = expand_parameters(o[YARRRML_PARAMETERS])
-                        elif YARRRML_MAPPING in o or YARRRML_CONDITION in o:
-                            if YARRRML_MAPPING in o:
-                                object_expansion[YARRRML_MAPPING] = o[YARRRML_MAPPING]
-                            if YARRRML_CONDITION in o:
-                                condition_temp = o[YARRRML_CONDITION]
-                                if isinstance(condition_temp, dict):
-                                    condition_temp = [condition_temp]
-                                object_expansion[YARRRML_CONDITION] = [
-                                    {
-                                        **condition,
-                                        YARRRML_PARAMETERS: expand_parameters(condition[YARRRML_PARAMETERS])
-                                    } if YARRRML_PARAMETERS in condition else condition
-                                    for condition in condition_temp
-                                ]
-                        elif YARRRML_GATHER in o:
-                            if isinstance(o[YARRRML_GATHER], list):
-                                object_expansion[YARRRML_GATHER] = []
-                                for gather_value in o[YARRRML_GATHER]:
-                                    if isinstance(gather_value, str) and '~' in gather_value:
-                                        gather_entry = {
-                                            YARRRML_GATHER: gather_value.split('~')[0],
-                                            YARRRML_GATHER_AS: gather_value.split('~')[1]
-                                        }
-                                        object_expansion[YARRRML_GATHER].append(gather_entry)
-                                    elif isinstance(gather_value, str):
-                                        gather_entry = {
-                                            YARRRML_GATHER: gather_value
-                                        }
-                                        object_expansion[YARRRML_GATHER].append(gather_entry)
-                                    elif isinstance(gather_value, dict):
-                                        gather_entry = {}
-                                        if YARRRML_MAPPING in gather_value or YARRRML_CONDITION in gather_value:
-                                            if YARRRML_MAPPING in gather_value:
-                                                gather_entry[YARRRML_MAPPING] = gather_value[YARRRML_MAPPING]
-                                            if YARRRML_CONDITION in gather_value:
-                                                condition_temp = gather_value[YARRRML_CONDITION]
-                                                if isinstance(condition_temp, dict):
-                                                    condition_temp = [condition_temp]
-                                                gather_entry[YARRRML_CONDITION] = [
-                                                    {
-                                                        **condition,
-                                                        YARRRML_PARAMETERS: expand_parameters(condition[YARRRML_PARAMETERS])
-                                                    } if YARRRML_PARAMETERS in condition else condition
-                                                    for condition in condition_temp
-                                                ]
-
-                                            object_expansion[YARRRML_GATHER].append(gather_entry)
-                                        else:
-                                            object_expansion[YARRRML_GATHER].append(gather_value)
-
-                            else:
-                                object_expansion[YARRRML_GATHER] = o[YARRRML_GATHER]
-                            object_expansion[YARRRML_GATHER_AS] = o[YARRRML_GATHER_AS]
-                            if YARRRML_VALUE in o:
-                                object_expansion[YARRRML_VALUE] = o[YARRRML_VALUE]
-                            if YARRRML_TYPE in o:
-                                object_expansion[YARRRML_TYPE] = o[YARRRML_TYPE]
-                            if YARRRML_EMPTY in o:
-                                object_expansion[YARRRML_EMPTY] = o[YARRRML_EMPTY]
-                            if YARRRML_STRATEGY in o:
-                                object_expansion[YARRRML_STRATEGY] = o[YARRRML_STRATEGY]
-                        else:
-                            object_expansion.update(o)
-                    else:
-                        object_expansion[YARRRML_VALUE] = o
-
-                    if YARRRML_EMPTY in object_expansion:
-                        if object_expansion[YARRRML_EMPTY] is True:
-                            object_expansion[YARRRML_EMPTY] = "\"true\""
-                        elif object_expansion[YARRRML_EMPTY] is False:
-                            object_expansion[YARRRML_EMPTY] = "\"false\""
-                    expanded_po[YARRRML_OBJECTS].append(object_expansion)
-
-                expanded_predicateobjects.append(expanded_po)
-
-            if 'graph' in po:
-                expanded_po[YARRRML_GRAPHS] = [po['graph']]
-            if YARRRML_GRAPHS in po:
-                expanded_po[YARRRML_GRAPHS] = [po[YARRRML_GRAPHS]]
-
-    return expanded_predicateobjects
+def _expand_dict_predicateobject(po):
+    result = []
+    if YARRRML_PREDICATES in po and YARRRML_OBJECTS in po:
+        if isinstance(po[YARRRML_PREDICATES], str):
+            po[YARRRML_PREDICATES] = [po[YARRRML_PREDICATES]]
+        if isinstance(po[YARRRML_OBJECTS], str):
+            po[YARRRML_OBJECTS] = [po[YARRRML_OBJECTS]]
+        for predicate in po[YARRRML_PREDICATES]:
+            if isinstance(predicate, dict) and YARRRML_VALUE in predicate:
+                predicates = po[YARRRML_PREDICATES]
+            else:
+                predicates = [{YARRRML_VALUE: predicate}]
+            result.append({
+                YARRRML_PREDICATES: predicates,
+                YARRRML_OBJECTS: [
+                    _expand_explicit_object(obj) for obj in po[YARRRML_OBJECTS]
+                ],
+            })
+    elif 'p' in po and 'o' in po:
+        if not isinstance(po['p'], list):
+            po['p'] = [po['p']]
+        objects = po['o'] if isinstance(po['o'], list) else [po['o']]
+        predicates = []
+        for predicate in po['p']:
+            if YARRRML_FUNCTION in predicate:
+                expanded = {YARRRML_FUNCTION: predicate[YARRRML_FUNCTION]}
+                if YARRRML_PARAMETERS in predicate:
+                    expanded[YARRRML_PARAMETERS] = expand_parameters(
+                        predicate[YARRRML_PARAMETERS]
+                    )
+            else:
+                expanded = {YARRRML_VALUE: predicate}
+            predicates.append(expanded)
+        result.append({
+            YARRRML_PREDICATES: predicates,
+            YARRRML_OBJECTS: [_expand_abbreviated_object(obj) for obj in objects],
+        })
+    if result:
+        if 'graph' in po:
+            result[-1][YARRRML_GRAPHS] = [po['graph']]
+        if YARRRML_GRAPHS in po:
+            result[-1][YARRRML_GRAPHS] = [po[YARRRML_GRAPHS]]
+    return result
 
 
 def expand_parameters(parameters):
@@ -553,7 +500,7 @@ def _expand_mapping_targets(mapping_content, targets_root):
 
 
 def normalize(data, external_sources, external_targets):
-    data = normalize_yaml(data)
+    data = normalize_yaml(copy.deepcopy(data))
 
     if data.get(YARRRML_MAPPINGS):
         for mapping in data.get(YARRRML_MAPPINGS):

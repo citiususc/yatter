@@ -1,0 +1,12 @@
+function: ex:outer
+parameters:
+  - parameter: ex:first
+    value:
+      function: ex:left
+      parameters:
+        - [ex:input, $(left)]
+  - parameter: ex:second
+    value:
+      function: ex:right
+      parameters:
+        - [ex:input, $(right)]

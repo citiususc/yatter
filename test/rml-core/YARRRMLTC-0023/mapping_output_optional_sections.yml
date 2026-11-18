@@ -1,0 +1,5 @@
+prefixes:
+  ex: "http://example.com/"
+mappings:
+  person:
+    s: ex:$(id)
