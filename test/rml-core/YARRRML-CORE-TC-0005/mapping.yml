@@ -1,13 +1,34 @@
 prefixes:
-  ex: http://example.com/
-  foaf: http://xmlns.com/foaf/0.1/
+ mail: "http://example.com/mail#"
+ ex: "http://www.example.com/"
 
+sources:
+  source1:
+    access: http://localhost/example
+    type: mysql
+    credentials:
+      username: root
+      password: root
+    queryFormulation: mysql
+    query: >
+        Select * from "example"
+    referenceFormulation: csv
 mappings:
-  student:
-    sources:
-      - ['student.xml~xpath','$students/student']
-    s: http://example.com/$(ID)/$(Name)
-    po:
-      - [a, foaf:Person]
-      - [ex:id, $(ID)]
-      - [foaf:name, $(Name)]
+  FromToMaps:
+    sources: source1
+    subjects: "http://www.example.com/note/$(@id)"
+    predicateobjects:
+     - [a, mail:Note]
+     - [mail:when,$(@year)-$(@month)-$(@day), xsd:date]
+     - [mail:from,$(from)]
+     - [mail:to, $(to)]
+     - [mail:heading,$(heading)]
+     - [mail:body,$(body)]
+  DateTime:
+    source: source1
+    subject: "http://www.example.com/DateTime/$(@year)$(@month)$(@day)"
+    predicateobjects:
+      - [a, ex:DateTime]
+      - [ex:day,--$(@day),xsd:gDay]
+      - [ex:month,--$(@month),xsd:gMonth]
+      - [ex:year, $(@year), xsd:gYear]

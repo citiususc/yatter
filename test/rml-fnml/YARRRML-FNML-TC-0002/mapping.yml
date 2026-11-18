@@ -6,10 +6,9 @@ mappings:
   student2:
     sources:
       - [ 'student.csv~csv' ]
-    s: http://example.com/$(Name)
+    s:
+      function: ex:toLowerCase
+      parameters:
+        - [ ex:input, $(firstname) ]
     po:
-      - p: foaf:name
-        o:
-          - function: ex:toLowerCase
-            parameters:
-              - [ ex:input, $(firstname) ]
+      - [foaf:firstName, $(name)]

@@ -16,37 +16,6 @@
 @base <http://example.com/ns#>.
 
 
-<function_student2_0> a fnml:Execution;
-	fnml:function ex:function0 ; 
-	fnml:input
-		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
-				rml:reference "firstname";
-			];
-		],
-		[
-			a fnml:Input;
-			fnml:parameter ex:input2;
-			fnml:valueMap[
-				fnml:execution <function_student2_1>;
-			];
-		].
-
-<function_student2_1> a fnml:Execution;
-	fnml:function ex:lowerCase ; 
-	fnml:input
-		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
-				rml:reference "name";
-			];
-		].
-
 <student2_0> a rr:TriplesMap;
 
 	rml:logicalSource [
@@ -61,10 +30,68 @@
 	rr:predicateObjectMap [
 		rr:predicateMap [
 			a rr:PredicateMap;
-			fnml:execution <function_student2_0>;
+			rr:constant foaf:name;
 		];
 		rr:objectMap [
-			a rr:ObjectMap;
-			rml:reference "Name";
+			a rr:RefObjectMap;
+			rr:parentTriplesMap <mapping1_0>;
+			rr:joinCondition [
+				rr:child "val1";
+				rr:parent "val2";
+			];
+			rr:joinCondition [
+				rr:child "val1";
+				rr:parent "val2";
+			];
+		];
+		rr:objectMap [
+			a rr:RefObjectMap;
+			rr:parentTriplesMap <mapping1_0>;
+			rr:joinCondition [
+				rr:child "val1";
+				rr:parent "val2";
+			];
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant foaf:surname;
+		];
+		rr:objectMap [
+			a rr:RefObjectMap;
+			rr:parentTriplesMap <mapping2_0>;
+			rr:joinCondition [
+				rr:child "val1";
+				rr:parent "val2";
+			];
 		];
 	].
+
+
+<mapping1_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source "student.csv";
+		rml:referenceFormulation ql:CSV
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/{Name}";
+	].
+
+
+<mapping2_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source "student.csv";
+		rml:referenceFormulation ql:CSV
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/{surname}";
+	].
+
+

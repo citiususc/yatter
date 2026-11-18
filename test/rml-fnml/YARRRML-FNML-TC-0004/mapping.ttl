@@ -21,21 +21,22 @@
 	fnml:input
 		[
 			a fnml:Input;
-			fnml:parameter ex:valueParameter;
-			fnml:valueMap[
-				fnml:execution <function_student2_1>;
+			fnml:parameter ex:input;
+			fnml:valueMap [
+				a fnml:ValueMap;
+				rml:reference "firstname";
 			];
 		].
 
 <function_student2_1> a fnml:Execution;
-	fnml:function ex:toUpperCase ; 
+	fnml:function ex:toLowerCase ; 
 	fnml:input
 		[
 			a fnml:Input;
-			fnml:parameter ex:valueParameter;
+			fnml:parameter ex:input;
 			fnml:valueMap [
 				a fnml:ValueMap;
-				rml:reference "name";
+				rml:reference "surname";
 			];
 		].
 
@@ -58,6 +59,16 @@
 		rr:objectMap [
 			a rr:ObjectMap;
 			fnml:execution <function_student2_0>;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant foaf:surname;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			fnml:execution <function_student2_1>;
 		];
 	].
 

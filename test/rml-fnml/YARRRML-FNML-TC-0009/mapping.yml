@@ -8,6 +8,20 @@ mappings:
       - [ 'student.csv~csv' ]
     s: http://example.com/$(Name)
     po:
-      - p:
-          - function: ex:function0(ex:input = $(firstname), ex:input2=ex:lowerCase(ex:input=$(name)))
-        o: $(Name)
+      - p: foaf:name
+        o:
+          - function: join(mapping1, equal($(val1),$(val2)), equal($(val1),$(val2)))
+          - function: join(mapping1, equal($(val1),$(val2)))
+      - p: foaf:surname
+        o:
+          - function: join(mapping2, equal($(val1),$(val2)))
+
+  mapping1:
+    sources:
+      - [ 'student.csv~csv' ]
+    s: http://example.com/$(Name)
+
+  mapping2:
+    sources:
+      - [ 'student.csv~csv' ]
+    s: http://example.com/$(surname)

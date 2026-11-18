@@ -1,4 +1,5 @@
 @prefix ex: <http://example.com/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
 @prefix rr: <http://www.w3.org/ns/r2rml#>.
 @prefix rml: <http://semweb.mmlab.be/ns/rml#>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
@@ -6,27 +7,20 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix ql: <http://semweb.mmlab.be/ns/ql#>.
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
-@prefix foaf: <http://xmlns.com/foaf/0.1/>.
-@prefix schema: <http://schema.org/>.
-@prefix formats: <http://www.w3.org/ns/formats/>.
-@prefix comp: <http://semweb.mmlab.be/ns/rml-compression#>.
-@prefix void: <http://rdfs.org/ns/void#>.
-@prefix fnml: <http://semweb.mmlab.be/ns/fnml#>.
-@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
 @base <http://example.com/ns#>.
 
 
-<person_0> a rr:TriplesMap;
+<student_0> a rr:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
-		rml:source "data.json";
-		rml:referenceFormulation ql:JSONPath;
-		rml:iterator "$.persons[*]";
+		rml:source "student.xml";
+		rml:referenceFormulation ql:XPath;
+		rml:iterator "$students/student";
 	];
 	rr:subjectMap [
 		a rr:SubjectMap;
-		rr:termType rr:BlankNode;
+		rr:template "http://example.com/{ID}/{Name}";
 	];
 	rr:predicateObjectMap [
 		rr:predicateMap [
@@ -41,11 +35,21 @@
 	rr:predicateObjectMap [
 		rr:predicateMap [
 			a rr:PredicateMap;
-			rr:constant ex:name;
+			rr:constant ex:id;
 		];
 		rr:objectMap [
 			a rr:ObjectMap;
-			rml:reference "firstname";
+			rml:reference "ID";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant foaf:name;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "Name";
 		];
 	].
 

@@ -23,7 +23,7 @@
 		rml:source "student.csv";
 		rml:referenceFormulation ql:CSV
 	];
-	rr:subjectMap [
+	rml:subjectMap [
 		a rr:SubjectMap;
 		rr:template "http://example.com/{Name}";
 	];
@@ -32,25 +32,13 @@
 			a rr:PredicateMap;
 			rr:constant foaf:name;
 		];
-		rr:objectMap [
+		rml:objectMap [ 
 			a rr:RefObjectMap;
-			rr:parentTriplesMap <mapping1_0>;
+			rml:quotedTriplesMap <mapping1_0>;
 			rr:joinCondition [
 				rr:child "val1";
 				rr:parent "val2";
-			];
-			rr:joinCondition [
-				rr:child "val1";
-				rr:parent "val2";
-			];
-		];
-		rr:objectMap [
-			a rr:RefObjectMap;
-			rr:parentTriplesMap <mapping1_0>;
-			rr:joinCondition [
-				rr:child "val1";
-				rr:parent "val2";
-			];
+			]; 
 		];
 	];
 	rr:predicateObjectMap [
@@ -58,13 +46,13 @@
 			a rr:PredicateMap;
 			rr:constant foaf:surname;
 		];
-		rr:objectMap [
+		rml:objectMap [ 
 			a rr:RefObjectMap;
-			rr:parentTriplesMap <mapping2_0>;
+			rml:quotedTriplesMap <mapping2_0>;
 			rr:joinCondition [
 				rr:child "val1";
 				rr:parent "val2";
-			];
+			]; 
 		];
 	].
 
@@ -76,20 +64,20 @@
 		rml:source "student.csv";
 		rml:referenceFormulation ql:CSV
 	];
-	rr:subjectMap [
+	rml:subjectMap [
 		a rr:SubjectMap;
 		rr:template "http://example.com/{Name}";
 	].
 
 
-<mapping2_0> a rr:TriplesMap;
+<mapping2_0> a rml:NonAssertedTriplesMap, rr:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
 		rml:source "student.csv";
 		rml:referenceFormulation ql:CSV
 	];
-	rr:subjectMap [
+	rml:subjectMap [
 		a rr:SubjectMap;
 		rr:template "http://example.com/{surname}";
 	].

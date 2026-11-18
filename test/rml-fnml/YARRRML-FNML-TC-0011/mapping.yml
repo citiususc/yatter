@@ -1,26 +1,28 @@
 prefixes:
-  foaf: http://xmlns.com/foaf/0.1/
-  ex: http://example.com/
+ ex: "http://www.semanticweb.org/tijnd/"
+ ontology: "http://www.semanticweb.org/tijnd/ontology/"
+ schema: "https://schema.org/"
+ idlab-fn: "http://example.com/idlab/function/"
+ grel: "http://users.ugent.be/~bjdmeest/function/grel.ttl#"
+ owl: "http://www.w3.org/2002/07/owl#"
+ rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+ xsd: "http://www.w3.org/2001/XMLSchema#"
+sources:
+  imdb:
+   access: imdb_video_game_rating_modified.csv
+   referenceFormulation: csv
 
 mappings:
-  student2:
+  director:
     sources:
-      - [ 'student.csv~csv' ]
-    s: http://example.com/$(Name)
+      - imdb
+    s: ex:Person/$(title) #Not really the correct subject, only used to simply test it
     po:
-      - p: foaf:name
+      - [a, schema:Person]
+      - p: schema:name
         o:
-          - function: join(quoted=mapping1, equal($(val1),$(val2)))
-      - p: foaf:surname
-        o:
-          - function: join(quotedNonAsserted=mapping2, equal($(val1),$(val2)))
-
-  mapping1:
-    sources:
-      - [ 'student.csv~csv' ]
-    s: http://example.com/$(Name)
-
-  mapping2:
-    sources:
-      - [ 'student.csv~csv' ]
-    s: http://example.com/$(surname)
+            function: grel:string_split
+            parameters:
+              - [grel:p_string_sep, ", "]
+              - [grel:valueParameter, $(directors)]

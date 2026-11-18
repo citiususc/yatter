@@ -10,11 +10,10 @@ mappings:
     po:
       - p: foaf:name
         o:
-          - function: join(mapping1, equal($(val1),$(val2)), equal($(val1),$(val2)))
-          - function: join(mapping1, equal($(val1),$(val2)))
+          - function: join(quoted=mapping1, equal($(val1),$(val2)))
       - p: foaf:surname
         o:
-          - function: join(mapping2, equal($(val1),$(val2)))
+          - function: join(quotedNonAsserted=mapping2, equal($(val1),$(val2)))
 
   mapping1:
     sources:

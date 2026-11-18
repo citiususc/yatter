@@ -47,49 +47,6 @@
 			];
 		].
 
-<function_student2_2> a fnml:Execution;
-	fnml:function ex:function1 ; 
-	fnml:input
-		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
-				rml:reference "name";
-			];
-		],
-		[
-			a fnml:Input;
-			fnml:parameter ex:valueParameter;
-			fnml:valueMap[
-				fnml:execution <function_student2_3>;
-			];
-		].
-
-<function_student2_3> a fnml:Execution;
-	fnml:function ex:toUpperCase ; 
-	fnml:input
-		[
-			a fnml:Input;
-			fnml:parameter ex:valueParameter;
-			fnml:valueMap [
-				a fnml:ValueMap;
-				rml:reference "firstname";
-			];
-		].
-
-<function_student2_4> a fnml:Execution;
-	fnml:function ex:function2 ; 
-	fnml:input
-		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
-				rml:reference "surname";
-			];
-		].
-
 <student2_0> a rr:TriplesMap;
 
 	rml:logicalSource [
@@ -104,32 +61,10 @@
 	rr:predicateObjectMap [
 		rr:predicateMap [
 			a rr:PredicateMap;
-			rr:constant foaf:firstName;
-		];
-		rr:objectMap [
-			a rr:ObjectMap;
 			fnml:execution <function_student2_0>;
 		];
-	];
-	rr:predicateObjectMap [
-		rr:predicateMap [
-			a rr:PredicateMap;
-			rr:constant foaf:name;
-		];
 		rr:objectMap [
 			a rr:ObjectMap;
-			fnml:execution <function_student2_2>;
-		];
-	];
-	rr:predicateObjectMap [
-		rr:predicateMap [
-			a rr:PredicateMap;
-			rr:constant foaf:surname;
-		];
-		rr:objectMap [
-			a rr:ObjectMap;
-			fnml:execution <function_student2_4>;
+			rml:reference "Name";
 		];
 	].
-
-

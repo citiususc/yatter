@@ -8,21 +8,6 @@ mappings:
       - [ 'student.csv~csv' ]
     s: http://example.com/$(Name)
     po:
-      - p: foaf:firstName
-        o:
+      - p:
           - function: ex:function0(ex:input = $(firstname), ex:input2=ex:lowerCase(ex:input=$(name)))
-      - p: foaf:name
-        o:
-          - function: ex:function1
-            parameters:
-              - [ ex:input, $(name) ]
-              - parameter: ex:valueParameter
-                value:
-                  function: ex:toUpperCase
-                  parameters:
-                    - [ ex:valueParameter, $(firstname) ]
-      - p: foaf:surname
-        o:
-          - function: ex:function2
-            parameters:
-              - [ ex:input, $(surname) ]
+        o: $(Name)

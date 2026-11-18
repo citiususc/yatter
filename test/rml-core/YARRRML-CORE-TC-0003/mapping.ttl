@@ -1,0 +1,39 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix map: <http://mapping.example.com/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@base <http://example.com/ns#>.
+
+<student_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:query "Select ('Student' || \"ID\" ) AS StudentId , \"ID\" , \"Name\" from \"Student\" ";
+		rml:source <DataSource_student>;
+		rr:sqlVersion rr:MYSQL;
+        rml:referenceFormulation ql:CSV
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/{ID}/{Name}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant foaf:name;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "Name";
+		];
+	].
+
+<DataSource_student> a d2rq:Database;
+	d2rq:jdbcDSN "http://localhost/example";
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:username "root";
+	d2rq:password "root".

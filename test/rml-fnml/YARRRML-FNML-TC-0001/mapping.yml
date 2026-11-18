@@ -1,0 +1,15 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+  ex: http://example.com/
+
+mappings:
+  student2:
+    sources:
+      - [ 'student.csv~csv' ]
+    s: http://example.com/$(Name)
+    po:
+      - p: foaf:name
+        o:
+          - function: ex:toLowerCase
+            parameters:
+              - [ ex:input, $(firstname) ]

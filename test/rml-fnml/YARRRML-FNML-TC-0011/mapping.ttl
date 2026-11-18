@@ -1,85 +1,76 @@
-@prefix foaf: <http://xmlns.com/foaf/0.1/>.
-@prefix ex: <http://example.com/>.
-@prefix rr: <http://www.w3.org/ns/r2rml#>.
-@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix ex: <http://www.semanticweb.org/tijnd/>.
+@prefix ontology: <http://www.semanticweb.org/tijnd/ontology/>.
+@prefix schema: <https://schema.org/>.
+@prefix idlab-fn: <http://example.com/idlab/function/>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
 @prefix ql: <http://semweb.mmlab.be/ns/ql#>.
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
 @prefix schema: <http://schema.org/>.
 @prefix formats: <http://www.w3.org/ns/formats/>.
 @prefix comp: <http://semweb.mmlab.be/ns/rml-compression#>.
 @prefix void: <http://rdfs.org/ns/void#>.
 @prefix fnml: <http://semweb.mmlab.be/ns/fnml#>.
-@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
 @base <http://example.com/ns#>.
 
 
-<student2_0> a rr:TriplesMap;
+<function_director_0> a fnml:Execution;
+	fnml:function grel:string_split ;
+	fnml:input
+		[
+			a fnml:Input;
+			fnml:parameter grel:p_string_sep;
+			fnml:valueMap [
+				a fnml:ValueMap;
+				rr:constant ", ";
+			];
+		],
+		[
+			a fnml:Input;
+			fnml:parameter grel:valueParameter;
+			fnml:valueMap [
+				a fnml:ValueMap;
+				rml:reference "directors";
+			];
+		].
+
+<director_0> a rr:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
-		rml:source "student.csv";
-		rml:referenceFormulation ql:CSV
+		rml:source "imdb_video_game_rating_modified.csv";
+		rml:referenceFormulation ql:CSV;
+
 	];
-	rml:subjectMap [
+	rr:subjectMap [
 		a rr:SubjectMap;
-		rr:template "http://example.com/{Name}";
+		rr:template "http://www.semanticweb.org/tijnd/Person/{title}";
 	];
 	rr:predicateObjectMap [
 		rr:predicateMap [
 			a rr:PredicateMap;
-			rr:constant foaf:name;
+			rr:constant rdf:type;
 		];
-		rml:objectMap [ 
-			a rr:RefObjectMap;
-			rml:quotedTriplesMap <mapping1_0>;
-			rr:joinCondition [
-				rr:child "val1";
-				rr:parent "val2";
-			]; 
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant schema:Person;
 		];
 	];
 	rr:predicateObjectMap [
 		rr:predicateMap [
 			a rr:PredicateMap;
-			rr:constant foaf:surname;
+			rr:constant schema:name;
 		];
-		rml:objectMap [ 
-			a rr:RefObjectMap;
-			rml:quotedTriplesMap <mapping2_0>;
-			rr:joinCondition [
-				rr:child "val1";
-				rr:parent "val2";
-			]; 
+		rr:objectMap [
+			a rr:ObjectMap;
+			fnml:execution <function_director_0>;
 		];
-	].
-
-
-<mapping1_0> a rr:TriplesMap;
-
-	rml:logicalSource [
-		a rml:LogicalSource;
-		rml:source "student.csv";
-		rml:referenceFormulation ql:CSV
-	];
-	rml:subjectMap [
-		a rr:SubjectMap;
-		rr:template "http://example.com/{Name}";
-	].
-
-
-<mapping2_0> a rml:NonAssertedTriplesMap, rr:TriplesMap;
-
-	rml:logicalSource [
-		a rml:LogicalSource;
-		rml:source "student.csv";
-		rml:referenceFormulation ql:CSV
-	];
-	rml:subjectMap [
-		a rr:SubjectMap;
-		rr:template "http://example.com/{surname}";
 	].
 
 

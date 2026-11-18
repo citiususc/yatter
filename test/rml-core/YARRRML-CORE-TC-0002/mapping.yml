@@ -1,0 +1,13 @@
+prefixes:
+  ex: http://example.com/
+  foaf: http://xmlns.com/foaf/0.1/
+
+mappings:
+  student:
+    sources:
+      - ['student.xml~xpath','$students/student']
+    s: http://example.com/$(ID)/$(Name)
+    po:
+      - [a, foaf:Person]
+      - [ex:id, $(ID)]
+      - [foaf:name, $(Name)]
