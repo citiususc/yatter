@@ -8,6 +8,7 @@ from .function import add_functions
 from .normalization import normalize
 import rdflib
 import ruamel.yaml as yaml
+from io import StringIO
 
 
 def translate(yarrrml_data, mapping_format=RML_URI):
@@ -93,7 +94,11 @@ def merge_mappings(yarrrrml_list):
             prefixes_list.append(mapping[YARRRML_PREFIXES])
     combined_mapping = combined_mapping | merge_mapping_section_by_key(YARRRML_PREFIXES, prefixes_list)
 
-    triples_map_ids = yarrrrml_list[0][YARRRML_MAPPINGS].keys()
+    triples_map_ids = dict.fromkeys(
+        individual_id
+        for mapping in yarrrrml_list
+        for individual_id in mapping.get(YARRRML_MAPPINGS, {})
+    )
     for individual_id in triples_map_ids:
         mapping_content_list = []
         for mapping in yarrrrml_list:
@@ -101,5 +106,6 @@ def merge_mappings(yarrrrml_list):
                 mapping_content_list.append(mapping[YARRRML_MAPPINGS][individual_id])
         combined_mapping[YARRRML_MAPPINGS] = combined_mapping[YARRRML_MAPPINGS] | merge_mapping_section_by_key(individual_id, mapping_content_list)
 
-    string_content = yaml.dump(combined_mapping)
-    return string_content
+    stream = StringIO()
+    yaml.YAML().dump(combined_mapping, stream)
+    return stream.getvalue()
