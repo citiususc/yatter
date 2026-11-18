@@ -18,10 +18,11 @@ def get_termmap_type(text, mapping_format):
     else:
         return R2RML_CONSTANT
 
-def generate_cc_termmap_text(text, mapping_format=RML_URI):
+
+def _generate_termmap_text(text, mapping_format=RML_URI, gather=False):
     from .mapping import prefixes
-    term_map = get_termmap_type(text[YARRRML_GATHER], mapping_format)
-    text = text[YARRRML_GATHER]
+    term_map = get_termmap_type(text[YARRRML_GATHER] if gather else text, mapping_format)
+    text = text[YARRRML_GATHER] if gather else text
     if term_map == R2RML_TEMPLATE:
         text = generate_rml_template(text)
         text = text.replace('"', r'\"')
@@ -30,29 +31,24 @@ def generate_cc_termmap_text(text, mapping_format=RML_URI):
             if text_prefix_split[0] in prefixes:
                 text = prefixes[text_prefix_split[0]] + text_prefix_split[1]
     elif term_map == RML_REFERENCE or term_map == R2RML_COLUMN:
-        text = text.replace("$(", "").replace(")", "")
+        if gather:
+            text = text.replace("$(", "").replace(")", "")
+        else:
+            text = generate_rml_template(text).replace("{","").replace("}","")
         text = text.replace('"', r'\"')
-        text = f'"{text}"'
+        if gather:
+            text = f'"{text}"'
     elif term_map == R2RML_CONSTANT and text == "a":
         text = RDF_TYPE
     return term_map, text
 
+
+def generate_cc_termmap_text(text, mapping_format=RML_URI):
+    return _generate_termmap_text(text, mapping_format, gather=True)
+
+
 def generate_rml_termmap_text(text, mapping_format=RML_URI):
-    from .mapping import prefixes
-    term_map = get_termmap_type(text, mapping_format)
-    if term_map == R2RML_TEMPLATE:
-        text = generate_rml_template(text)
-        text = text.replace('"', r'\"')
-        if ":" in text:
-            text_prefix_split = text.split(":")
-            if text_prefix_split[0] in prefixes:
-                text = prefixes[text_prefix_split[0]] + text_prefix_split[1]
-    elif term_map == RML_REFERENCE or term_map == R2RML_COLUMN:
-        text = generate_rml_template(text).replace("{","").replace("}","")
-        text = text.replace('"', r'\"')
-    elif term_map == R2RML_CONSTANT and text == "a":
-        text = RDF_TYPE
-    return term_map, text
+    return _generate_termmap_text(text, mapping_format)
 
 def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_format=RML_URI):
     template = indentation[0:-1] + rml_property + " [\n" + indentation + "a " + rml_class + ";\n"
