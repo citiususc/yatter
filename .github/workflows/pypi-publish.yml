@@ -5,12 +5,12 @@ on: push
 jobs:
   build:
     name: Build distribution 📦
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: "3.x"
     - name: Install pypa/build
@@ -32,7 +32,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs:
     - build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: release
       url: https://pypi.org/p/yatter  # Replace <package-name> with your PyPI project name
