@@ -29,7 +29,8 @@ def get_rml_termtype(term_type):
 
 
 def _generate_termmap_text(text, mapping_format=RML_URI, gather=False):
-    from .mapping import prefixes
+    from .mapping import get_prefixes
+    prefixes = get_prefixes()
     term_map = get_termmap_type(text[YARRRML_GATHER] if gather else text, mapping_format)
     text = text[YARRRML_GATHER] if gather else text
     if term_map == R2RML_TEMPLATE:

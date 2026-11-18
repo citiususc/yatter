@@ -4,7 +4,6 @@ from .graph import add_inverse_graph
 from .source import add_source, add_table
 from .subject import add_subject
 from .termmap import generate_rml_termmap, generate_cc_termmap, generate_rml_termmap_text, get_rml_termtype
-from .mapping import prefixes
 from ruamel.yaml import YAML
 
 
