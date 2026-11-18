@@ -19,6 +19,15 @@ def get_termmap_type(text, mapping_format):
         return R2RML_CONSTANT
 
 
+def get_rml_termtype(term_type):
+    return {
+        'iri': R2RML_IRI,
+        'blank': R2RML_BLANK_NODE,
+        YARRRML_BLANK: R2RML_BLANK_NODE,
+        'literal': R2RML_LITERAL,
+    }.get(term_type)
+
+
 def _generate_termmap_text(text, mapping_format=RML_URI, gather=False):
     from .mapping import prefixes
     term_map = get_termmap_type(text[YARRRML_GATHER] if gather else text, mapping_format)

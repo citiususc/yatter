@@ -1,5 +1,5 @@
 from .constants import *
-from .termmap import generate_rml_termmap, generate_cc_termmap
+from .termmap import generate_rml_termmap, generate_cc_termmap, get_rml_termtype
 from .graph import add_inverse_graph
 import rdflib
 
@@ -53,7 +53,8 @@ def add_subject(data, mapping, mapping_format):
                     YARRRML_TARGETS] + ">\n\t];\n"
 
             if isinstance(individual_subject, dict) and YARRRML_TYPE in individual_subject:
-                if individual_subject.get(YARRRML_TYPE) == YARRRML_BLANK:
+                rml_termtype = get_rml_termtype(individual_subject[YARRRML_TYPE])
+                if rml_termtype == R2RML_BLANK_NODE:
                     subject_termmap = subject_termmap[
                                       0:-3] + "\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t];\n"
 

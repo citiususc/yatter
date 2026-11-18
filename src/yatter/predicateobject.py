@@ -3,7 +3,7 @@ from .constants import *
 from .graph import add_inverse_graph
 from .source import add_source, add_table
 from .subject import add_subject
-from .termmap import generate_rml_termmap, generate_cc_termmap, generate_rml_termmap_text
+from .termmap import generate_rml_termmap, generate_cc_termmap, generate_rml_termmap_text, get_rml_termtype
 from .mapping import prefixes
 from ruamel.yaml import YAML
 
@@ -73,12 +73,9 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                 template += generate_cc_termmap(STAR_OBJECT, R2RML_OBJECT_CLASS, om, "\t\t\t", mapping_format) + "\n\t\t];\n"
 
             if YARRRML_TYPE in om:
-                if om.get(YARRRML_TYPE) == 'iri':
-                    template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_IRI + "\n\t\t];\n"
-                elif om.get(YARRRML_TYPE) == 'blank':
-                    template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t\t];\n"
-                elif om.get(YARRRML_TYPE) == 'literal':
-                    template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_LITERAL + "\n\t\t];\n"
+                rml_termtype = get_rml_termtype(om[YARRRML_TYPE])
+                if rml_termtype:
+                    template = template[0:len(template) - 6] + "\t\t\t" + R2RML_TERMTYPE + " " + rml_termtype + "\n\t\t];\n"
         elif object_value is not None:
             rml_map_class, rml_map, r2rml_map = None, None, None
             if mapping_format == STAR_URI:
@@ -115,12 +112,9 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
             elif YARRRML_TARGETS in om:
                 template = template[0:len(template) - 5] + "\t\t\t" + RML_LOGICAL_TARGET + " <" + om[YARRRML_TARGETS] + ">\n\t\t];\n"
             if YARRRML_TYPE in om:
-                if om.get(YARRRML_TYPE) == 'iri':
-                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_IRI + "\n\t\t];\n"
-                elif om.get(YARRRML_TYPE) == 'blank':
-                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t\t];\n"
-                elif om.get(YARRRML_TYPE) == 'literal':
-                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + R2RML_LITERAL + "\n\t\t];\n"
+                rml_termtype = get_rml_termtype(om[YARRRML_TYPE])
+                if rml_termtype:
+                    template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " + rml_termtype + "\n\t\t];\n"
 
         elif YARRRML_MAPPING in om or YARRRML_NON_ASSERTED in om or YARRRML_QUOTED in om:
             if YARRRML_MAPPING in om:
@@ -155,14 +149,10 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
                     template = template[0:len(template) - 5] + "\t\t\t" + R2RML_LANGUAGE + " \"" \
                                + om.get(YARRRML_LANGUAGE) + "\"\n\t\t];\n"
                 if YARRRML_TYPE in om:
-                    if om.get(YARRRML_TYPE) == "iri":
-                        iri = True
-                    elif om.get(YARRRML_TYPE) == "literal":
+                    rml_termtype = get_rml_termtype(om[YARRRML_TYPE])
+                    if rml_termtype:
                         template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " \
-                                   + R2RML_LITERAL + "\n\t\t];\n"
-                    elif om.get(YARRRML_TYPE) == YARRRML_BLANK:
-                        template = template[0:len(template) - 5] + "\t\t\t" + R2RML_TERMTYPE + " " \
-                                   + R2RML_BLANK_NODE + "\n\t\t];\n"
+                                   + rml_termtype + "\n\t\t];\n"
                 if YARRRML_TARGETS in om:
                     template = template[0:len(template) - 5] + "\t\t\t" + RML_LOGICAL_TARGET + " <" + om.get(
                         YARRRML_TARGETS) + ">\n\t\t];\n"

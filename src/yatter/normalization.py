@@ -504,26 +504,7 @@ def switch_mappings(data, external_sources, external_targets):
 
             mapping_content[YARRRML_SOURCES] = expanded_sources
 
-        if YARRRML_SUBJECTS in mapping_content:
-            for subject in mapping_content[YARRRML_SUBJECTS]:
-                if isinstance(subject, dict):
-                    if YARRRML_TARGETS in subject:
-                        subject[YARRRML_TARGETS] = expand_targets_with_identifiers(subject[YARRRML_TARGETS], targets_root)
-
-        if YARRRML_GRAPHS in mapping_content:
-            for graph in mapping_content[YARRRML_GRAPHS]:
-                if isinstance(graph, dict):
-                    if YARRRML_TARGETS in graph:
-                        graph[YARRRML_TARGETS] = expand_targets_with_identifiers(graph[YARRRML_TARGETS], targets_root)
-
-        if YARRRML_PREDICATEOBJECT in mapping_content:
-            for predicate_object in mapping_content[YARRRML_PREDICATEOBJECT]:
-                if YARRRML_OBJECTS not in predicate_object:
-                    continue
-                for object in predicate_object[YARRRML_OBJECTS]:
-                    if isinstance(object, dict):
-                        if YARRRML_TARGETS in object:
-                            object[YARRRML_TARGETS] = expand_targets_with_identifiers(object[YARRRML_TARGETS], targets_root)
+        _expand_mapping_targets(mapping_content, targets_root)
 
     if YARRRML_MAPPINGS in data:
         for mapping_name, mapping_content in data[YARRRML_MAPPINGS].items():
@@ -549,6 +530,26 @@ def expand_targets_with_identifiers(targets, root_targets):
         elif isinstance(target, dict):
             expanded_targets.append(target)
     return expanded_targets
+
+
+def _expand_mapping_targets(mapping_content, targets_root):
+    if YARRRML_SUBJECTS in mapping_content:
+        for subject in mapping_content[YARRRML_SUBJECTS]:
+            if isinstance(subject, dict) and YARRRML_TARGETS in subject:
+                subject[YARRRML_TARGETS] = expand_targets_with_identifiers(subject[YARRRML_TARGETS], targets_root)
+
+    if YARRRML_GRAPHS in mapping_content:
+        for graph in mapping_content[YARRRML_GRAPHS]:
+            if isinstance(graph, dict) and YARRRML_TARGETS in graph:
+                graph[YARRRML_TARGETS] = expand_targets_with_identifiers(graph[YARRRML_TARGETS], targets_root)
+
+    if YARRRML_PREDICATEOBJECT in mapping_content:
+        for predicate_object in mapping_content[YARRRML_PREDICATEOBJECT]:
+            if YARRRML_OBJECTS not in predicate_object:
+                continue
+            for obj in predicate_object[YARRRML_OBJECTS]:
+                if isinstance(obj, dict) and YARRRML_TARGETS in obj:
+                    obj[YARRRML_TARGETS] = expand_targets_with_identifiers(obj[YARRRML_TARGETS], targets_root)
 
 
 def normalize(data, external_sources, external_targets):
