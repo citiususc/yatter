@@ -1,0 +1,153 @@
+@prefix ex: <http://www.example.com/>.
+@prefix e: <http://myontology.com/>.
+@prefix dbo: <http://dbpedia.org/ontology/>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix schema: <http://schema.org/>.
+@prefix formats: <http://www.w3.org/ns/formats/>.
+@prefix comp: <http://semweb.mmlab.be/ns/rml-compression#>.
+@prefix void: <http://rdfs.org/ns/void#>.
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#>.
+@base <http://example.com/ns#>.
+
+
+<function_people_0> a fnml:Execution;
+	fnml:function grel:toUpperCase ; 
+	fnml:input
+		[
+			a fnml:Input;
+			fnml:parameter grel:valueParameter;
+			fnml:valueMap [
+				a fnml:ValueMap;
+				rml:reference "hair color";
+			];
+		].
+
+<people_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source "yatter_test/people.csv";
+		rml:referenceFormulation ql:CSV
+
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://www.example.com/{id}";
+		rr:graphMap [
+			a rr:GraphMap;
+			rr:constant ex:Characters;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant schema:Person;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant schema:givenName;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "firstname";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant schema:familyName;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "lastname";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant e:debutEpisode;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "debut episode";
+			rr:datatype xsd:integer
+		];
+		rr:graphMap [
+			a rr:GraphMap;
+			rr:constant ex:Episodes;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant dbo:hairColor;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			fnml:execution <function_people_0>;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant e:appearsIn;
+		];
+		rr:objectMap [
+			a rr:RefObjectMap;
+			rr:parentTriplesMap <episode_0>;
+			rr:joinCondition [
+				rr:child "debut episode";
+				rr:parent "number";
+			];
+		];
+	].
+
+
+<episode_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source "yatter_test/episodes.csv";
+		rml:referenceFormulation ql:CSV
+
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://www.example.com/episode_{number}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant schema:Episode;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant schema:title;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "title";
+		];
+	].
+
+
