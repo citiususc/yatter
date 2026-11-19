@@ -1,0 +1,6 @@
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rml:reference "id";
+		rml:logicalTarget <output>;
+		rr:termType rr:BlankNode
+	];

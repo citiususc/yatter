@@ -15,3 +15,4 @@ These cases check function mappings, parameter forms, and function-based joins.
 | `YARRRML-FNML-TC-0009` | Joining mappings with equality conditions. |
 | `YARRRML-FNML-TC-0010` | Joins using quoted and non-asserted mappings. |
 | `YARRRML-FNML-TC-0011` | A GREL string-splitting function. |
+| `YARRRML-FNML-TC-0012` | A function with multiple nested function parameters. |

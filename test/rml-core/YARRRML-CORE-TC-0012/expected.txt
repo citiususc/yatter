@@ -1,0 +1,11 @@
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant ex:name;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "name";
+			rr:language "en";
+			rr:termType rr:Literal
+		];
+	];

@@ -18,10 +18,21 @@ def get_termmap_type(text, mapping_format):
     else:
         return R2RML_CONSTANT
 
-def generate_cc_termmap_text(text, mapping_format=RML_URI):
-    from .mapping import prefixes
-    term_map = get_termmap_type(text[YARRRML_GATHER], mapping_format)
-    text = text[YARRRML_GATHER]
+
+def get_rml_termtype(term_type):
+    return {
+        'iri': R2RML_IRI,
+        'blank': R2RML_BLANK_NODE,
+        YARRRML_BLANK: R2RML_BLANK_NODE,
+        'literal': R2RML_LITERAL,
+    }.get(term_type)
+
+
+def _generate_termmap_text(text, mapping_format=RML_URI, gather=False):
+    from .mapping import get_prefixes
+    prefixes = get_prefixes()
+    term_map = get_termmap_type(text[YARRRML_GATHER] if gather else text, mapping_format)
+    text = text[YARRRML_GATHER] if gather else text
     if term_map == R2RML_TEMPLATE:
         text = generate_rml_template(text)
         text = text.replace('"', r'\"')
@@ -30,50 +41,74 @@ def generate_cc_termmap_text(text, mapping_format=RML_URI):
             if text_prefix_split[0] in prefixes:
                 text = prefixes[text_prefix_split[0]] + text_prefix_split[1]
     elif term_map == RML_REFERENCE or term_map == R2RML_COLUMN:
-        text = text.replace("$(", "").replace(")", "")
+        if gather:
+            text = text.replace("$(", "").replace(")", "")
+        else:
+            text = generate_rml_template(text).replace("{","").replace("}","")
         text = text.replace('"', r'\"')
-        text = f'"{text}"'
+        if gather:
+            text = f'"{text}"'
     elif term_map == R2RML_CONSTANT and text == "a":
         text = RDF_TYPE
     return term_map, text
 
+
+def generate_cc_termmap_text(text, mapping_format=RML_URI):
+    return _generate_termmap_text(text, mapping_format, gather=True)
+
+
 def generate_rml_termmap_text(text, mapping_format=RML_URI):
-    from .mapping import prefixes
-    term_map = get_termmap_type(text, mapping_format)
-    if term_map == R2RML_TEMPLATE:
-        text = generate_rml_template(text)
-        text = text.replace('"', r'\"')
-        if ":" in text:
-            text_prefix_split = text.split(":")
-            if text_prefix_split[0] in prefixes:
-                text = prefixes[text_prefix_split[0]] + text_prefix_split[1]
-    elif term_map == RML_REFERENCE or term_map == R2RML_COLUMN:
-        text = generate_rml_template(text).replace("{","").replace("}","")
-        text = text.replace('"', r'\"')
-    elif term_map == R2RML_CONSTANT and text == "a":
-        text = RDF_TYPE
-    return term_map, text
+    return _generate_termmap_text(text, mapping_format)
+
+
+def _append_term_map_property(template, indentation, predicate, value):
+    return _append_term_map_content(
+        template, indentation, indentation + predicate + " " + value + "\n"
+    )
+
+
+def _append_term_map_content(template, indentation, content):
+    closing = indentation[:-1] + "];\n"
+    if not template.endswith(closing):
+        raise ValueError("Term map text does not end with its expected closing")
+    body = template[: -len(closing)].rstrip("\n")
+    if not body.endswith(";"):
+        body += ";"
+    return body + "\n" + content + closing
+
+
+def generate_graph_termmap(graph, indentation):
+    graph_value = graph[YARRRML_VALUE] if YARRRML_VALUE in graph else graph
+    result = generate_rml_termmap(
+        R2RML_GRAPH_MAP, R2RML_GRAPH_CLASS, graph_value, indentation
+    )
+    if YARRRML_TARGETS in graph:
+        result = _append_term_map_property(
+            result, indentation, RML_LOGICAL_TARGET,
+            "<" + graph[YARRRML_TARGETS] + ">",
+        )
+    return result
+
+
+def _format_term_map_value(term_map, text):
+    if term_map == STAR_QUOTED:
+        key = YARRRML_QUOTED if YARRRML_QUOTED in text else YARRRML_NON_ASSERTED
+        return "<" + text[key] + "_0>"
+    if term_map != R2RML_CONSTANT:
+        return "\"" + text + "\""
+    if text.startswith("http"):
+        return "<" + text + ">"
+    if ":" in text or "<" in text:
+        return text
+    return "\"" + text + "\""
+
 
 def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_format=RML_URI):
     template = indentation[0:-1] + rml_property + " [\n" + indentation + "a " + rml_class + ";\n"
     if isinstance(content, dict) and 'value' in content:
         value_text = content.get('value', '')
         term_map, value_text = generate_rml_termmap_text(value_text, mapping_format)
-        if term_map == STAR_QUOTED:
-            if 'quoted' in value_text:
-                template +=indentation + term_map + " <" + value_text[YARRRML_QUOTED] + "_0>;\n"
-            else:
-                template +=indentation +  term_map + " <" + value_text[YARRRML_NON_ASSERTED] + "_0>;\n"
-        elif term_map != "rr:constant":
-            template +=indentation +  term_map + " \"" + value_text + "\";\n"
-        else:
-            if value_text.startswith("http"):
-                template +=indentation +  term_map + " <" + value_text + ">;\n"
-            else:
-                if ":" in value_text or "<" in value_text:
-                    template +=indentation +  term_map + " " + value_text + ";\n"
-                else:
-                    template +=indentation +  term_map + " \"" + value_text + "\";\n"
+        template += indentation + term_map + " " + _format_term_map_value(term_map, value_text) + ";\n"
     if isinstance(content[YARRRML_GATHER], str):
         term_map, text = generate_cc_termmap_text(content, mapping_format)
         if YARRRML_EMPTY in content:
@@ -113,23 +148,10 @@ def generate_rml_termmap(rml_property, rml_class, text, indentation, mapping_for
         text = str(text)
     term_map, text = generate_rml_termmap_text(text, mapping_format)
 
-    if term_map == STAR_QUOTED:
-        if 'quoted' in text:
-            template += term_map + " <" + text[YARRRML_QUOTED] + "_0>;\n" + indentation[0:-1] + "];\n"
-        else:
-            template += term_map + " <" + text[YARRRML_NON_ASSERTED] + "_0>;\n" + indentation[0:-1] + "];\n"
-    elif term_map != "rr:constant":
-        template += term_map + " \"" + text + "\";\n"+indentation[0:-1]+"];\n"
-    else:
-        if text.startswith("http"):
-            template += term_map + " <" + text + ">;\n" + indentation[0:-1] + "];\n"
-        else:
-            if ":" in text or "<" in text:
-                template += term_map + " " + text + ";\n"+indentation[0:-1]+"];\n"
-            else:
-                template += term_map + " \"" + text + "\";\n" + indentation[0:-1] + "];\n"
-
-    return template
+    return (
+        template + term_map + " " + _format_term_map_value(term_map, text)
+        + ";\n" + indentation[:-1] + "];\n"
+    )
 
 
 def generate_rml_template(yarrrml_template: str) -> str:

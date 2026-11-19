@@ -1,0 +1,6 @@
+po:
+  - p:
+      function: grel:test
+      parameters:
+        - [param, $(value)]
+    o: result

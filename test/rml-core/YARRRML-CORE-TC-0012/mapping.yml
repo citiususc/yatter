@@ -1,0 +1,6 @@
+predicates:
+  - value: ex:name
+objects:
+  - value: $(name)
+    language: en
+    type: literal

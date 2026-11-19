@@ -27,8 +27,9 @@ These cases translate YARRRML mappings into R2RML and compare the generated grap
 
 | Test case | What it covers |
 | --- | --- |
-| `YARRRML-R2RML-TC-INV-0001` | Inverse translation of a basic table-based mapping. |
+| `YARRRML-R2RML-TC-INV-0001` | Inverse translation of a basic table-based mapping, the inverse API alias, and a CSV logical source. |
 | `YARRRML-R2RML-TC-INV-0002` | Inverse translation of a mapping with a query formulation. |
 | `YARRRML-R2RML-TC-INV-0003` | Inverse translation of function and condition maps. |
 | `YARRRML-R2RML-TC-INV-0004` | Inverse translation of function maps with graph output. |
 | `YARRRML-R2RML-TC-INV-0005` | Inverse translation of an FNML function mapping. |
+| `YARRRML-R2RML-TC-INV-0006` | Error for an inverse logical source without a source or table. |

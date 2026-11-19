@@ -1,4 +1,3 @@
-import sys
 from ruamel.yaml import YAML
 import argparse
 from rdflib import Graph
@@ -9,7 +8,7 @@ from pyjelly.integrations.rdflib.serialize import SerializerOptions, StreamParam
 
 
 def write_results(args, mapping):
-    if type(mapping) is str:
+    if isinstance(mapping, str):
         if args.output_mapping_path.endswith('.jelly'):
             # Jelly file saved by parsing to graph and serialization.
             g = Graph()
@@ -17,10 +16,9 @@ def write_results(args, mapping):
             options = SerializerOptions(params=StreamParameters(namespace_declarations=True))
             g.serialize(args.output_mapping_path, format='jelly', options=options)
         else:
-            output_file = open(args.output_mapping_path, "w")
-            output_file.write(mapping)
-            output_file.close()
-    elif type(mapping) is dict:
+            with open(args.output_mapping_path, "w") as output_file:
+                output_file.write(mapping)
+    elif isinstance(mapping, dict):
         with open(args.output_mapping_path, "wb") as f:
             yaml = YAML()
             yaml.width = 3000
@@ -43,9 +41,8 @@ def parse_inputs(args):
             input_data = Graph()
             input_data.parse(args.input_mapping_path, format='jelly')
         else:
-            sys.tracebacklimit = 0
             logger.error("Input mapping does not have a valid extension (.yml, .yaml, .ttl, .rml, .r2rml or .jelly)")
-            raise Exception("Change your mapping extension to a valid one")
+            raise ValueError("Change your mapping extension to a valid one")
 
         if args.format is not None and args.format == "R2RML":
             input_format = R2RML_URI
@@ -55,9 +52,8 @@ def parse_inputs(args):
             with open(mapping) as f:
                 input_data.append(yaml.load(f))
     else:
-        sys.tracebacklimit = 0
-        logger.error("No correct arguments, run python3 -m yatter -h to see the help)")
-        raise Exception("")
+        logger.error("No correct arguments, run python3 -m yatter -h to see the help")
+        raise ValueError("No correct arguments, run python3 -m yatter -h to see the help")
 
     return input_format, input_data
 

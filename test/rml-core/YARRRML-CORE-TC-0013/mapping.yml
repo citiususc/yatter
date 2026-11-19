@@ -1,0 +1,6 @@
+mappings:
+  person:
+    subjects:
+      - value: $(id)
+        targets: output
+        type: blank

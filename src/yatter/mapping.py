@@ -1,6 +1,11 @@
-from . import *
+from contextvars import ContextVar
+from .constants import *
 
-prefixes = {}
+prefixes_context = ContextVar("yatter_prefixes", default=None)
+
+
+def get_prefixes():
+    return prefixes_context.get() or {}
 
 
 def add_mapping(mapping, mappings, it):
@@ -13,10 +18,11 @@ def add_mapping(mapping, mappings, it):
 
 
 def add_prefix(data):
-    global prefixes
     template = []
     common_prefixes = []
+    prefixes_context.set({})
     if YARRRML_PREFIXES in data:
+        prefixes_context.set(data.get(YARRRML_PREFIXES))
         prefixes = data.get(YARRRML_PREFIXES)
         for prefix in prefixes:
             prefix_uri = data.get(YARRRML_PREFIXES).get(prefix)

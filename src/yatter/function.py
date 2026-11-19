@@ -2,96 +2,87 @@ from .constants import *
 from .termmap import generate_rml_termmap
 
 
-local_id = 0
 def add_functions(yarrrml_data):
-    global local_id
     functions = []
-    for mapping in yarrrml_data.get(YARRRML_MAPPINGS):
-        local_id = 0
-        mapping_data = yarrrml_data.get(YARRRML_MAPPINGS).get(mapping)
-        add_internal_function(mapping, mapping_data, functions)
+    for mapping, mapping_data in yarrrml_data[YARRRML_MAPPINGS].items():
+        context = {"local_id": 0}
+        add_internal_function(mapping, mapping_data, functions, context)
     return functions
 
-def add_internal_function(mapping_id, mapping_data, functions):
-    global local_id
-    keys = mapping_data.keys()
-    for key in keys:
-        if type(mapping_data[key]) is list:
-            for i in range(len(mapping_data[key])):  # when the function is defined in POMs
-                value = mapping_data[key][i]
-                if YARRRML_FUNCTION in value:
-                    function_return = transform_function(mapping_id, value, functions)
-                    if type(function_return) is dict:
-                        mapping_data[key][i] = function_return
-                    elif type(function_return) is str:
-                        mapping_data[key][i][YARRRML_FUNCTION] = function_return
-                else:
-                    if type(value) is list:
-                        for v in value:
-                            if type(v) is dict:
-                                add_internal_function(mapping_id, v, functions)
-                    elif type(value) is dict:
-                        add_internal_function(mapping_id, value, functions)
-        elif type(mapping_data[key]) is dict: # when the function is defined in the subject
-            if YARRRML_FUNCTION in mapping_data[key]:
-                function_return = transform_function(mapping_id,mapping_data[key], functions)
-                if type(function_return) is dict:
-                    mapping_data[key] = function_return
-                elif type(function_return) is str:
-                    mapping_data[key][YARRRML_FUNCTION] = function_return
 
-def transform_function(mapping_id, function_value, functions):
-    global local_id
+def add_internal_function(mapping_id, mapping_data, functions, context):
+    for key, value in mapping_data.items():
+        if isinstance(value, list):
+            for index, item in enumerate(value):
+                if isinstance(item, dict) and YARRRML_FUNCTION in item:
+                    value[index] = _replace_function(mapping_id, item, functions, context)
+                elif isinstance(item, list):
+                    for child in item:
+                        if isinstance(child, dict):
+                            add_internal_function(mapping_id, child, functions, context)
+                elif isinstance(item, dict):
+                    add_internal_function(mapping_id, item, functions, context)
+        elif isinstance(value, dict) and YARRRML_FUNCTION in value:
+            mapping_data[key] = _replace_function(mapping_id, value, functions, context)
+
+
+def _replace_function(mapping_id, value, functions, context):
+    result = transform_function(mapping_id, value, functions, context)
+    if isinstance(result, dict):
+        return result
+    if isinstance(result, str):
+        value[YARRRML_FUNCTION] = result
+    return value
+
+def transform_function(mapping_id, function_value, functions, context):
     function_return = None
     if function_value[YARRRML_FUNCTION].replace(" ","").startswith(YARRRML_JOIN+"("):
         function_return = generate_extended_join(function_value[YARRRML_FUNCTION])
     elif function_value[YARRRML_FUNCTION] != YARRRML_EQUAL:
         function_id = "function_" + mapping_id
-        function_return = function_id + "_" + str(local_id)
-        functions.append(generate_function(function_value, function_id))
-        local_id += 1  # different functions in the same TM
+        function_return = function_id + "_" + str(context["local_id"])
+        functions.append(generate_function(function_value, function_id, context))
+        context["local_id"] += 1  # different functions in the same TM
 
     return function_return
 
-def generate_function(function_yarrrml_data, id_function):
-    global local_id
-    function = function_yarrrml_data[YARRRML_FUNCTION]
+def generate_function(function_yarrrml_data, id_function, context):
+    function_name = function_yarrrml_data[YARRRML_FUNCTION]
+    if YARRRML_PARAMETERS not in function_yarrrml_data:
+        function_yarrrml_data, function_name = split_in_line_function(function_name)
+    rml_function = [
+        "<" + id_function + "_" + str(context["local_id"]) + "> a "
+        + RML_EXECUTION_CLASS + ";\n\t" + RML_FUNCTION + " " + function_name + " ; \n"
+    ]
+    nested_functions = []
     if YARRRML_PARAMETERS in function_yarrrml_data:
-        rml_function = ["<" + id_function +"_"+str(local_id)+"> a " + RML_EXECUTION_CLASS + ";\n\t"+RML_FUNCTION+" "+function+" ; \n"]
-    else:
-        function_yarrrml_data, function_name = split_in_line_function(function)
-        rml_function = ["<" + id_function + "_" + str(
-            local_id) + "> a " + RML_EXECUTION_CLASS + ";\n\t" + RML_FUNCTION + " " + function_name + " ; \n"]
-
-    new_function = None
-    if YARRRML_PARAMETERS in function_yarrrml_data:
-        rml_function.append("\t"+RML_INPUT+"\n")
-        parameters = function_yarrrml_data[YARRRML_PARAMETERS]
-        for param in parameters:
-            rml_function.append("\t\t[\n\t\t\ta "+RML_INPUT_CLASS + ";\n")
-            if type(param) is list:
-                param_extended = {YARRRML_PARAMETER: param[0], YARRRML_VALUE: param[1]}
-            else:
-                param_extended = param
-
-            rml_function.append("\t\t\t"+RML_PARAMETER+" "+param_extended[YARRRML_PARAMETER] + ";\n")
-
-            if YARRRML_VALUE in param_extended:
-                if YARRRML_FUNCTION in param_extended[YARRRML_VALUE]:
-                    local_id += 1  # new function definition within another functon
-                    rml_function.append("\t\t\t" + RML_VALUE_MAP + "[\n\t\t\t\t" + RML_EXECUTION + " <"+id_function+"_"+str(local_id) +">;\n\t\t\t];\n")
-                    new_function = generate_function(param_extended[YARRRML_VALUE],id_function)
-                else:
-                    rml_function.append(generate_rml_termmap(RML_VALUE_MAP, RML_VALUE_MAP_CLASS, param_extended[YARRRML_VALUE], "\t\t\t\t"))
-
-            rml_function.append("\t\t],\n")
+        rml_function.append("\t" + RML_INPUT + "\n")
+        for param in function_yarrrml_data[YARRRML_PARAMETERS]:
+            rml_function.append(
+                _generate_function_input(param, id_function, context, nested_functions)
+            )
+    return "".join(rml_function)[:-2] + ".\n\n" + "".join(nested_functions)
 
 
-    final_function = "".join(rml_function)[0:-2]+".\n\n"
-    if new_function:
-        final_function += new_function
-
-    return final_function
+def _generate_function_input(param, id_function, context, nested_functions):
+    if isinstance(param, list):
+        param = {YARRRML_PARAMETER: param[0], YARRRML_VALUE: param[1]}
+    result = "\t\t[\n\t\t\ta " + RML_INPUT_CLASS + ";\n"
+    result += "\t\t\t" + RML_PARAMETER + " " + param[YARRRML_PARAMETER] + ";\n"
+    if YARRRML_VALUE in param:
+        value = param[YARRRML_VALUE]
+        if YARRRML_FUNCTION in value:
+            context["local_id"] += 1
+            result += (
+                "\t\t\t" + RML_VALUE_MAP + "[\n\t\t\t\t" + RML_EXECUTION + " <"
+                + id_function + "_" + str(context["local_id"]) + ">;\n\t\t\t];\n"
+            )
+            nested_functions.append(generate_function(value, id_function, context))
+        else:
+            result += generate_rml_termmap(
+                RML_VALUE_MAP, RML_VALUE_MAP_CLASS, value, "\t\t\t\t"
+            )
+    return result + "\t\t],\n"
 
 
 

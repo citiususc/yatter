@@ -1,0 +1,5 @@
+mappings:
+  person:
+    s: ex:$(id)
+    po:
+      - [ex:name, $(name)]

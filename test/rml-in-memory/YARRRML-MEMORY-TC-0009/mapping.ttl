@@ -1,0 +1,78 @@
+@prefix ex: <http://example.com/>.
+@prefix sd: <https://w3id.org/okn/o/sd#>.
+@prefix kg4di: <https://w3id.org/kg4di/>.
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix schema: <http://schema.org/>.
+@prefix formats: <http://www.w3.org/ns/formats/>.
+@prefix comp: <http://semweb.mmlab.be/ns/rml-compression#>.
+@prefix void: <http://rdfs.org/ns/void#>.
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
+@base <http://example.com/ns#>.
+
+
+<json_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source [
+			a sd:DatasetSpecification;
+			sd:name "json_data";
+		];
+		rml:iterator "$";
+		rml:referenceFormulation ql:JSONPath;
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/{id}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant ex:value;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "value";
+		];
+	].
+
+
+<xml_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source [
+			a sd:DatasetSpecification;
+			sd:name "xml_data";
+		];
+		rml:iterator "/";
+		rml:referenceFormulation ql:XPath;
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/{id}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant ex:value;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "value";
+		];
+	].
+
+
+ql:JSONPath a rml:ReferenceFormulation;
+	kg4di:definedBy "JSON".
+ql:XPath a rml:ReferenceFormulation;
+	kg4di:definedBy "XML".

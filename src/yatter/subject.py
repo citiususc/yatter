@@ -1,85 +1,98 @@
 from .constants import *
-from .termmap import generate_rml_termmap, generate_cc_termmap
+from .errors import InvalidMappingError
+from .termmap import (
+    _append_term_map_content,
+    _append_term_map_property,
+    generate_cc_termmap,
+    generate_graph_termmap,
+    generate_rml_termmap,
+    get_rml_termtype,
+)
 from .graph import add_inverse_graph
 import rdflib
 
 
-## Adds a subject or set of subjects to the given TriplesMap
 def add_subject(data, mapping, mapping_format):
-    rml_subjects = []
+    mapping_data = data[YARRRML_MAPPINGS][mapping]
+    if YARRRML_SUBJECTS not in mapping_data:
+        raise InvalidMappingError("ERROR: no subjects in mapping " + mapping)
 
-    if YARRRML_SUBJECTS in data.get(YARRRML_MAPPINGS).get(mapping):
-        subject = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SUBJECTS)
-    else:
-        raise Exception("ERROR: no subjects in mapping " + mapping)
-
-    for individual_subject in subject:
-        if YARRRML_QUOTED in individual_subject or YARRRML_NON_ASSERTED in individual_subject:
-            if YARRRML_CONDITION in individual_subject:
-                from .predicateobject import ref_mapping
-                if YARRRML_NON_ASSERTED in individual_subject:
-                    subject_termmap = ref_mapping(data, mapping, individual_subject, YARRRML_NON_ASSERTED, STAR_QUOTED,
-                                                  mapping_format)
-                else:
-                    subject_termmap = ref_mapping(data, mapping, individual_subject, YARRRML_QUOTED, STAR_QUOTED,
-                                                  mapping_format)
-                subject_termmap = subject_termmap.replace(R2RML_REFOBJECT_CLASS, STAR_CLASS).replace(STAR_OBJECT,
-                                                                                                     STAR_SUBJECT).replace(
-                    "\t\t\t\t", "\t\t\t\t\t").replace("\t\t", "\t")
-            else:
-                subject_termmap = generate_rml_termmap(STAR_SUBJECT, STAR_CLASS, individual_subject, "\t\t")
-        elif mapping_format == STAR_URI:
-            subject_termmap = generate_rml_termmap(STAR_SUBJECT, R2RML_SUBJECT_CLASS, individual_subject, "\t\t")
-        elif YARRRML_GATHER in individual_subject:
-            subject_termmap = generate_cc_termmap(STAR_SUBJECT, R2RML_SUBJECT_CLASS, individual_subject, "\t\t\t", mapping_format) + "\n\t\t];\n"
-
-        else:
-            subject_value = individual_subject
-            if YARRRML_VALUE in individual_subject and type(individual_subject) is dict:
-                subject_value = individual_subject.get(YARRRML_VALUE)
-            elif YARRRML_FUNCTION in individual_subject:
-                subject_value = individual_subject.get(YARRRML_FUNCTION)
-
-            subject_termmap = generate_rml_termmap(R2RML_SUBJECT, R2RML_SUBJECT_CLASS, subject_value, "\t\t",
-                                                   mapping_format)
-
-            if YARRRML_FUNCTION in individual_subject:
-                subject_termmap = subject_termmap.replace(R2RML_CONSTANT + " \"" + subject_value + "\"",
-                                                          RML_EXECUTION + " <" + individual_subject.get(
-                                                              YARRRML_FUNCTION) + ">")
-
-            if YARRRML_TARGETS in individual_subject:
-                subject_termmap = subject_termmap[0:-3] + "\t" + RML_LOGICAL_TARGET + " <" + individual_subject[
-                    YARRRML_TARGETS] + ">\n\t];\n"
-
-            if isinstance(individual_subject, dict) and YARRRML_TYPE in individual_subject:
-                if individual_subject.get(YARRRML_TYPE) == YARRRML_BLANK:
-                    subject_termmap = subject_termmap[
-                                      0:-3] + "\t" + R2RML_TERMTYPE + " " + R2RML_BLANK_NODE + "\n\t];\n"
-
-        rml_subjects.append(subject_termmap)
+    rml_subjects = [
+        _generate_subject(data, mapping, subject, mapping_format)
+        for subject in mapping_data[YARRRML_SUBJECTS]
+    ]
     if not rml_subjects:
-        rml_subjects.append(generate_rml_termmap(R2RML_SUBJECT, R2RML_SUBJECT_CLASS, R2RML_BLANK_NODE, "\t\t",
-                                                   mapping_format).replace(R2RML_CONSTANT, R2RML_TERMTYPE))
-    if YARRRML_GRAPHS in data.get(YARRRML_MAPPINGS).get(mapping):
-        graphs = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_GRAPHS)
-    else:
-        graphs = []
+        rml_subjects.append(
+            generate_rml_termmap(
+                R2RML_SUBJECT, R2RML_SUBJECT_CLASS, R2RML_BLANK_NODE,
+                "\t\t", mapping_format,
+            ).replace(R2RML_CONSTANT, R2RML_TERMTYPE)
+        )
 
-    if type(graphs) != list:
+    graphs = mapping_data.get(YARRRML_GRAPHS, [])
+    if not isinstance(graphs, list):
         graphs = [graphs]
-
     for graph in graphs:
-        graph_value = graph
-        if YARRRML_VALUE in graph:
-            graph_value = graph[YARRRML_VALUE]
-        graph_termmap = generate_rml_termmap(R2RML_GRAPH_MAP, R2RML_GRAPH_CLASS, graph_value, "\t\t\t")
-        if YARRRML_TARGETS in graph:
-            graph_termmap = graph_termmap[0:-3] + "\t" + RML_LOGICAL_TARGET + " <" + graph[
-                YARRRML_TARGETS] + ">\n\t\t];\n"
-        rml_subjects = list(map(lambda subject: subject[0:-4] + graph_termmap + "\t];\n", rml_subjects))
+        graph_termmap = generate_graph_termmap(graph, "\t\t\t")
+        rml_subjects = [
+            _append_term_map_content(subject, "\t\t", graph_termmap)
+            for subject in rml_subjects
+        ]
 
     return rml_subjects
+
+
+def _generate_subject(data, mapping, subject, mapping_format):
+    if YARRRML_QUOTED in subject or YARRRML_NON_ASSERTED in subject:
+        if YARRRML_CONDITION not in subject:
+            return generate_rml_termmap(STAR_SUBJECT, STAR_CLASS, subject, "\t\t")
+
+        from .predicateobject import ref_mapping
+
+        key = YARRRML_NON_ASSERTED if YARRRML_NON_ASSERTED in subject else YARRRML_QUOTED
+        termmap = ref_mapping(data, mapping, subject, key, STAR_QUOTED, mapping_format)
+        return (
+            termmap.replace(R2RML_REFOBJECT_CLASS, STAR_CLASS)
+            .replace(STAR_OBJECT, STAR_SUBJECT)
+            .replace("\t\t\t\t", "\t\t\t\t\t")
+            .replace("\t\t", "\t")
+        )
+
+    if mapping_format == STAR_URI:
+        return generate_rml_termmap(STAR_SUBJECT, R2RML_SUBJECT_CLASS, subject, "\t\t")
+    if YARRRML_GATHER in subject:
+        return (
+            generate_cc_termmap(
+                STAR_SUBJECT, R2RML_SUBJECT_CLASS, subject, "\t\t\t", mapping_format
+            )
+            + "\n\t\t];\n"
+        )
+
+    value = subject
+    if isinstance(subject, dict) and YARRRML_VALUE in subject:
+        value = subject[YARRRML_VALUE]
+    elif YARRRML_FUNCTION in subject:
+        value = subject[YARRRML_FUNCTION]
+
+    termmap = generate_rml_termmap(
+        R2RML_SUBJECT, R2RML_SUBJECT_CLASS, value, "\t\t", mapping_format
+    )
+    if YARRRML_FUNCTION in subject:
+        termmap = termmap.replace(
+            R2RML_CONSTANT + " \"" + value + "\"",
+            RML_EXECUTION + " <" + subject[YARRRML_FUNCTION] + ">",
+        )
+    if YARRRML_TARGETS in subject:
+        termmap = _append_term_map_property(
+            termmap, "\t\t", RML_LOGICAL_TARGET,
+            "<" + subject[YARRRML_TARGETS] + ">",
+        )
+    if isinstance(subject, dict) and YARRRML_TYPE in subject:
+        if get_rml_termtype(subject[YARRRML_TYPE]) == R2RML_BLANK_NODE:
+            termmap = _append_term_map_property(
+                termmap, "\t\t", R2RML_TERMTYPE, R2RML_BLANK_NODE
+            )
+    return termmap
 
 
 def add_inverse_subject(tm, rdf_mapping):
@@ -90,9 +103,10 @@ def add_inverse_subject(tm, rdf_mapping):
     subject = [tm[rdflib.Variable('subject_value')].value for tm in rdf_mapping.query(query).bindings]
     if len(subject) > 1:
         logger.error("There are more than one subject in your mapping")
-        raise Exception("A mapping defines one and only one subjectMap")
-    else:
-        subject = subject[0]
+        raise InvalidMappingError("A mapping defines one and only one subjectMap")
+    if not subject:
+        raise InvalidMappingError("A mapping must define one subjectMap")
+    subject = subject[0]
     # this means it's a column
     if not subject.startswith("http"):
         subject = '$(' + subject + ')'
