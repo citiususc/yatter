@@ -1,4 +1,5 @@
 from .constants import *
+from .errors import InvalidMappingError
 from .termmap import (
     _append_term_map_content,
     _append_term_map_property,
@@ -14,7 +15,7 @@ import rdflib
 def add_subject(data, mapping, mapping_format):
     mapping_data = data[YARRRML_MAPPINGS][mapping]
     if YARRRML_SUBJECTS not in mapping_data:
-        raise Exception("ERROR: no subjects in mapping " + mapping)
+        raise InvalidMappingError("ERROR: no subjects in mapping " + mapping)
 
     rml_subjects = [
         _generate_subject(data, mapping, subject, mapping_format)
@@ -102,9 +103,10 @@ def add_inverse_subject(tm, rdf_mapping):
     subject = [tm[rdflib.Variable('subject_value')].value for tm in rdf_mapping.query(query).bindings]
     if len(subject) > 1:
         logger.error("There are more than one subject in your mapping")
-        raise Exception("A mapping defines one and only one subjectMap")
-    else:
-        subject = subject[0]
+        raise InvalidMappingError("A mapping defines one and only one subjectMap")
+    if not subject:
+        raise InvalidMappingError("A mapping must define one subjectMap")
+    subject = subject[0]
     # this means it's a column
     if not subject.startswith("http"):
         subject = '$(' + subject + ')'

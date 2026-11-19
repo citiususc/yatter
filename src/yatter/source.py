@@ -2,6 +2,7 @@ import os
 import re
 import rdflib
 from .constants import *
+from .errors import InvalidMappingError
 from ruamel.yaml import YAML
 
 
@@ -41,7 +42,9 @@ def add_source(data, mapping, external_sources=None):
             else:
                 final_list.append(source_template + add_source_simplified(mapping, source)) # this probably needs to be removed
         else:
-            raise Exception("ERROR: source " + source + " in mapping " + mapping + " not valid")
+            raise InvalidMappingError(
+                f"ERROR: source {source} in mapping {mapping} not valid"
+            )
     return final_list, external_references_list
 
 
@@ -63,7 +66,9 @@ def add_table(data, mapping):
         elif YARRRML_TABLE in source:
             r2rml_access = R2RML_TABLE_NAME + " \"" + source.get(YARRRML_TABLE) + "\""
         else:
-            raise Exception("ERROR: table or query is not provided in " + source + " of mapping " + mapping)
+            raise InvalidMappingError(
+                f"ERROR: table or query is not provided in {source} of mapping {mapping}"
+            )
         if not sql_version:
             if YARRRML_QUERY_FORMULATION in source:
                 r2rml_access += ";\n\t\t" + R2RML_SQL_VERSION + " rr:" + source.get(YARRRML_QUERY_FORMULATION).upper()
@@ -83,15 +88,19 @@ def add_source_simplified(mapping, source):
     ref_formulation_rml = YARRRML_REFERENCE_FORMULATIONS[reference_formulation]
 
     if switch_in_reference_formulation(reference_formulation, source_extension) != source_extension:
-        raise Exception(
-            "ERROR: mismatch extension and referenceFormulation in source " + source + " in mapping " + mapping)
+        raise InvalidMappingError(
+            "ERROR: mismatch extension and referenceFormulation in source "
+            + str(source) + " in mapping " + mapping
+        )
     else:
         if len(source) == 1:  # do not have iterator
             if source_extension == "csv" or source_extension == "SQL2008" or source_extension == "xlsx":
                 source_rdf += '"' + file_path + '"' + ";\n" + "\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
                               + ref_formulation_rml + "\n" + "\t];\n"
             else:
-                raise Exception("ERROR: source " + source + " in mapping " + mapping + " has no iterator")
+                raise InvalidMappingError(
+                    f"ERROR: source {source} in mapping {mapping} has no iterator"
+                )
         else:  # source[1] is the iterator for json and xml
             source_rdf += "\"" + file_path + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
                           + ref_formulation_rml + ";\n\t\t" + RML_ITERATOR + " \"" \
@@ -158,8 +167,10 @@ def add_source_full(mapping, source):
         ref_formulation_rml = YARRRML_REFERENCE_FORMULATIONS[reference_formulation]
 
         if extension != format_from_reference or format_from_reference == "ERROR":
-            raise Exception("ERROR: not referenceFormulation found or mismatch between the format and "
-                            "referenceFormulation in source " + access + "in mapping " + mapping)
+            raise InvalidMappingError(
+                "ERROR: not referenceFormulation found or mismatch between the format and "
+                f"referenceFormulation in source {access} in mapping {mapping}"
+            )
         if YARRRML_ITERATOR in source:
             source_iterator = str(source.get(YARRRML_ITERATOR))
 
@@ -171,13 +182,17 @@ def add_source_full(mapping, source):
                 source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " ql:" \
                               + ref_formulation_rml + "\n\n\t];\n"
             else:
-                raise Exception("ERROR: source " + access + "in mapping " + mapping + " has no referenceFormulation")
+                raise InvalidMappingError(
+                    f"ERROR: source {access} in mapping {mapping} has no referenceFormulation"
+                )
 
     else:
         if extension == "csv":
             source_rdf += "\"" + access + "\";\n\n\t];\n"
         else:
-            raise Exception("ERROR: source " + access + "in mapping " + mapping + " has no referenceFormulation")
+            raise InvalidMappingError(
+                f"ERROR: source {access} in mapping {mapping} has no referenceFormulation"
+            )
 
     return source_rdf
 
@@ -202,9 +217,13 @@ def database_source(mapping, source, db_identifier):
                     source_rdf += ";\n\t\t" + R2RML_SQL_VERSION + " rr:SQL2008"
                 source_rdf += "\n\t];\n"
         else:
-            raise Exception("ERROR: no credentials to get access to source in mapping " + mapping)
+            raise InvalidMappingError(
+                f"ERROR: no credentials to get access to source in mapping {mapping}"
+            )
     else:
-        raise Exception("ERROR: no access to the source in mapping " + mapping)
+        raise InvalidMappingError(
+            f"ERROR: no access to the source in mapping {mapping}"
+        )
 
     return source_rdf
 
@@ -278,7 +297,7 @@ def add_inverse_source(tm, rdf_mapping, mapping_format):
     ]
     if not sources:
         logger.error("Logical Source or Logical Table is not defined in the mapping")
-        raise ValueError("Logical Source or Logical Table is not defined in the mapping")
+        raise InvalidMappingError("Logical Source or Logical Table is not defined in the mapping")
     source = sources[0]
 
     if mapping_format == R2RML_URI:
@@ -296,7 +315,9 @@ def get_logical_table(logical_table_id, rdf_mapping):
 
     if table_name is None and sql_query is None:
         logger.error("Mapping does not define neither tableName nor sqlQuery")
-        raise Exception()
+        raise InvalidMappingError(
+            "Mapping does not define neither tableName nor sqlQuery"
+        )
     yarrrml_source = {}
     if table_name:
         yarrrml_source["table"] = table_name.value
@@ -320,7 +341,7 @@ def get_logical_source(logical_source_id, rdf_mapping):
 
     if source is None:
         logger.error("Mapping does not define source access")
-        raise Exception()
+        raise InvalidMappingError("Mapping does not define source access")
 
     if source and reference_formulation and iterator:
         yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_URI, '').lower(), iterator.value]
