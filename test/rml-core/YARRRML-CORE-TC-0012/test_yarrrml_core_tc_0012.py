@@ -5,7 +5,7 @@ from ruamel.yaml import YAML
 from yatter.predicateobject import add_predicate_object
 
 
-def test_object_map_with_language_and_term_type():
+def test_yarrrml_core_tc_0012():
     directory = os.path.dirname(os.path.realpath(__file__))
     yaml = YAML(typ="safe", pure=True)
     with open(os.path.join(directory, "mapping.yml")) as input_file:

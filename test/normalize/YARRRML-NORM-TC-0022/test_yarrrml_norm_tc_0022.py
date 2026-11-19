@@ -5,7 +5,7 @@ from ruamel.yaml import YAML
 from yatter.normalization import normalize
 
 
-def test_normalization_does_not_mutate_input():
+def test_yarrrml_norm_tc_0022():
     directory = os.path.dirname(os.path.realpath(__file__))
     yaml = YAML(typ="safe", pure=True)
 

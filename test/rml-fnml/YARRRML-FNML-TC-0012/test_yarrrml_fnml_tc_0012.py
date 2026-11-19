@@ -5,7 +5,7 @@ from ruamel.yaml import YAML
 from yatter.function import generate_function
 
 
-def test_multiple_nested_function_parameters():
+def test_yarrrml_fnml_tc_0012():
     directory = os.path.dirname(os.path.realpath(__file__))
     yaml = YAML(typ="safe", pure=True)
     with open(os.path.join(directory, "mapping.yml")) as input_file:

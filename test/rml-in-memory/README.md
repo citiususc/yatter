@@ -12,3 +12,4 @@ These cases check YARRRML mappings that use Python data directly as input.
 | `YARRRML-MEMORY-TC-0006` | Multiple dataframes as sources. |
 | `YARRRML-MEMORY-TC-0007` | Multiple Python dictionaries as sources. |
 | `YARRRML-MEMORY-TC-0008` | A combination of in-memory and local-file sources. |
+| `YARRRML-MEMORY-TC-0009` | JSON and XML in-memory sources with structure definers. |

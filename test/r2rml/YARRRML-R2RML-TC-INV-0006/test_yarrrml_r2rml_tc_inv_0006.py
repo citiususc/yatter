@@ -7,7 +7,7 @@ from yatter.constants import RML_URI
 from yatter.source import add_inverse_source
 
 
-def test_inversetc0008():
+def test_yarrrml_r2rml_tc_inv_0006():
     directory = os.path.dirname(os.path.realpath(__file__))
     mapping_id = rdflib.URIRef("http://example.com/LogicalSource")
     graph = rdflib.Graph()

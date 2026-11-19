@@ -11,7 +11,10 @@ These cases cover common mapping constructs and source formats in YARRRML-to-RML
 | `YARRRML-CORE-TC-0005` | MySQL source with an external source description. |
 | `YARRRML-CORE-TC-0006` | MySQL source with an internal source description. |
 | `YARRRML-CORE-TC-0007` | CSV source with datatype handling. |
-| `YARRRML-CORE-TC-0008` | Merging mappings by TriplesMap identifier. |
+| `YARRRML-CORE-TC-0008` | Merging mappings by TriplesMap identifier, including inputs without optional sections. |
 | `YARRRML-CORE-TC-0009` | Positive-integer datatype on a constant object. |
 | `YARRRML-CORE-TC-0010` | Class and property maps with a default subject. |
 | `YARRRML-CORE-TC-0011` | GeoSPARQL point geometry with a WKT literal. |
+| `YARRRML-CORE-TC-0012` | An object map with a language tag and term type. |
+| `YARRRML-CORE-TC-0013` | A subject map with a target and term type. |
+| `YARRRML-CORE-TC-0014` | A subject map with a target and graph. |

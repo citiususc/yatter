@@ -6,7 +6,7 @@ from yatter.constants import RML_URI
 from yatter.subject import add_subject
 
 
-def test_subject_map_with_target_and_graph():
+def test_yarrrml_core_tc_0013():
     directory = os.path.dirname(os.path.realpath(__file__))
     yaml = YAML(typ="safe", pure=True)
     with open(os.path.join(directory, "mapping.yml")) as input_file:

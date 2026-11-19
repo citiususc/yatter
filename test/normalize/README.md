@@ -1,6 +1,6 @@
 # Normalization
 
-Each case checks that a supported YARRRML shorthand is normalized to its canonical mapping form.
+These cases check YARRRML normalization and related term-map handling.
 
 | Test case | What it covers |
 | --- | --- |
@@ -22,3 +22,7 @@ Each case checks that a supported YARRRML shorthand is normalized to its canonic
 | `YARRRML-NORM-TC-0016` | Multiple object values with datatypes. |
 | `YARRRML-NORM-TC-0017` | Multiple object values with language tags. |
 | `YARRRML-NORM-TC-0018` | Function parameters normalized to explicit parameter maps. |
+| `YARRRML-NORM-TC-0019` | Normalization of function parameters in predicate maps. |
+| `YARRRML-NORM-TC-0020` | Expansion of targets in each predicate-object map. |
+| `YARRRML-NORM-TC-0021` | Conversion of a reference to RML term-map text. |
+| `YARRRML-NORM-TC-0022` | Normalization without mutating the input mapping. |

@@ -6,7 +6,7 @@ from ruamel.yaml import YAML
 from yatter.predicateobject import add_inverse_pom
 
 
-def test_inverse_language_map_template():
+def test_yarrrml_language_tc_inv_0002():
     directory = os.path.dirname(os.path.realpath(__file__))
     graph = Graph().parse(os.path.join(directory, "mapping.ttl"), format="turtle")
     yaml = YAML(typ="safe", pure=True)
