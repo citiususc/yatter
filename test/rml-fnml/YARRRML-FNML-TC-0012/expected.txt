@@ -1,41 +1,41 @@
-<function_person_0> a fnml:Execution;
-	fnml:function ex:outer ;
-	fnml:input
+<function_person_0> a rml:FunctionExecution;
+	rml:function ex:outer ;
+	rml:input
 		[
-			a fnml:Input;
-			fnml:parameter ex:first;
-			fnml:valueMap[
-				fnml:execution <function_person_1>;
+			a rml:Input;
+			rml:parameter ex:first;
+			rml:inputValueMap[
+				rml:functionExecution <function_person_1>;
 			];
 		],
 		[
-			a fnml:Input;
-			fnml:parameter ex:second;
-			fnml:valueMap[
-				fnml:execution <function_person_2>;
+			a rml:Input;
+			rml:parameter ex:second;
+			rml:inputValueMap[
+				rml:functionExecution <function_person_2>;
 			];
 		].
 
-<function_person_1> a fnml:Execution;
-	fnml:function ex:left ;
-	fnml:input
+<function_person_1> a rml:FunctionExecution;
+	rml:function ex:left ;
+	rml:input
 		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
+			a rml:Input;
+			rml:parameter ex:input;
+			rml:inputValueMap [
+				a rml:TermMap;
 				rml:reference "left";
 			];
 		].
 
-<function_person_2> a fnml:Execution;
-	fnml:function ex:right ;
-	fnml:input
+<function_person_2> a rml:FunctionExecution;
+	rml:function ex:right ;
+	rml:input
 		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
+			a rml:Input;
+			rml:parameter ex:input;
+			rml:inputValueMap [
+				a rml:TermMap;
 				rml:reference "right";
 			];
 		].

@@ -1,0 +1,32 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+
+mappings:
+  student:
+    graph: http://example.com/graph/students
+    sources:
+      - ['student.json~jsonpath','$.students[*]']
+    s: http://example.com/resource/student_$(ID)
+    po:
+      - [rdf:type, http://example.com/ontology/Student]
+      - p: foaf:name
+        o: $(Name)
+        graph: http://example.com/graph/students
+      - p: http://example.com/ontology/practises
+        o:
+          mapping: sport
+          condition:
+            function: equal
+            parameters:
+              - [str1, $(Sport)]
+              - [str2, $(Name)]
+        graph: http://example.com/graph/practise
+  sport:
+    graph: http://example.com/graph/sports
+    sources:
+      - ['sport.json~jsonpath','$.sports[*]']
+    s: http://example.com/resource/sport_$(ID)
+    po:
+      - [rdf:type, http://example.com/ontology/Sport]
+      - [rdfs:label, $(Name)]

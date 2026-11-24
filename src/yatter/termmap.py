@@ -1,6 +1,55 @@
 from .constants import *
 
 
+_CORE_TERMS = {
+    R2RML_TRIPLES_MAP: "rml:TriplesMap",
+    R2RML_TEMPLATE: "rml:template",
+    R2RML_CONSTANT: "rml:constant",
+    R2RML_COLUMN: RML_REFERENCE,
+    R2RML_SUBJECT: "rml:subjectMap",
+    R2RML_SUBJECT_CLASS: "rml:SubjectMap",
+    R2RML_CLASS: "rml:class",
+    R2RML_PREDICATE: "rml:predicateMap",
+    R2RML_SHORTCUT_PREDICATE: "rml:predicate",
+    R2RML_PREDICATE_CLASS: "rml:PredicateMap",
+    R2RML_OBJECT: "rml:objectMap",
+    R2RML_SHORTCUT_OBJECT: "rml:object",
+    R2RML_OBJECT_CLASS: "rml:ObjectMap",
+    R2RML_GRAPH_MAP: "rml:graphMap",
+    R2RML_GRAPH: "rml:graph",
+    R2RML_GRAPH_CLASS: "rml:GraphMap",
+    R2RML_PREDICATE_OBJECT_MAP: "rml:predicateObjectMap",
+    R2RML_REFOBJECT_CLASS: "rml:RefObjectMap",
+    R2RML_PARENT_TRIPLESMAP: "rml:parentTriplesMap",
+    R2RML_JOIN_CONITION: "rml:joinCondition",
+    R2RML_CHILD: "rml:child",
+    R2RML_PARENT: "rml:parent",
+    R2RML_DATATYPE: "rml:datatype",
+    R2RML_LANGUAGE: "rml:language",
+    R2RML_TERMTYPE: "rml:termType",
+    R2RML_IRI: "rml:IRI",
+    R2RML_BLANK_NODE: "rml:BlankNode",
+    R2RML_LITERAL: "rml:Literal",
+    RML_EXECUTION: "rml:functionExecution",
+    RML_EXECUTION_CLASS: "rml:FunctionExecution",
+    RML_FUNCTION: "rml:function",
+    RML_INPUT: "rml:input",
+    RML_INPUT_CLASS: "rml:Input",
+    RML_PARAMETER: "rml:parameter",
+    RML_VALUE_MAP: "rml:inputValueMap",
+    RML_VALUE_MAP_CLASS: "rml:TermMap",
+}
+
+
+def _term_for_format(term, mapping_format):
+    if mapping_format == RML_CORE_URI:
+        if term in _CORE_TERMS:
+            return _CORE_TERMS[term]
+        if term.startswith("rr:"):
+            raise ValueError(f"No RML-Core term defined for {term}")
+    return term
+
+
 ## return the type of TermMap based on the input text
 def get_termmap_type(text, mapping_format):
     if type(text) in basic_types:
@@ -13,7 +62,9 @@ def get_termmap_type(text, mapping_format):
                return RML_REFERENCE
         else:
             return R2RML_TEMPLATE
-    elif YARRRML_QUOTED in text or YARRRML_NON_ASSERTED in text:
+    elif (mapping_format != RML_CORE_URI or isinstance(text, dict)) and (
+        YARRRML_QUOTED in text or YARRRML_NON_ASSERTED in text
+    ):
         return STAR_QUOTED
     else:
         return R2RML_CONSTANT
@@ -77,10 +128,10 @@ def _append_term_map_content(template, indentation, content):
     return body + "\n" + content + closing
 
 
-def generate_graph_termmap(graph, indentation):
+def generate_graph_termmap(graph, indentation, mapping_format=RML_URI):
     graph_value = graph[YARRRML_VALUE] if YARRRML_VALUE in graph else graph
     result = generate_rml_termmap(
-        R2RML_GRAPH_MAP, R2RML_GRAPH_CLASS, graph_value, indentation
+        R2RML_GRAPH_MAP, R2RML_GRAPH_CLASS, graph_value, indentation, mapping_format
     )
     if YARRRML_TARGETS in graph:
         result = _append_term_map_property(
@@ -104,11 +155,11 @@ def _format_term_map_value(term_map, text):
 
 
 def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_format=RML_URI):
-    template = indentation[0:-1] + rml_property + " [\n" + indentation + "a " + rml_class + ";\n"
+    template = indentation[0:-1] + _term_for_format(rml_property, mapping_format) + " [\n" + indentation + "a " + _term_for_format(rml_class, mapping_format) + ";\n"
     if isinstance(content, dict) and 'value' in content:
         value_text = content.get('value', '')
         term_map, value_text = generate_rml_termmap_text(value_text, mapping_format)
-        template += indentation + term_map + " " + _format_term_map_value(term_map, value_text) + ";\n"
+        template += indentation + _term_for_format(term_map, mapping_format) + " " + _format_term_map_value(term_map, value_text) + ";\n"
     if isinstance(content[YARRRML_GATHER], str):
         term_map, text = generate_cc_termmap_text(content, mapping_format)
         if YARRRML_EMPTY in content:
@@ -116,7 +167,7 @@ def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_f
                 template += indentation + RML_CC_EMPTY +" " + "true" + ";\n"
             elif content[YARRRML_EMPTY] == "\"false\"":
                 template += indentation + RML_CC_EMPTY +" " + "false" + ";\n"
-        template += indentation + RML_CC_GATHER + " ( [ " + term_map + " " + text + "; ] ) ;\n"
+        template += indentation + RML_CC_GATHER + " ( [ " + _term_for_format(term_map, mapping_format) + " " + text + "; ] ) ;\n"
         if YARRRML_GATHER_AS in content and content[YARRRML_GATHER_AS] in YARRRML_GATHER_AS_OPTIONS:
             template += indentation + RML_CC_GATHER_AS + " rdf:" + content[YARRRML_GATHER_AS].capitalize() + ";\n"
     elif isinstance(content[YARRRML_GATHER], list):
@@ -124,11 +175,12 @@ def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_f
         for gather_item in content[YARRRML_GATHER]:
             term_map, text = generate_cc_termmap_text(gather_item, mapping_format)
             if YARRRML_GATHER_AS in gather_item:
-                template += indentation + "\t" + "[\n" + indentation + "\t\t" + RML_CC_GATHER + " ( [ " + term_map + " " + text + "; ] ) ;\n"
+                template += indentation + "\t" + "[\n" + indentation + "\t\t" + RML_CC_GATHER + " ( [ " + _term_for_format(term_map, mapping_format) + " " + text + "; ] ) ;\n"
                 template += indentation + "\t\t" + RML_CC_GATHER_AS + " rdf:" + gather_item[YARRRML_GATHER_AS].capitalize() + ";\n"
                 template += indentation + "\t]\n"
             else:
-                template += indentation + " [ " + term_map + " " + text + "; ] \n"
+                ending = "; ]\n" if mapping_format == RML_CORE_URI else "; ] \n"
+                template += indentation + " [ " + _term_for_format(term_map, mapping_format) + " " + text + ending
 
         template += indentation + ") ;\n"
 
@@ -140,7 +192,10 @@ def generate_cc_termmap(rml_property, rml_class, content, indentation, mapping_f
 
 
 ## Generates a TermMap (subject, predicate, object) based on the property, class and the text
-def generate_rml_termmap(rml_property, rml_class, text, indentation, mapping_format=RML_URI):
+def generate_rml_termmap(rml_property, rml_class, text, indentation, mapping_format=RML_URI,
+                         literal_constant=False):
+    rml_property = _term_for_format(rml_property, mapping_format)
+    rml_class = _term_for_format(rml_class, mapping_format)
     template = indentation[0:-1] + rml_property + " [\n" + indentation + "a " + rml_class + ";\n" + indentation
     if isinstance(text, dict) and 'value' in text:
         text = text.get('value', '')
@@ -148,8 +203,13 @@ def generate_rml_termmap(rml_property, rml_class, text, indentation, mapping_for
         text = str(text)
     term_map, text = generate_rml_termmap_text(text, mapping_format)
 
+    if mapping_format == RML_CORE_URI and literal_constant and term_map == R2RML_CONSTANT:
+        import rdflib
+        formatted = rdflib.Literal(text).n3()
+    else:
+        formatted = _format_term_map_value(term_map, text)
     return (
-        template + term_map + " " + _format_term_map_value(term_map, text)
+        template + _term_for_format(term_map, mapping_format) + " " + formatted
         + ";\n" + indentation[:-1] + "];\n"
     )
 

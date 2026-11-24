@@ -5,15 +5,15 @@ prefixes:
 mappings:
   student2:
     sources:
-      - [ 'student.csv~csv' ]
+    - [student.csv~csv]
     s: http://example.com/$(Name)
     po:
-      - p: foaf:name
-        o:
-          - function: ex:toLowerCase
+    - p: foaf:name
+      o:
+      - function: ex:toLowerCase
+        parameters:
+        - parameter: ex:valueParameter
+          value:
+            function: ex:toUpperCase
             parameters:
-              - parameter: ex:valueParameter
-                value:
-                  function: ex:toUpperCase
-                  parameters:
-                    - [ ex:valueParameter, $(name) ]
+            - [ex:valueParameter, $(name)]

@@ -1,0 +1,34 @@
+prefixes:
+ mail: "http://example.com/mail#"
+ ex: "http://www.example.com/"
+
+sources:
+  source1:
+    access: http://localhost/example
+    type: mysql
+    credentials:
+      username: root
+      password: root
+    queryFormulation: mysql
+    query: >
+        Select * from "example"
+    referenceFormulation: csv
+mappings:
+  FromToMaps:
+    sources: source1
+    subjects: "http://www.example.com/note/$(@id)"
+    predicateobjects:
+     - [a, mail:Note]
+     - [mail:when,$(@year)-$(@month)-$(@day), xsd:date]
+     - [mail:from,$(from)]
+     - [mail:to, $(to)]
+     - [mail:heading,$(heading)]
+     - [mail:body,$(body)]
+  DateTime:
+    source: source1
+    subject: "http://www.example.com/DateTime/$(@year)$(@month)$(@day)"
+    predicateobjects:
+      - [a, ex:DateTime]
+      - [ex:day,--$(@day),xsd:gDay]
+      - [ex:month,--$(@month),xsd:gMonth]
+      - [ex:year, $(@year), xsd:gYear]

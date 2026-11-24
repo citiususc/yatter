@@ -1,0 +1,5 @@
+mappings:
+  person:
+    subjects:
+      - value: $(id)
+        type: blank

@@ -1,1 +1,4 @@
-- [ex:name, $(name), "http://languages.example/$(lang)"]
+- p: http://example.com/name
+  o:
+    value: $(name)
+    language: http://languages.example/$(lang)

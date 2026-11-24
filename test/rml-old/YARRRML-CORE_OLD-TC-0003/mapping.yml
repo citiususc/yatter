@@ -1,0 +1,21 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+
+mappings:
+  student:
+    sources:
+      access: http://localhost/example
+      type: mysql
+      credentials:
+        username: root
+        password: root
+      queryFormulation: mysql
+      query: >
+          Select ('Student' || "ID" ) AS StudentId
+          , "ID"
+          , "Name"
+          from "Student"
+      referenceFormulation: csv
+    s: http://example.com/$(ID)/$(Name)
+    po:
+      - [foaf:name, $(Name)]

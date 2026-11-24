@@ -1,0 +1,3 @@
+@prefix rml: <http://w3id.org/rml/>.
+
+<http://example.com/LogicalSource> a rml:TriplesMap.

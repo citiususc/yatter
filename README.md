@@ -31,7 +31,16 @@ python3 -m yatter -i path_to_input_yarrrml.yml -o path_to_rdf_mapping.ttl [-f R2
 python3 -m yatter -i path_to_input_rdf_mapping.ttl -o path_to_output_yarrrml.yml [-f R2RML]
 ```
 
-`-f R2RML` is an optional parameter for translating input YARRRML to R2RML (and inverse)
+`-f` selects the profile for either direction:
+
+- `RML` (default): the current RML-Core vocabulary,
+  `http://w3id.org/rml/`.
+- `RML-OLD`: the previous RML vocabulary, for compatibility.
+- `R2RML`: R2RML.
+
+The new profile supports the implemented RML-IO, FNML and collection features;
+RML-Star and Logical Views are not supported in this profile. Existing
+RML-Star mappings can still use `RML-OLD`.
 
 ## Execution as a library
 
@@ -49,6 +58,12 @@ rml_content = yatter.translate(yarrrml_mapping)
 # RML to YARRRML
 rml_graph = Graph().parse("path-to-rml-mapping.ttl", format="turtle")
 yarrrml_content = yatter.inverse_translate(rml_graph)
+```
+- for the previous RML profile, pass its namespace explicitly in either direction:
+```python
+RML_OLD_URI = 'http://semweb.mmlab.be/ns/rml#'
+rml_content = yatter.translate(yarrrml_mapping, mapping_format=RML_OLD_URI)
+yarrrml_content = yatter.inverse_translate(rml_graph, mapping_format=RML_OLD_URI)
 ```
 - for translating **YARRRML mappings** to **R2RML mappings** (and inverse):
 ```python
@@ -83,14 +98,19 @@ yarrrml_content = yatter.merge_mappings(list_yarrrml_mappings)
 These are the following specifications used by the translation process:
 - YARRRML: https://w3id.org/kg-construct/yarrrml
 - R2RML: https://www.w3.org/TR/r2rml/ 
-- RML: https://rml.io/spec 
-- RML-star: https://w3id.org/rml/star/spec
+- RML-Core: https://kg-construct.github.io/rml-core/spec/docs/
+- Previous RML: https://rml.io/specs/rml/
+- RML-star (previous RML profile): https://w3id.org/rml/star/spec
 - RML-IO: https://w3id.org/rml/io/spec
 - RML-FNML: https://w3id.org/rml/fnml/spec
 - RML-CC: https://w3id.org/rml/cc/spec
 
-To be implemented soon:
-- RML-core: https://w3id.org/rml/core/spec 
+SQL sources in the new profile require an access description; database type
+and credentials are optional. Existing `rml:` prefix declarations for the previous
+namespace must be renamed or removed when selecting RML-Core. Inverse translation
+rejects some unsupported constructs rather than silently discarding them, including
+typed or language-tagged constant literals, multiple logical targets on one
+term map, and file-source options such as encoding and compression.
 
 
 ## Cite this work:

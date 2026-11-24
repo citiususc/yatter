@@ -1,0 +1,39 @@
+mappings:
+  sport:
+    sources:
+    - - Sport.csv~csv
+    s: http://example.com/resource/sport_$(ID)
+    graphs:
+    - http://example.com/graph/sports
+    po:
+    - p: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+      o:
+        value: http://example.com/ontology/Sport
+    - p: http://www.w3.org/2000/01/rdf-schema#label
+      o:
+        value: $(Name)
+  student:
+    sources:
+    - - Student.csv~csv
+    s: http://example.com/resource/student_$(ID)
+    graphs:
+    - http://example.com/graph/students
+    po:
+    - p: http://example.com/ontology/practises
+      o:
+        mapping: sport
+        condition:
+          function: equal
+          parameters:
+          - - str1
+            - $(Sport)
+          - - str2
+            - $(Name)
+      graph: http://example.com/graph/practise
+    - p: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+      o:
+        value: http://example.com/ontology/Student
+    - p: http://xmlns.com/foaf/0.1/Name
+      o:
+        value: $(Name)
+      graph: http://example.com/graph/students

@@ -1,0 +1,21 @@
+prefixes:
+  esdir: http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/direccion-postal#
+  edintinf: http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/infraestructura#
+  edintpublicservice: http://vocab.linkeddata.es/datosabiertos/kos/edint/PublicService/
+  edintregularact: http://vocab.linkeddata.es/datosabiertos/kos/edint/RegularActivity/
+  schema: http://www.owl-ontologies.com/schema#
+  geosparql: http://www.opengis.net/ont/geosparql#
+  dct: http://purl.org/dc/terms/
+
+sources:
+  facility-source: ['Madrid_atencion_social.csv~csv']
+
+mappings:
+  locations:
+    sources:
+      - facility-source
+    s: http://vocab.linkeddata.es/datosabiertos/recurso/equipamiento-municipal/locations/$(pk)
+    po:
+      - [a, geosparql:Geometry]
+      - [dct:identifier,"$(pk)"]
+      - [geosparql:asWKT, "POINT ($(longitud) $(latitud))", geosparql:wktLiteral]

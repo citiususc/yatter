@@ -1,0 +1,14 @@
+# test.yml
+prefixes:
+ ex: "http://example.com/"
+
+mappings:
+  person:
+    sources:
+      - ['data.json~jsonpath', '$.persons[*]']
+    s: ex:$(firstname)
+    po:
+      - p: ex:id
+        o: 
+          value: 1
+          datatype: xsd:positiveInteger

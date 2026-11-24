@@ -1,6 +1,11 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+
 mappings:
-  person:
-    subjects:
-      - value: $(id)
-        targets: output
-        type: blank
+  student:
+    sources:
+    - access: Student.csv
+      referenceFormulation: csv
+    s: http://example.com/$(Name)
+    po:
+    - [foaf:name, $(Name)]

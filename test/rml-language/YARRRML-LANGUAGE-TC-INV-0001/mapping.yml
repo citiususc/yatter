@@ -1,18 +1,10 @@
-prefixes:
-  owl: http://www.w3.org/2002/07/owl#
-  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
-  rdfs: http://www.w3.org/2000/01/rdf-schema#
-  xsd: http://www.w3.org/2001/XMLSchema#
-  xml: http://www.w3.org/XML/1998/namespace
-  foaf: http://xmlns.com/foaf/0.1/
-  rr: http://www.w3.org/ns/r2rml#
-  rml: http://semweb.mmlab.be/ns/rml#
-  ql: http://semweb.mmlab.be/ns/ql#
-  d2rq: http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#
 mappings:
   student:
     sources:
-    - [student.csv~csv]
+      - [student.csv~csv]
     s: http://example.com/$(Name)
     po:
-    - [foaf:name, $(Name), en~lang]
+      - p: http://xmlns.com/foaf/0.1/name
+        o:
+          value: $(Name)
+          language: en

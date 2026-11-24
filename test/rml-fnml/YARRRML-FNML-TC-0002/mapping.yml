@@ -5,10 +5,10 @@ prefixes:
 mappings:
   student2:
     sources:
-      - [ 'student.csv~csv' ]
+    - [student.csv~csv]
     s:
       function: ex:toLowerCase
       parameters:
-        - [ ex:input, $(firstname) ]
+      - [ex:input, $(firstname)]
     po:
-      - [foaf:firstName, $(name)]
+    - [foaf:firstName, $(name)]

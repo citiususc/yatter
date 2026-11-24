@@ -1,7 +1,6 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/>.
 @prefix ex: <http://example.com/>.
-@prefix rr: <http://www.w3.org/ns/r2rml#>.
-@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rml: <http://w3id.org/rml/>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
@@ -9,43 +8,43 @@
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
 @prefix schema: <http://schema.org/>.
 @prefix formats: <http://www.w3.org/ns/formats/>.
-@prefix comp: <http://semweb.mmlab.be/ns/rml-compression#>.
 @prefix void: <http://rdfs.org/ns/void#>.
-@prefix fnml: <http://semweb.mmlab.be/ns/fnml#>.
 @prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
 @base <http://example.com/ns#>.
 
 
-<function_student2_0> a fnml:Execution;
-	fnml:function ex:toLowerCase ;
-	fnml:input
+<function_student2_0> a rml:FunctionExecution;
+	rml:function ex:toLowerCase ;
+	rml:input
 		[
-			a fnml:Input;
-			fnml:parameter ex:input;
-			fnml:valueMap [
-				a fnml:ValueMap;
+			a rml:Input;
+			rml:parameter ex:input;
+			rml:inputValueMap [
+				a rml:TermMap;
 				rml:reference "firstname";
 			];
 		].
 
-<student2_0> a rr:TriplesMap;
+<student2_0> a rml:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
-		rml:source "student.csv";
-		rml:referenceFormulation ql:CSV
-	];
-	rr:subjectMap [
-		a rr:SubjectMap;
-		fnml:execution <function_student2_0>;
-	];
-	rr:predicateObjectMap [
-		rr:predicateMap [
-			a rr:PredicateMap;
-			rr:constant foaf:firstName;
+		rml:source [ a rml:Source, rml:FilePath;
+			rml:path "student.csv";
 		];
-		rr:objectMap [
-			a rr:ObjectMap;
+		rml:referenceFormulation rml:CSV
+	];
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:functionExecution <function_student2_0>;
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant foaf:firstName;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
 			rml:reference "name";
 		];
 	].

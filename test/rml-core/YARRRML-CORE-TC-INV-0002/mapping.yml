@@ -1,0 +1,9 @@
+mappings:
+  student:
+    sources:
+    - - Student.csv~csv
+    s: http://example.com/$(ID)/$(Name)
+    po:
+    - p: http://xmlns.com/foaf/0.1/name
+      o:
+        value: $(AA)

@@ -1,0 +1,16 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  ex: http://example.com/
+
+mappings:
+  TriplesMap1:
+    sources:
+    - access: Student.csv
+      referenceFormulation: csv
+    s: http://example.com/$(ID)/$(Name)
+    po:
+    - [rdf:type, foaf:Person]
+    - [rdf:type, ex:Student]
+    - [ex:id, $(ID)]
+    - [foaf:name, $(Name)]

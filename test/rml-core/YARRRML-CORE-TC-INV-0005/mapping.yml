@@ -1,0 +1,16 @@
+mappings:
+  TriplesMap1_0:
+    sources:
+    - - Patient.csv~csv
+    s: http://example.com/Patient/$(ID)
+    po:
+    - p: http://example.com/$(last_name)
+      o:
+        value: $(LastName)
+        datatype: xsd:string
+    - p: http://example.com/height
+      o:
+        value: http://example.com/$(Height)
+    - p: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+      o:
+        value: http://xmlns.com/foaf/0.1/Person

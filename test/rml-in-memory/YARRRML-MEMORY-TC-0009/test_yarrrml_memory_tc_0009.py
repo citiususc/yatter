@@ -1,17 +1,22 @@
-import os
+from pathlib import Path
+
+from rdflib import Graph, Namespace, RDF
+from rdflib.compare import isomorphic
+from ruamel.yaml import YAML
 
 import yatter
-from ruamel.yaml import YAML
 
 
 def test_yarrrml_memory_tc_0009():
-    directory = os.path.dirname(os.path.realpath(__file__))
-    yaml = YAML(typ="safe", pure=True)
-    with open(os.path.join(directory, "mapping.yml")) as input_file:
-        mapping = yaml.load(input_file)
-    with open(os.path.join(directory, "mapping.ttl")) as expected_file:
-        expected = expected_file.read()
+    directory = Path(__file__).parent
+    with (directory / "mapping.yml").open() as source:
+        mapping = YAML(typ="safe", pure=True).load(source)
+    actual = yatter.translate(mapping)
+    expected = (directory / "mapping.ttl").read_text()
 
-    translated = yatter.translate(mapping)
-
-    assert translated == expected
+    assert actual == expected
+    assert isomorphic(
+        Graph().parse(data=actual, format="turtle"),
+        Graph().parse(data=expected, format="turtle"),
+    )
+    assert list(Graph().parse(data=actual, format="turtle").subjects(RDF.type, Namespace("https://w3id.org/okn/o/sd#").DatasetSpecification))

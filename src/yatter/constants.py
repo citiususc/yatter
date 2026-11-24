@@ -5,6 +5,7 @@ import logging, coloredlogs
 ##############################################################################
 
 RML_URI = 'http://semweb.mmlab.be/ns/rml#'
+RML_CORE_URI = 'http://w3id.org/rml/'
 R2RML_URI = 'http://www.w3.org/ns/r2rml#'
 RDF_URI = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 D2RQ_URI = 'http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#'

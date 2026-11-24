@@ -1,28 +1,26 @@
 prefixes:
-  insta: "http://instagram.com/data/"
-  rr: "http://www.w3.org/ns/r2rml#"
-  rml: "http://semweb.mmlab.be/ns/rml#"
-  rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
-  xsd: "http://www.w3.org/2001/XMLSchema#"
-  foaf: "http://xmlns.com/foaf/0.1/"
-  sd: "https://w3id.org/okn/o/sd#"
-  kg4di: "https://w3id.org/kg4di/"
+  insta: http://instagram.com/data/
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  xsd: http://www.w3.org/2001/XMLSchema#
+  foaf: http://xmlns.com/foaf/0.1/
+  sd: https://w3id.org/okn/o/sd#
+  kg4di: https://w3id.org/kg4di/
 
 mappings:
 
   df_map:
     sources:
-      - access: $(variable1)
-        referenceFormulation: Dictionary
-        structureDefiner: Python
-        iterator: $.users[*]
-        softwareSpecification: 
-          programmingLanguage: Python3.9
-      - [followersperson.json~jsonpath, "$.followers[*]"]
+    - access: $(variable1)
+      referenceFormulation: Dictionary
+      structureDefiner: Python
+      iterator: $.users[*]
+      softwareSpecification:
+        programmingLanguage: Python3.9
+    - [followersperson.json~jsonpath, '$.followers[*]']
     s: http://instagram.com/data/user$(id)
     po:
-       - [a, insta:User]
-       - [insta:username, $(Username)]
-       - [insta:name, "$(Name) $(Surname)"]
-       - [insta:follows, http://instagram.com/data/user$(Follows)~iri]
+    - [a, insta:User]
+    - [insta:username, $(Username)]
+    - [insta:name, $(Name) $(Surname)]
+    - [insta:follows, http://instagram.com/data/user$(Follows)~iri]

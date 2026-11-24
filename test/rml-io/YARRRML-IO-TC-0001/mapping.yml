@@ -4,15 +4,15 @@ prefixes:
 mappings:
   student:
     sources:
-      - ['student.csv~csv']
+    - [student.csv~csv]
     s:
-     - value: http://example.com/$(Name)
-       targets:
-         access: data/dump.ttl.gz
-         type: void
-         serialization: turtle
-         compression: gzip
+    - value: http://example.com/$(Name)
+      targets:
+        access: data/dump.ttl.gz
+        type: void
+        serialization: turtle
+        compression: gzip
     po:
-      - [foaf:name, $(Name)]
+    - [foaf:name, $(Name)]
 
 

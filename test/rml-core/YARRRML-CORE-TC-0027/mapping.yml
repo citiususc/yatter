@@ -1,0 +1,18 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  ex: http://example.com/
+
+mappings:
+  TriplesMap1:
+    sources:
+    - access: Student.csv
+      referenceFormulation: csv
+    s: $(Name)
+    po:
+    - p: rdf:type
+      o: [foaf:Person, ex:Student]
+    - p: foaf:Name
+      o:
+      - value: $(Name)
+        type: iri

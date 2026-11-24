@@ -10,3 +10,4 @@ These cases check the translation of YARRRML mappings that produce RDF-star quot
 | `YARRRML-STAR-TC-0004` | A non-asserted quoted triple used as a subject (RMLSTARTC-0005a). |
 | `YARRRML-STAR-TC-0005` | A non-asserted quoted triple used as an object (RMLSTARTC-0006a). |
 | `YARRRML-STAR-TC-0006` | Chained quoted-triple mappings (RMLSTARTC-0008a). |
+| `YARRRML-STAR-TC-0007` | Function joins using quoted and non-asserted mappings. |

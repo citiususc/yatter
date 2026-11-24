@@ -1,0 +1,12 @@
+prefixes:
+  foaf: http://example.org/
+
+mappings:
+  firstTM:
+    po:
+     - [ex:p,  http://example/$(c2)~iri]
+
+  secondTM:
+    sources:
+      - [data.csv~csv]
+    s: http//example/$(c1)

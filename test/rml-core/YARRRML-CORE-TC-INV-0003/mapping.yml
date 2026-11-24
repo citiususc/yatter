@@ -1,0 +1,27 @@
+mappings:
+  sport:
+    sources:
+    - - Sport.csv~csv
+    s: http://example.com/resource/sport_$(ID)
+    po:
+    - p: http://www.w3.org/2000/01/rdf-schema#label
+      o:
+        value: $(Name)
+  student:
+    sources:
+    - - Student.csv~csv
+    s: http://example.com/resource/student_$(ID)
+    po:
+    - p: http://example.com/ontology/practises
+      o:
+        mapping: sport
+        condition:
+          function: equal
+          parameters:
+          - - str1
+            - $(Sport)
+          - - str2
+            - $(Name)
+    - p: http://xmlns.com/foaf/0.1/name
+      o:
+        value: $(Name)

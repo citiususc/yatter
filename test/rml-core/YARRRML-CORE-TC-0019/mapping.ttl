@@ -1,0 +1,80 @@
+@prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
+@prefix gn: <http://www.geonames.org/ontology#>.
+@prefix geosp: <http://www.telegraphis.net/ontology/geography/geography#>.
+@prefix schema: <http://schema.org/>.
+@prefix rml: <http://w3id.org/rml/>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix formats: <http://www.w3.org/ns/formats/>.
+@prefix void: <http://rdfs.org/ns/void#>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
+@base <http://example.com/ns#>.
+
+
+<venue_0> a rml:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source [ a rml:Source, rml:FilePath;
+			rml:path "Venue4.csv";
+		];
+		rml:referenceFormulation rml:CSV
+	];
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:template "http://loc.example.com/city/{city}";
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant rdf:type;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:constant schema:City;
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant wgs84_pos:lat;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "latitude";
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant wgs84_pos:long;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "longtitude";
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant geosp:onContinent;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "continent";
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant gn:countryCode;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "country";
+		];
+	].

@@ -383,8 +383,8 @@ def _expand_dict_predicateobject(po):
         objects = po['o'] if isinstance(po['o'], list) else [po['o']]
         predicates = []
         for predicate in po['p']:
-            if YARRRML_FUNCTION in predicate:
-                expanded = {YARRRML_FUNCTION: predicate[YARRRML_FUNCTION]}
+            if isinstance(predicate, dict):
+                expanded = dict(predicate)
                 if YARRRML_PARAMETERS in predicate:
                     expanded[YARRRML_PARAMETERS] = expand_parameters(
                         predicate[YARRRML_PARAMETERS]

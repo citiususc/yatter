@@ -1,0 +1,6 @@
+mappings:
+  person:
+    subjects:
+      - value: $(id)
+    graphs:
+      - value: http://example.com/graph

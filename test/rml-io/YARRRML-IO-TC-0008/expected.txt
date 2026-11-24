@@ -1,0 +1,9 @@
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:reference "id";
+		rml:logicalTarget <output>;
+		rml:graphMap [
+			a rml:GraphMap;
+			rml:constant <http://example.com/graph>;
+		];
+	];

@@ -10,3 +10,5 @@ These cases check output target declarations and their use in mappings.
 | `YARRRML-IO-TC-0004` | A named target declared with serialization and compression settings. |
 | `YARRRML-IO-TC-0005` | Associating a target with a named graph. |
 | `YARRRML-IO-TC-0006` | Associating a target with an object map. |
+| `YARRRML-IO-TC-0007` | A subject map with a target and blank-node term type. |
+| `YARRRML-IO-TC-0008` | A subject map with a target and graph. |

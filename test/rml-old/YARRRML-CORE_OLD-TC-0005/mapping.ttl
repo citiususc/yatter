@@ -1,0 +1,151 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix mail: <http://example.com/mail#> .
+@prefix ex: <http://www.example.com/> .
+@base <http://example.com/ns#>.
+
+<FromToMaps_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source <DataSource_source1>;
+		rml:query "Select * from \"example\" ";
+		rml:referenceFormulation ql:CSV;
+		rr:sqlVersion rr:MYSQL
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://www.example.com/note/{@id}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant mail:Note;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant mail:when;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:template "{@year}-{@month}-{@day}";
+			rr:datatype xsd:date
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant mail:from;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "from";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant mail:to;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "to";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant mail:heading;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "heading";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant mail:body;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "body";
+		];
+	].
+
+
+<DateTime_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source <DataSource_source1>;
+		rml:query "Select * from \"example\" ";
+		rml:referenceFormulation ql:CSV;
+		rr:sqlVersion rr:MYSQL
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://www.example.com/DateTime/{@year}{@month}{@day}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant ex:DateTime;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant ex:day;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:template "--{@day}";
+			rr:datatype xsd:gDay
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant ex:month;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:template "--{@month}";
+			rr:datatype xsd:gMonth
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant ex:year;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "@year";
+			rr:datatype xsd:gYear
+		];
+	].
+
+
+<DataSource_source1> a d2rq:Database;
+	d2rq:jdbcDSN "http://localhost/example";
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:username "root";
+	d2rq:password "root".
+
