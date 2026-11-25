@@ -4,9 +4,14 @@ import logging, coloredlogs
 #############################   RML CONSTANTS  ###############################
 ##############################################################################
 
-RML_URI = 'http://semweb.mmlab.be/ns/rml#'
-RML_CORE_URI = 'http://w3id.org/rml/'
+RML_OLD_URI = 'http://semweb.mmlab.be/ns/rml#'
+RML_URI = 'http://w3id.org/rml/'
 R2RML_URI = 'http://www.w3.org/ns/r2rml#'
+MAPPING_FORMATS = {
+    'RML': RML_URI,
+    'RML-OLD': RML_OLD_URI,
+    'R2RML': R2RML_URI,
+}
 RDF_URI = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
 D2RQ_URI = 'http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#'
 QL_URI = 'http://semweb.mmlab.be/ns/ql#'
@@ -23,9 +28,26 @@ VOID_URI = 'http://rdfs.org/ns/void#'
 FNML_URI = 'http://semweb.mmlab.be/ns/fnml#'
 GREL_URI = 'http://users.ugent.be/~bjdmeest/function/grel.ttl#'
 SD_URI = 'https://w3id.org/okn/o/sd#'
+KG4DI_URI = 'https://w3id.org/kg4di/'
+DCAT_URI = 'http://www.w3.org/ns/dcat#'
+SPARQL_SERVICE_URI = 'http://www.w3.org/ns/sparql-service-description#'
 
 RML_PREFIX = '@prefix'
 RML_BASE = '@base'
+RML_TERM_PREFIX = 'rml:'
+R2RML_TERM_PREFIX = 'rr:'
+RDF_TERM_PREFIX = 'rdf:'
+RDFS_TERM_PREFIX = 'rdfs:'
+XSD_TERM_PREFIX = 'xsd:'
+QL_TERM_PREFIX = 'ql:'
+D2RQ_TERM_PREFIX = 'd2rq:'
+FOAF_TERM_PREFIX = 'foaf:'
+SCHEMA_TERM_PREFIX = 'schema:'
+COMPRESSION_TERM_PREFIX = 'comp:'
+FORMATS_TERM_PREFIX = 'formats:'
+VOID_TERM_PREFIX = 'void:'
+FNML_TERM_PREFIX = 'fnml:'
+GREL_TERM_PREFIX = 'grel:'
 RML_LOGICAL_SOURCE_CLASS = 'rml:LogicalSource'
 RML_LOGICAL_SOURCE = 'rml:logicalSource'
 RML_SOURCE = 'rml:source'
@@ -38,6 +60,13 @@ RML_LANGUAGE_MAP_CLASS = 'rml:LanguageMap'
 RML_DATATYPE_MAP = 'rml:datatypeMap'
 RML_DATATYPE_MAP_CLASS = 'rml:DatatypeMap'
 RML_QUERY = 'rml:query'
+RML_SOURCE_CLASS = 'rml:Source'
+RML_FILE_PATH_CLASS = 'rml:FilePath'
+RML_PATH = 'rml:path'
+RML_SQL_QUERY_FORMULATION = 'SQL2008Query'
+RML_SQL_TABLE_FORMULATION = 'SQL2008Table'
+R2RML_SQL_VERSION_NAME = 'SQL2008'
+R2RML_SQL_VERSION_DEFAULT = R2RML_TERM_PREFIX + R2RML_SQL_VERSION_NAME
 
 RML_LOGICAL_TARGET = 'rml:logicalTarget'
 RML_LOGICAL_TARGET_CLASS = 'rml:LogicalTarget'
@@ -101,6 +130,39 @@ R2RML_LOGICAL_TABLE = 'rr:logicalTable'
 R2RML_TABLE_NAME = 'rr:tableName'
 R2RML_COLUMN = 'rr:column'
 
+SPARQL_ENDPOINT = 'sd:endpoint'
+SPARQL_SUPPORTED_LANGUAGE = 'sd:supportedLanguage'
+SPARQL_11_UPDATE = 'sd:SPARQL11Update'
+DCAT_DATASET = 'dcat:Dataset'
+DCAT_DATA_DUMP = 'dcat:dataDump'
+VOID_DATASET = 'void:Dataset'
+VOID_DATA_DUMP = 'void:dataDump'
+FORMATS_NQUADS = FORMATS_TERM_PREFIX + 'N-Quads'
+
+# Terms shared by R2RML and Core retain their local names; only the prefix changes.
+R2RML_CORE_SHARED_TERMS = (
+    R2RML_TRIPLES_MAP, R2RML_TEMPLATE, R2RML_CONSTANT, R2RML_SUBJECT,
+    R2RML_SUBJECT_CLASS, R2RML_CLASS, R2RML_PREDICATE,
+    R2RML_SHORTCUT_PREDICATE, R2RML_PREDICATE_CLASS, R2RML_OBJECT,
+    R2RML_SHORTCUT_OBJECT, R2RML_OBJECT_CLASS, R2RML_GRAPH_MAP,
+    R2RML_GRAPH, R2RML_GRAPH_CLASS, R2RML_PREDICATE_OBJECT_MAP,
+    R2RML_REFOBJECT_CLASS, R2RML_PARENT_TRIPLESMAP, R2RML_JOIN_CONITION,
+    R2RML_CHILD, R2RML_PARENT, R2RML_DATATYPE, R2RML_LANGUAGE,
+    R2RML_TERMTYPE, R2RML_IRI, R2RML_BLANK_NODE, R2RML_LITERAL,
+)
+
+RML_CORE_TERM_OVERRIDES = {
+    R2RML_COLUMN: RML_REFERENCE,
+    RML_EXECUTION: 'rml:functionExecution',
+    RML_EXECUTION_CLASS: 'rml:FunctionExecution',
+    RML_FUNCTION: 'rml:function',
+    RML_INPUT: 'rml:input',
+    RML_INPUT_CLASS: 'rml:Input',
+    RML_PARAMETER: 'rml:parameter',
+    RML_VALUE_MAP: 'rml:inputValueMap',
+    RML_VALUE_MAP_CLASS: 'rml:TermMap',
+}
+
 
 ##############################################################################
 #############################   D2RQ CONSTANTS  ###########################
@@ -127,6 +189,7 @@ KG4DI_DEFINED_BY = 'kg4di:definedBy'
 
 YARRRML_PREFIXES = 'prefixes'
 YARRRML_SOURCES = 'sources'
+YARRRML_SOURCE = 'source'
 YARRRML_TABLE = 'table'
 YARRRML_ACCESS = 'access'
 YARRRML_QUERY = 'query'
@@ -147,13 +210,18 @@ YARRRML_MAPPINGS = 'mappings' # used for mappings in conditions and mappings mai
 YARRRML_MAPPING = 'mapping'
 
 YARRRML_SUBJECTS = 'subjects'
+YARRRML_SUBJECT_SHORT = 's'
 YARRRML_AUTHORS = 'authors'
 YARRRML_GRAPHS = 'graphs'
 
 YARRRML_PREDICATEOBJECT = 'predicateobjects'
+YARRRML_PREDICATEOBJECT_SHORT = 'po'
 
 YARRRML_PREDICATES = 'predicates'
+YARRRML_PREDICATE_SHORT = 'p'
 YARRRML_OBJECTS = 'objects'
+YARRRML_OBJECT_SHORT = 'o'
+YARRRML_GRAPH = 'graph'
 YARRRML_VALUE = 'value'
 YARRRML_DATATYPE = 'datatype'
 YARRRML_LANGUAGE = 'language'
@@ -166,7 +234,9 @@ YARRRML_PARAMETERS = 'parameters' #used for conditions and functions
 
 YARRRML_IRI = '~iri'
 YARRRML_LANG = '~lang'
+YARRRML_IRI_TYPE = 'iri'
 YARRRML_BLANK = 'blank'
+YARRRML_LITERAL_TYPE = 'literal'
 
 YARRRML_QUOTED = 'quoted'
 YARRRML_NON_ASSERTED = 'quotedNonAsserted'
@@ -174,16 +244,22 @@ YARRRML_NON_ASSERTED = 'quotedNonAsserted'
 YARRRML_TARGETS = 'targets'
 YARRRML_SERIALIZATION = 'serialization'
 YARRRML_COMPRESSION = 'compression'
+YARRRML_TARGET_SPARQL = 'sparql'
+YARRRML_TARGET_DCAT = 'dcat'
+YARRRML_TARGET_VOID = 'void'
 
 YARRRML_FUNCTION = 'function'
 
 YARRRML_PARAMETER = 'parameter'
+YARRRML_JOIN_CHILD_PARAMETER = 'str1'
+YARRRML_JOIN_PARENT_PARAMETER = 'str2'
 
 YARRRML_GATHER = 'gather'
 YARRRML_GATHER_AS = 'gatherAs'
 YARRRML_GATHER_AS_OPTIONS = ["alt","bag","seq","list"]
 YARRRML_EMPTY = 'empty'
 YARRRML_STRATEGY = 'strategy'
+YARRRML_STRATEGY_OPTIONS = ['append', 'cartesianProduct']
 
 YARRRML_MAPPING_KEYS = [YARRRML_MAPPINGS, YARRRML_MAPPING]
 YARRRML_SUBJECT_KEYS = [YARRRML_SUBJECTS]

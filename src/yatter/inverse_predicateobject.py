@@ -8,13 +8,13 @@ from .termmap import _term_for_format
 from .core_inverse import read_predicate_object_maps
 
 
-def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes, mapping_format=RML_URI):
-    if mapping_format == RML_CORE_URI:
+def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes, mapping_format=RML_OLD_URI):
+    if mapping_format == RML_URI:
         return read_predicate_object_maps(rdf_mapping, mapping_id, classes)
     yarrrml_poms = []
     yaml = YAML()
     for c in classes:
-        yarrrml_pom = yaml.seq(['rdf:type', find_prefixes(c.toPython(), prefixes)])
+        yarrrml_pom = yaml.seq([RDF_TYPE, find_prefixes(c.toPython(), prefixes)])
         yarrrml_pom.fa.set_flow_style()
         yarrrml_poms.append(yarrrml_pom)
 
@@ -31,7 +31,7 @@ def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes, mapping_format=R
     return yarrrml_poms
 
 
-def _inverse_pom_query(mapping_id, mapping_format=RML_URI):
+def _inverse_pom_query(mapping_id, mapping_format=RML_OLD_URI):
     term = lambda value: _term_for_format(value, mapping_format)
     expression_path = "|".join(dict.fromkeys(
         [term(R2RML_TEMPLATE), term(R2RML_COLUMN), term(R2RML_CONSTANT), RML_REFERENCE]
@@ -89,28 +89,29 @@ def _inverse_predicate(row, mapping_id, prefixes):
 
 
 def _inverse_reference_object(row, predicate, yaml):
-    obj = {'mapping': row['parentTriplesMap'].split("/")[-1]}
+    obj = {YARRRML_MAPPING: row['parentTriplesMap'].split("/")[-1]}
     if row['child']:
         parameters = []
-        for name, value in (('str1', row['child']), ('str2', row['parent'])):
+        for name, value in ((YARRRML_JOIN_CHILD_PARAMETER, row['child']),
+                            (YARRRML_JOIN_PARENT_PARAMETER, row['parent'])):
             parameter = yaml.seq([name, '$(' + value + ')'])
             parameter.fa.set_flow_style()
             parameters.append(parameter)
-        obj['condition'] = {'function': 'equal', 'parameters': parameters}
-    return {'p': predicate, 'o': obj}
+        obj[YARRRML_CONDITION] = {YARRRML_FUNCTION: YARRRML_EQUAL, YARRRML_PARAMETERS: parameters}
+    return {YARRRML_PREDICATE_SHORT: predicate, YARRRML_OBJECT_SHORT: obj}
 
 
-def _inverse_value_object(row, predicate, mapping_id, prefixes, mapping_format=RML_URI):
+def _inverse_value_object(row, predicate, mapping_id, prefixes, mapping_format=RML_OLD_URI):
     value = row['objectValue'] or row['object']
     if not value:
         logger.error("There is not object for a given predicate")
         raise InvalidMappingError("Review your mapping " + str(mapping_id))
     value = _inverse_term_value(value.toPython(), prefixes)
-    iri_namespace = RML_CORE_URI if mapping_format == RML_CORE_URI else R2RML_URI
+    iri_namespace = RML_URI if mapping_format == RML_URI else R2RML_URI
     if row['termtype'] == rdflib.URIRef(iri_namespace + "IRI"):
-        value += '~iri'
+        value += YARRRML_IRI
     if row['graphValue']:
-        pom = {'p': predicate, 'o': value}
+        pom = {YARRRML_PREDICATE_SHORT: predicate, YARRRML_OBJECT_SHORT: value}
         pom.update(add_inverse_graph([row['graphValue']]))
     else:
         pom = [predicate, value]
@@ -122,7 +123,7 @@ def _inverse_value_object(row, predicate, mapping_id, prefixes, mapping_format=R
         datatype = _inverse_map_value(row['datatypeMapValue'])
     language = None
     if row[YARRRML_LANGUAGE]:
-        language = row[YARRRML_LANGUAGE].toPython() + "~lang"
+        language = row[YARRRML_LANGUAGE].toPython() + YARRRML_LANG
     elif row['languageMapValue']:
         language = _inverse_map_value(row['languageMapValue'])
     for key, optional_value in ((YARRRML_DATATYPE, datatype), (YARRRML_LANGUAGE, language)):

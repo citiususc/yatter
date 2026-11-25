@@ -14,8 +14,8 @@ import ruamel.yaml as yaml
 from io import StringIO
 
 
-def translate(yarrrml_data, mapping_format=RML_CORE_URI):
-    if mapping_format not in (RML_CORE_URI, RML_URI, R2RML_URI):
+def translate(yarrrml_data, mapping_format=RML_URI):
+    if mapping_format not in MAPPING_FORMATS.values():
         raise ValueError(f"Unknown mapping format: {mapping_format}")
     logger.info("Translating YARRRML mapping to [R2]RML")
     try:
@@ -37,7 +37,7 @@ def _translate(yarrrml_data, mapping_format):
     external_references = []
     requested_format = mapping_format
     mappings, mapping_format = get_non_asserted_mappings(yarrrml_data, mapping_format)
-    if requested_format == RML_CORE_URI and mapping_format == STAR_URI:
+    if requested_format == RML_URI and mapping_format == STAR_URI:
         raise InvalidMappingError("RML-Star is not supported by the RML-Core profile")
     for mapping in yarrrml_data.get(YARRRML_MAPPINGS):
         if mapping_format == R2RML_URI:
@@ -66,7 +66,7 @@ def _translate(yarrrml_data, mapping_format):
 
     logger.info("RML content is created!")
     rml_mapping_string = "".join(rml_mapping)
-    if mapping_format == RML_CORE_URI:
+    if mapping_format == RML_URI:
         rml_mapping_string = rml_mapping_string.rstrip("\n") + "\n"
     try:
         graph = rdflib.Graph()
@@ -82,30 +82,30 @@ def _translate(yarrrml_data, mapping_format):
     return rml_mapping_string
 
 
-def inverse_translation(rdf_mapping, mapping_format=RML_CORE_URI):
-    if mapping_format not in (RML_CORE_URI, RML_URI, R2RML_URI):
+def inverse_translation(rdf_mapping, mapping_format=RML_URI):
+    if mapping_format not in MAPPING_FORMATS.values():
         raise ValueError(f"Unknown mapping format: {mapping_format}")
     logger.info("Translating [R2]RML mappings to YARRRML")
     yarrrml_mapping = {YARRRML_PREFIXES: {}, YARRRML_MAPPINGS: {}}
     rdf_mapping.bind('rml', rdflib.term.URIRef(
-        RML_CORE_URI if mapping_format == RML_CORE_URI else RML_URI
+        RML_URI if mapping_format == RML_URI else RML_OLD_URI
     ), replace=True)
     rdf_mapping.bind('rr', rdflib.term.URIRef(R2RML_URI), replace=True)
     rdf_mapping.bind('ql', rdflib.term.URIRef(QL_URI), replace=True)
     yarrrml_mapping[YARRRML_PREFIXES] = add_inverse_prefix(rdf_mapping)
     query = f'SELECT ?triplesMap WHERE {{ ?triplesMap {RML_LOGICAL_SOURCE}|{R2RML_LOGICAL_TABLE} ?source . }} '
     triples_map = [tm[rdflib.Variable('triplesMap')] for tm in rdf_mapping.query(query).bindings]
-    if mapping_format == RML_CORE_URI and not triples_map and len(rdf_mapping):
+    if mapping_format == RML_URI and not triples_map and len(rdf_mapping):
         raise InvalidMappingError("No RML-Core logical sources found; check the selected profile")
 
     for tm in triples_map:
         tm_name = tm.split("/")[-1].split("#")[-1]
-        if mapping_format == RML_CORE_URI and tm_name in yarrrml_mapping[YARRRML_MAPPINGS]:
+        if mapping_format == RML_URI and tm_name in yarrrml_mapping[YARRRML_MAPPINGS]:
             raise InvalidMappingError(f"Triples maps have the same YARRRML identifier: {tm_name}")
         yarrrml_tm = {YARRRML_SOURCES: [add_inverse_source(tm, rdf_mapping, mapping_format)]}
         subject, classes = add_inverse_subject(tm, rdf_mapping, mapping_format)
         yarrrml_tm.update(subject)
-        yarrrml_tm['po'] = add_inverse_pom(
+        yarrrml_tm[YARRRML_PREDICATEOBJECT_SHORT] = add_inverse_pom(
             tm, rdf_mapping, classes, yarrrml_mapping[YARRRML_PREFIXES], mapping_format
         )
         yarrrml_mapping[YARRRML_MAPPINGS][tm_name] = yarrrml_tm
@@ -114,7 +114,7 @@ def inverse_translation(rdf_mapping, mapping_format=RML_CORE_URI):
     return yarrrml_mapping
 
 
-def inverse_translate(rdf_mapping, mapping_format=RML_CORE_URI):
+def inverse_translate(rdf_mapping, mapping_format=RML_URI):
     """Compatibility alias for inverse_translation."""
     return inverse_translation(rdf_mapping, mapping_format)
 

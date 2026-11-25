@@ -10,7 +10,7 @@ def get_prefixes():
     return prefixes_context.get() or {}
 
 
-def add_mapping(mapping, mappings, it, mapping_format=RML_URI):
+def add_mapping(mapping, mappings, it, mapping_format=RML_OLD_URI):
     map_template = "<" + mapping + "_" + str(it) + "> a "
     if mappings[mapping]:
         if mappings[mapping] == "non_asserted":
@@ -19,7 +19,7 @@ def add_mapping(mapping, mappings, it, mapping_format=RML_URI):
     return map_template
 
 
-def add_prefix(data, mapping_format=RML_URI):
+def add_prefix(data, mapping_format=RML_OLD_URI):
     template = []
     common_prefixes = []
     prefixes_context.set({})
@@ -28,42 +28,42 @@ def add_prefix(data, mapping_format=RML_URI):
         prefixes = data.get(YARRRML_PREFIXES)
         for prefix in prefixes:
             prefix_uri = data.get(YARRRML_PREFIXES).get(prefix)
-            if mapping_format == RML_CORE_URI and prefix == "rml" and prefix_uri != RML_CORE_URI:
+            if mapping_format == RML_URI and prefix == "rml" and prefix_uri != RML_URI:
                 raise InvalidMappingError("The rml prefix is reserved for RML-Core")
             check_common_prefixes(prefix_uri, common_prefixes)
             template.append(RML_PREFIX + " " + prefix + ": <" + prefix_uri + ">.\n")
 
-    if mapping_format != RML_CORE_URI and "r2rml" not in common_prefixes:
-        template.append(RML_PREFIX + " rr: <" + R2RML_URI + ">.\n")
-    if mapping_format == RML_CORE_URI:
-        if data.get(YARRRML_PREFIXES, {}).get("rml") != RML_CORE_URI:
-            template.append(RML_PREFIX + " rml: <" + RML_CORE_URI + ">.\n")
+    if mapping_format != RML_URI and "r2rml" not in common_prefixes:
+        template.append(RML_PREFIX + " " + R2RML_TERM_PREFIX + " <" + R2RML_URI + ">.\n")
+    if mapping_format == RML_URI:
+        if data.get(YARRRML_PREFIXES, {}).get("rml") != RML_URI:
+            template.append(RML_PREFIX + " " + RML_TERM_PREFIX + " <" + RML_URI + ">.\n")
     elif "rml" not in common_prefixes:
-        template.append(RML_PREFIX + " rml: <" + RML_URI + ">.\n")
+        template.append(RML_PREFIX + " " + RML_TERM_PREFIX + " <" + RML_OLD_URI + ">.\n")
     if "rdf" not in common_prefixes:
-        template.append(RML_PREFIX + " rdf: <" + RDF_URI + ">.\n")
+        template.append(RML_PREFIX + " " + RDF_TERM_PREFIX + " <" + RDF_URI + ">.\n")
     if "rdfs" not in common_prefixes:
-        template.append(RML_PREFIX + " rdfs: <" + RDFS_URI + ">.\n")
+        template.append(RML_PREFIX + " " + RDFS_TERM_PREFIX + " <" + RDFS_URI + ">.\n")
     if "xsd" not in common_prefixes:
-        template.append(RML_PREFIX + " xsd: <" + XSD_URI + ">.\n")
+        template.append(RML_PREFIX + " " + XSD_TERM_PREFIX + " <" + XSD_URI + ">.\n")
     if "ql" not in common_prefixes:
-        template.append(RML_PREFIX + " ql: <" + QL_URI + ">.\n")
+        template.append(RML_PREFIX + " " + QL_TERM_PREFIX + " <" + QL_URI + ">.\n")
     if "d2rq" not in common_prefixes:
-        template.append(RML_PREFIX + " d2rq: <" + D2RQ_URI + ">.\n")
+        template.append(RML_PREFIX + " " + D2RQ_TERM_PREFIX + " <" + D2RQ_URI + ">.\n")
     if "foaf" not in common_prefixes:
-        template.append(RML_PREFIX + " foaf: <" + FOAF_URI + ">.\n")
+        template.append(RML_PREFIX + " " + FOAF_TERM_PREFIX + " <" + FOAF_URI + ">.\n")
     if "schema" not in common_prefixes:
-        template.append(RML_PREFIX + " schema: <" + SCHEMA_URI + ">.\n")
+        template.append(RML_PREFIX + " " + SCHEMA_TERM_PREFIX + " <" + SCHEMA_URI + ">.\n")
     if "formats" not in common_prefixes:
-        template.append(RML_PREFIX + " formats: <" + FORMATS_URI + ">.\n")
-    if mapping_format != RML_CORE_URI and "comp" not in common_prefixes:
-        template.append(RML_PREFIX + " comp: <" + COMPRESSION_URI + ">.\n")
+        template.append(RML_PREFIX + " " + FORMATS_TERM_PREFIX + " <" + FORMATS_URI + ">.\n")
+    if mapping_format != RML_URI and "comp" not in common_prefixes:
+        template.append(RML_PREFIX + " " + COMPRESSION_TERM_PREFIX + " <" + COMPRESSION_URI + ">.\n")
     if "void" not in common_prefixes:
-        template.append(RML_PREFIX + " void: <" + VOID_URI + ">.\n")
-    if mapping_format != RML_CORE_URI and "fnml" not in common_prefixes:
-        template.append(RML_PREFIX + " fnml: <" + FNML_URI + ">.\n")
+        template.append(RML_PREFIX + " " + VOID_TERM_PREFIX + " <" + VOID_URI + ">.\n")
+    if mapping_format != RML_URI and "fnml" not in common_prefixes:
+        template.append(RML_PREFIX + " " + FNML_TERM_PREFIX + " <" + FNML_URI + ">.\n")
     if "grel" not in common_prefixes:
-        template.append(RML_PREFIX + " grel: <" + GREL_URI + ">.\n")
+        template.append(RML_PREFIX + " " + GREL_TERM_PREFIX + " <" + GREL_URI + ">.\n")
     if "base" not in common_prefixes:
         template.append(RML_BASE + " <" + EXAMPLE_URI + ">.\n")
 
@@ -75,7 +75,7 @@ def add_prefix(data, mapping_format=RML_URI):
 def check_common_prefixes(prefix_uri, common_prefixes):
     if prefix_uri == R2RML_URI:
         common_prefixes.append("r2rml")
-    elif prefix_uri == RML_URI:
+    elif prefix_uri == RML_OLD_URI:
         common_prefixes.append("rml")
     elif prefix_uri == RDF_URI:
         common_prefixes.append("rdf")

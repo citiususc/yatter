@@ -28,7 +28,7 @@ def add_predicate_object_maps(data, mapping, mapping_format):
     )
 
 
-def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI):
+def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_OLD_URI):
     predicates = "".join(
         _generate_predicate_map(predicate, mapping_format)
         for predicate in predicate_object[YARRRML_PREDICATES]
@@ -43,7 +43,7 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_URI
     return predicates + objects + graphs + "\t];"
 
 
-def _generate_predicate_map(predicate, mapping_format=RML_URI):
+def _generate_predicate_map(predicate, mapping_format=RML_OLD_URI):
     value = predicate
     execution = False
     if isinstance(predicate, dict) and YARRRML_VALUE in predicate:
@@ -53,7 +53,7 @@ def _generate_predicate_map(predicate, mapping_format=RML_URI):
         execution = True
     template = generate_rml_termmap(
         R2RML_PREDICATE, R2RML_PREDICATE_CLASS, value, "\t\t\t",
-        RML_URI if mapping_format == R2RML_URI else mapping_format
+        RML_OLD_URI if mapping_format == R2RML_URI else mapping_format
     )
     if execution:
         template = template.replace(
@@ -104,7 +104,7 @@ def _generate_collection_object(data, mapping, obj, mapping_format):
             data, mapping, gather, YARRRML_MAPPING, R2RML_PARENT_TRIPLESMAP, mapping_format
         )
         if obj[YARRRML_GATHER_AS] in YARRRML_GATHER_AS_OPTIONS:
-            template += "\t\t\t" + RML_CC_GATHER_AS + " rdf:" + obj[YARRRML_GATHER_AS].capitalize() + ";\n"
+            template += "\t\t\t" + RML_CC_GATHER_AS + " " + RDF_TERM_PREFIX + obj[YARRRML_GATHER_AS].capitalize() + ";\n"
         if YARRRML_VALUE in obj:
             term_map, text = generate_rml_termmap_text(obj[YARRRML_VALUE], mapping_format)
             template += "\t\t\t" + _term_for_format(term_map, mapping_format) + " " + _format_term_map_value(term_map, text) + ";\n"
@@ -120,7 +120,7 @@ def _generate_value_object(obj, mapping_format):
     rml_property = STAR_OBJECT if mapping_format == STAR_URI else R2RML_OBJECT
     template = generate_rml_termmap(
         rml_property, R2RML_OBJECT_CLASS, obj[YARRRML_VALUE], "\t\t\t", mapping_format,
-        literal_constant=obj.get(YARRRML_TYPE) == "literal",
+        literal_constant=obj.get(YARRRML_TYPE) == YARRRML_LITERAL_TYPE,
     )
     optional_value = None
     if YARRRML_DATATYPE in obj:
@@ -147,7 +147,7 @@ def _generate_value_object(obj, mapping_format):
     return _append_object_term_type(template, obj, mapping_format)
 
 
-def _append_object_term_type(template, obj, mapping_format=RML_URI):
+def _append_object_term_type(template, obj, mapping_format=RML_OLD_URI):
     if YARRRML_TYPE in obj:
         term_type = get_rml_termtype(obj[YARRRML_TYPE])
         if term_type:
@@ -204,7 +204,7 @@ def _get_mapping_join_cardinality(data, mapping_join, mapping_format):
     return len(subject_list) * len(source_list)
 
 
-def _format_join_conditions(om, mapping, indentation, mapping_format=RML_URI):
+def _format_join_conditions(om, mapping, indentation, mapping_format=RML_OLD_URI):
     if YARRRML_CONDITION not in om:
         return ""
 
@@ -222,8 +222,8 @@ def _format_join_conditions(om, mapping, indentation, mapping_format=RML_URI):
             raise InvalidMappingError("Only two parameters can be indicated (child and parent)")
 
         try:
-            child = parameters[0]['value'].replace('"', r'\"').replace("$(", '"').replace(")", '"')
-            parent = parameters[1]['value'].replace('"', r'\"').replace("$(", '"').replace(")", '"')
+            child = parameters[0][YARRRML_VALUE].replace('"', r'\"').replace("$(", '"').replace(")", '"')
+            parent = parameters[1][YARRRML_VALUE].replace('"', r'\"').replace("$(", '"').replace(")", '"')
         except (KeyError, AttributeError, TypeError) as error:
             logger.error("ERROR: Parameters not normalized correctly")
             raise InvalidMappingError(

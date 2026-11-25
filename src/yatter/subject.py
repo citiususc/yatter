@@ -24,10 +24,12 @@ def add_subject(data, mapping, mapping_format):
         for subject in mapping_data[YARRRML_SUBJECTS]
     ]
     if not rml_subjects:
-        if mapping_format == RML_CORE_URI:
+        if mapping_format == RML_URI:
             rml_subjects.append(
-                "\trml:subjectMap [\n\t\ta rml:SubjectMap;\n"
-                "\t\trml:termType rml:BlankNode;\n\t];\n"
+                f"\t{_term_for_format(R2RML_SUBJECT, mapping_format)} [\n"
+                f"\t\ta {_term_for_format(R2RML_SUBJECT_CLASS, mapping_format)};\n"
+                f"\t\t{_term_for_format(R2RML_TERMTYPE, mapping_format)} "
+                f"{_term_for_format(R2RML_BLANK_NODE, mapping_format)};\n\t];\n"
             )
         else:
             rml_subjects.append(
@@ -104,8 +106,8 @@ def _generate_subject(data, mapping, subject, mapping_format):
     return termmap
 
 
-def add_inverse_subject(tm, rdf_mapping, mapping_format=RML_URI):
-    if mapping_format == RML_CORE_URI:
+def add_inverse_subject(tm, rdf_mapping, mapping_format=RML_OLD_URI):
+    if mapping_format == RML_URI:
         return add_inverse_core_subject(tm, rdf_mapping)
     term = lambda value: _term_for_format(value, mapping_format)
     expression_path = "|".join(dict.fromkeys(
@@ -129,7 +131,7 @@ def add_inverse_subject(tm, rdf_mapping, mapping_format=RML_URI):
         if '{' in subject:
             subject = subject.replace('{', "$(").replace('}', ')')
 
-    yarrrml_subject = {'s': subject}
+    yarrrml_subject = {YARRRML_SUBJECT_SHORT: subject}
 
     query = f'SELECT ?class_value  WHERE {{ <{tm}> {term(R2RML_SUBJECT)} ?subject . ' \
             f'?subject {term(R2RML_CLASS)} ?class_value }} '
@@ -154,38 +156,38 @@ def add_inverse_core_subject(tm, rdf_mapping):
     if len(subject_maps) + len(subjects) != 1:
         raise InvalidMappingError("A mapping must define exactly one subject map")
     if subjects:
-        return {"s": str(subjects[0])}, []
+        return {YARRRML_SUBJECT_SHORT: str(subjects[0])}, []
     subject_map = subject_maps[0]
     term_type = rdf_mapping.value(subject_map, CORE.termType)
     has_expression = any(rdf_mapping.value(subject_map, predicate) is not None
                          for predicate in (CORE.constant, CORE.reference, CORE.template))
     execution = rdf_mapping.value(subject_map, CORE.functionExecution)
     if execution is not None:
-        subject = {"s": read_function(rdf_mapping, execution)}
+        subject = {YARRRML_SUBJECT_SHORT: read_function(rdf_mapping, execution)}
     elif rdf_mapping.value(subject_map, CORE.gather) is not None:
-        subject = {"s": read_gather(rdf_mapping, subject_map)}
+        subject = {YARRRML_SUBJECT_SHORT: read_gather(rdf_mapping, subject_map)}
     elif not has_expression and term_type == CORE.BlankNode:
         subject = {}
     else:
         value = read_expression(rdf_mapping, subject_map)
         if term_type == CORE.BlankNode:
-            subject = {"s": {"value": value, "type": "blank"}}
+            subject = {YARRRML_SUBJECT_SHORT: {YARRRML_VALUE: value, YARRRML_TYPE: YARRRML_BLANK}}
         else:
-            subject = {"s": value}
+            subject = {YARRRML_SUBJECT_SHORT: value}
     classes = list(rdf_mapping.objects(subject_map, CORE["class"]))
     graph_values = list(rdf_mapping.objects(subject_map, CORE.graph))
     for graph_map in rdf_mapping.objects(subject_map, CORE.graphMap):
         graph_values.append(read_graph_map(rdf_mapping, graph_map))
     if graph_values:
-        subject["graphs"] = [str(value) if isinstance(value, rdflib.URIRef) else value
-                             for value in graph_values]
+        subject[YARRRML_GRAPHS] = [str(value) if isinstance(value, rdflib.URIRef) else value
+                                   for value in graph_values]
     targets = read_targets(rdf_mapping, subject_map)
     if targets:
-        current = subject.get("s")
+        current = subject.get(YARRRML_SUBJECT_SHORT)
         if current is None:
             raise InvalidMappingError("Targets on anonymous subjects cannot be represented")
         if not isinstance(current, dict):
-            current = {"value": current}
-        current["targets"] = targets
-        subject["s"] = [current]
+            current = {YARRRML_VALUE: current}
+        current[YARRRML_TARGETS] = targets
+        subject[YARRRML_SUBJECT_SHORT] = [current]
     return subject, classes

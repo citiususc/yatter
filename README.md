@@ -61,10 +61,13 @@ yarrrml_content = yatter.inverse_translate(rml_graph)
 ```
 - for the previous RML profile, pass its namespace explicitly in either direction:
 ```python
-RML_OLD_URI = 'http://semweb.mmlab.be/ns/rml#'
+from yatter.constants import RML_OLD_URI
+
 rml_content = yatter.translate(yarrrml_mapping, mapping_format=RML_OLD_URI)
 yarrrml_content = yatter.inverse_translate(rml_graph, mapping_format=RML_OLD_URI)
 ```
+`RML_URI` identifies the current vocabulary; `RML_OLD_URI` identifies the
+previous one. Code that used `RML_URI` for legacy RML must use `RML_OLD_URI`.
 - for translating **YARRRML mappings** to **R2RML mappings** (and inverse):
 ```python
 import yatter

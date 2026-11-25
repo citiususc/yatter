@@ -27,7 +27,7 @@ def write_results(args, mapping):
 
 
 def parse_inputs(args):
-    input_format = RML_CORE_URI
+    input_format = RML_URI
     yaml = YAML(typ='safe', pure=True)
     if args.input_mapping_path and args.output_mapping_path:
         if args.input_mapping_path.endswith('.yml') or args.input_mapping_path.endswith('.yaml'):
@@ -44,12 +44,7 @@ def parse_inputs(args):
             logger.error("Input mapping does not have a valid extension (.yml, .yaml, .ttl, .rml, .r2rml or .jelly)")
             raise ValueError("Change your mapping extension to a valid one")
 
-        input_format = {
-            None: RML_CORE_URI,
-            "RML": RML_CORE_URI,
-            "RML-OLD": RML_URI,
-            "R2RML": R2RML_URI,
-        }[args.format]
+        input_format = MAPPING_FORMATS[args.format or "RML"]
     elif args.merge_mapping:
         input_data = []
         for mapping in args.merge_mapping:
@@ -68,7 +63,7 @@ def define_args():
     parser.add_argument("-o", "--output_mapping_path", required=False, help="Output path for the generated mapping")
     parser.add_argument("-m", "--merge_mapping", nargs="*", required=False, help="List of mappings to be merged")
     parser.add_argument("-f", "--format", required=False,
-                        choices=("RML", "RML-OLD", "R2RML"),
+                        choices=tuple(MAPPING_FORMATS),
                         help="Mapping format (RML by default)")
     return parser
 

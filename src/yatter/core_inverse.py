@@ -1,11 +1,21 @@
 import rdflib
 from rdflib.collection import Collection
 
-from .constants import RML_CORE_URI, YARRRML_OUTPUT_FORMAT
+from .constants import (
+    DCAT_URI, FORMATS_URI, RDF_TYPE, RML_URI, SPARQL_SERVICE_URI, VOID_URI,
+    YARRRML_ACCESS, YARRRML_COMPRESSION, YARRRML_CONDITION, YARRRML_DATATYPE,
+    YARRRML_BLANK, YARRRML_EMPTY, YARRRML_EQUAL, YARRRML_FUNCTION, YARRRML_GATHER,
+    YARRRML_GATHER_AS, YARRRML_GRAPH, YARRRML_IRI_TYPE, YARRRML_JOIN_CHILD_PARAMETER,
+    YARRRML_JOIN_PARENT_PARAMETER, YARRRML_LANGUAGE, YARRRML_LITERAL_TYPE,
+    YARRRML_MAPPING, YARRRML_OBJECT_SHORT, YARRRML_OUTPUT_FORMAT, YARRRML_PARAMETER,
+    YARRRML_PARAMETERS, YARRRML_PREDICATE_SHORT, YARRRML_SERIALIZATION,
+    YARRRML_STRATEGY, YARRRML_TARGET_DCAT, YARRRML_TARGET_SPARQL,
+    YARRRML_TARGET_VOID, YARRRML_TARGETS, YARRRML_TYPE, YARRRML_VALUE,
+)
 from .errors import InvalidMappingError
 
 
-RML = rdflib.Namespace(RML_CORE_URI)
+RML = rdflib.Namespace(RML_URI)
 
 
 def read_expression(graph, node):
@@ -49,35 +59,36 @@ def read_targets(graph, node):
         return []
     target = targets[0]
     destination = _single(graph, target, RML.target, required=True)
-    void = rdflib.Namespace("http://rdfs.org/ns/void#")
-    dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
-    sd = rdflib.Namespace("http://www.w3.org/ns/sparql-service-description#")
-    choices = [(void.dataDump, "void"), (dcat.dataDump, "dcat"), (sd.endpoint, "sparql")]
+    void = rdflib.Namespace(VOID_URI)
+    dcat = rdflib.Namespace(DCAT_URI)
+    sd = rdflib.Namespace(SPARQL_SERVICE_URI)
+    choices = [(void.dataDump, YARRRML_TARGET_VOID), (dcat.dataDump, YARRRML_TARGET_DCAT),
+               (sd.endpoint, YARRRML_TARGET_SPARQL)]
     accesses = [(graph.value(destination, predicate), kind) for predicate, kind in choices]
     accesses = [(access, kind) for access, kind in accesses if access is not None]
     if len(accesses) != 1:
         raise InvalidMappingError("Unsupported logical target destination")
     access, kind = accesses[0]
-    result = {"access": str(access), "type": kind}
+    result = {YARRRML_ACCESS: str(access), YARRRML_TYPE: kind}
     serialization = _single(graph, target, RML.serialization)
     if serialization is not None:
-        formats = rdflib.Namespace("http://www.w3.org/ns/formats/")
+        formats = rdflib.Namespace(FORMATS_URI)
         names = {formats[value]: name for name, value in YARRRML_OUTPUT_FORMAT.items()}
         if serialization not in names:
             raise InvalidMappingError("Unsupported target serialization")
-        result["serialization"] = names[serialization]
+        result[YARRRML_SERIALIZATION] = names[serialization]
     compression = _single(graph, destination, RML.compression)
     if compression is not None:
-        if not str(compression).startswith(RML_CORE_URI):
+        if not str(compression).startswith(RML_URI):
             raise InvalidMappingError("Unsupported target compression")
-        result["compression"] = str(compression).removeprefix(RML_CORE_URI)
+        result[YARRRML_COMPRESSION] = str(compression).removeprefix(RML_URI)
     return [result]
 
 
 def read_graph_map(graph, node):
     value = read_expression(graph, node)
     targets = read_targets(graph, node)
-    return {"value": value, "targets": targets} if targets else value
+    return {YARRRML_VALUE: value, YARRRML_TARGETS: targets} if targets else value
 
 
 def read_function(graph, execution):
@@ -96,8 +107,8 @@ def read_function(graph, execution):
             if isinstance(input_value, rdflib.Literal) and (input_value.datatype or input_value.language):
                 raise InvalidMappingError("Typed function input cannot be represented without loss")
             value = str(input_value)
-        parameters.append({"parameter": _iri(graph, parameter), "value": value})
-    return {"function": _iri(graph, function), "parameters": parameters}
+        parameters.append({YARRRML_PARAMETER: _iri(graph, parameter), YARRRML_VALUE: value})
+    return {YARRRML_FUNCTION: _iri(graph, function), YARRRML_PARAMETERS: parameters}
 
 
 def _mapping_name(value):
@@ -108,13 +119,13 @@ def _mapping_name(value):
 
 def read_join(graph, node):
     parent = _single(graph, node, RML.parentTriplesMap, required=True)
-    result = {"mapping": _mapping_name(parent)}
+    result = {YARRRML_MAPPING: _mapping_name(parent)}
     conditions = []
     for condition in graph.objects(node, RML.joinCondition):
         parameters = []
         for name, shortcut, mapping in (
-            ("str1", RML.child, RML.childMap),
-            ("str2", RML.parent, RML.parentMap),
+            (YARRRML_JOIN_CHILD_PARAMETER, RML.child, RML.childMap),
+            (YARRRML_JOIN_PARENT_PARAMETER, RML.parent, RML.parentMap),
         ):
             reference = _single(graph, condition, shortcut)
             expression_map = _single(graph, condition, mapping)
@@ -122,9 +133,9 @@ def read_join(graph, node):
                 raise InvalidMappingError("Join must have one child and one parent expression")
             value = "$(" + str(reference) + ")" if reference is not None else read_expression(graph, expression_map)
             parameters.append([name, value])
-        conditions.append({"function": "equal", "parameters": parameters})
+        conditions.append({YARRRML_FUNCTION: YARRRML_EQUAL, YARRRML_PARAMETERS: parameters})
     if conditions:
-        result["condition"] = conditions[0] if len(conditions) == 1 else conditions
+        result[YARRRML_CONDITION] = conditions[0] if len(conditions) == 1 else conditions
     return result
 
 
@@ -147,17 +158,17 @@ def read_gather(graph, node):
             items.append(read_join(graph, item))
         else:
             items.append(read_expression(graph, item))
-    result = {"gather": items[0] if len(items) == 1 and isinstance(items[0], str) else items,
-              "gatherAs": types[gather_as]}
+    result = {YARRRML_GATHER: items[0] if len(items) == 1 and isinstance(items[0], str) else items,
+              YARRRML_GATHER_AS: types[gather_as]}
     if any(graph.value(node, predicate) is not None
            for predicate in (RML.constant, RML.reference, RML.template)):
-        result["value"] = read_expression(graph, node)
+        result[YARRRML_VALUE] = read_expression(graph, node)
     strategy = _single(graph, node, RML.strategy)
     if strategy is not None:
-        result["strategy"] = str(strategy).removeprefix(RML_CORE_URI)
+        result[YARRRML_STRATEGY] = str(strategy).removeprefix(RML_URI)
     allow_empty = _single(graph, node, RML.allowEmptyListAndContainer)
     if allow_empty is not None:
-        result["empty"] = allow_empty.toPython()
+        result[YARRRML_EMPTY] = allow_empty.toPython()
     return result
 
 
@@ -170,18 +181,18 @@ def read_object(graph, node):
     elif graph.value(node, RML.gather) is not None:
         result = read_gather(graph, node)
     else:
-        result = {"value": read_expression(graph, node)}
+        result = {YARRRML_VALUE: read_expression(graph, node)}
         constant = _single(graph, node, RML.constant)
         if isinstance(constant, rdflib.Literal):
             if constant.datatype or constant.language:
                 raise InvalidMappingError("Typed or language-tagged constant cannot be represented without loss")
-            result["type"] = "literal"
+            result[YARRRML_TYPE] = YARRRML_LITERAL_TYPE
     term_type = _single(graph, node, RML.termType)
-    types = {RML.IRI: "iri", RML.BlankNode: "blank", RML.Literal: "literal"}
+    types = {RML.IRI: YARRRML_IRI_TYPE, RML.BlankNode: YARRRML_BLANK, RML.Literal: YARRRML_LITERAL_TYPE}
     if term_type is not None:
         if term_type not in types:
             raise InvalidMappingError("Unsupported Core term type")
-        result["type"] = types[term_type]
+        result[YARRRML_TYPE] = types[term_type]
     datatype = _single(graph, node, RML.datatype)
     datatype_map = _single(graph, node, RML.datatypeMap)
     language = _single(graph, node, RML.language)
@@ -189,21 +200,21 @@ def read_object(graph, node):
     if sum(value is not None for value in (datatype, datatype_map, language, language_map)) > 1:
         raise InvalidMappingError("Object has incompatible datatype or language maps")
     if datatype is not None:
-        result["datatype"] = _iri(graph, datatype)
+        result[YARRRML_DATATYPE] = _iri(graph, datatype)
     elif datatype_map is not None:
-        result["datatype"] = read_expression(graph, datatype_map)
+        result[YARRRML_DATATYPE] = read_expression(graph, datatype_map)
     elif language is not None:
-        result["language"] = str(language)
+        result[YARRRML_LANGUAGE] = str(language)
     elif language_map is not None:
-        result["language"] = read_expression(graph, language_map)
+        result[YARRRML_LANGUAGE] = read_expression(graph, language_map)
     targets = read_targets(graph, node)
     if targets:
-        result["targets"] = targets
+        result[YARRRML_TARGETS] = targets
     return result
 
 
 def read_predicate_object_maps(graph, triples_map, classes):
-    result = [{"p": "rdf:type", "o": str(cls)} for cls in classes]
+    result = [{YARRRML_PREDICATE_SHORT: RDF_TYPE, YARRRML_OBJECT_SHORT: str(cls)} for cls in classes]
     for pom in graph.objects(triples_map, RML.predicateObjectMap):
         predicates = [str(value) for value in graph.objects(pom, RML.predicate)]
         for node in graph.objects(pom, RML.predicateMap):
@@ -212,17 +223,17 @@ def read_predicate_object_maps(graph, triples_map, classes):
             targets = read_targets(graph, node)
             if targets:
                 if not isinstance(predicate, dict):
-                    predicate = {"value": predicate}
-                predicate["targets"] = targets
+                    predicate = {YARRRML_VALUE: predicate}
+                predicate[YARRRML_TARGETS] = targets
             predicates.append(predicate)
         objects = []
         for value in graph.objects(pom, RML.object):
             if isinstance(value, rdflib.Literal):
                 if value.datatype or value.language:
                     raise InvalidMappingError("Typed or language-tagged constant cannot be represented without loss")
-                objects.append({"value": str(value), "type": "literal"})
+                objects.append({YARRRML_VALUE: str(value), YARRRML_TYPE: YARRRML_LITERAL_TYPE})
             else:
-                objects.append({"value": str(value)})
+                objects.append({YARRRML_VALUE: str(value)})
         objects.extend(read_object(graph, node) for node in graph.objects(pom, RML.objectMap))
         graphs = [str(value) for value in graph.objects(pom, RML.graph)]
         graphs.extend(read_graph_map(graph, node) for node in graph.objects(pom, RML.graphMap))
@@ -231,8 +242,8 @@ def read_predicate_object_maps(graph, triples_map, classes):
         for predicate in predicates:
             for obj in objects:
                 for graph_value in graphs or [None]:
-                    item = {"p": predicate, "o": obj}
+                    item = {YARRRML_PREDICATE_SHORT: predicate, YARRRML_OBJECT_SHORT: obj}
                     if graph_value is not None:
-                        item["graph"] = graph_value
+                        item[YARRRML_GRAPH] = graph_value
                     result.append(item)
     return result

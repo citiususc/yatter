@@ -1,7 +1,7 @@
 from .constants import *
 
 
-def add_logical_targets(yarrrml_data, external_targets, mapping_format=RML_URI):
+def add_logical_targets(yarrrml_data, external_targets, mapping_format=RML_OLD_URI):
     logical_targets = []
     for target in external_targets:
         logical_targets.extend(generate_logical_target(external_targets.get(target), target, mapping_format))
@@ -11,7 +11,7 @@ def add_logical_targets(yarrrml_data, external_targets, mapping_format=RML_URI):
     return logical_targets
 
 
-def add_internal_logical_target(mapping_id, mapping_data, internal_targets, external_targets, local_target_id=0, mapping_format=RML_URI):
+def add_internal_logical_target(mapping_id, mapping_data, internal_targets, external_targets, local_target_id=0, mapping_format=RML_OLD_URI):
     keys = mapping_data.keys()
     for key in keys:
         if type(mapping_data[key]) is list:
@@ -46,7 +46,7 @@ def add_internal_logical_target(mapping_id, mapping_data, internal_targets, exte
             local_target_id += 1
 
 
-def generate_logical_target(target_yaml_data, id_target, mapping_format=RML_URI):
+def generate_logical_target(target_yaml_data, id_target, mapping_format=RML_OLD_URI):
     logical_targets = []
     output_type = None
     format = None
@@ -61,28 +61,28 @@ def generate_logical_target(target_yaml_data, id_target, mapping_format=RML_URI)
         if YARRRML_TYPE in target_yaml_data:
             output_type = target_yaml_data[YARRRML_TYPE]
         if YARRRML_SERIALIZATION in target_yaml_data:
-            format = "formats:" + YARRRML_OUTPUT_FORMAT[target_yaml_data[YARRRML_SERIALIZATION]]
+            format = FORMATS_TERM_PREFIX + YARRRML_OUTPUT_FORMAT[target_yaml_data[YARRRML_SERIALIZATION]]
         if YARRRML_COMPRESSION in target_yaml_data:
-            compression = ("rml:" if mapping_format == RML_CORE_URI else "comp:") + target_yaml_data[YARRRML_COMPRESSION]
+            compression = (RML_TERM_PREFIX if mapping_format == RML_URI else COMPRESSION_TERM_PREFIX) + target_yaml_data[YARRRML_COMPRESSION]
 
         logical_target.append("\t " + RML_TARGET + " [\n\t\t")
 
-        if output_type == "sparql":
-            target_description = "sd:endpoint <" + access + ">;\n\t\tsd:supportedLanguage sd:SPARQL11Update"
-        elif output_type == "dcat":
-            target_description = "a dcat:Dataset;\n\t\tdcat:dataDump <" + access + ">"
+        if output_type == YARRRML_TARGET_SPARQL:
+            target_description = SPARQL_ENDPOINT + " <" + access + ">;\n\t\t" + SPARQL_SUPPORTED_LANGUAGE + " " + SPARQL_11_UPDATE
+        elif output_type == YARRRML_TARGET_DCAT:
+            target_description = "a " + DCAT_DATASET + ";\n\t\t" + DCAT_DATA_DUMP + " <" + access + ">"
         else:
-            target_description = "a void:Dataset;\n\t\tvoid:dataDump <" + access + ">"
-        if compression and mapping_format == RML_CORE_URI:
-            target_description += ";\n\t\trml:compression " + compression
+            target_description = "a " + VOID_DATASET + ";\n\t\t" + VOID_DATA_DUMP + " <" + access + ">"
+        if compression and mapping_format == RML_URI:
+            target_description += ";\n\t\t" + RML_COMPRESSION + " " + compression
         logical_target.append(target_description + "\n\t];\n")
 
         if format:
             logical_target.append("\t " + RML_SERIALIZATION + " " + format + ";")
         else:
-            logical_target.append("\t " + RML_SERIALIZATION + " formats:N-Quads;")
+            logical_target.append("\t " + RML_SERIALIZATION + " " + FORMATS_NQUADS + ";")
 
-        if compression and mapping_format != RML_CORE_URI:
+        if compression and mapping_format != RML_URI:
             logical_target.append("\n\t " + RML_COMPRESSION + " " + compression + ";")
         logical_targets.append("".join(logical_target)[0:-1] + ".\n\n")
     return logical_targets

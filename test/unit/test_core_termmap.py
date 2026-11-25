@@ -10,10 +10,14 @@ from yatter.constants import (
     R2RML_OBJECT_CLASS,
     R2RML_SUBJECT,
     R2RML_SUBJECT_CLASS,
-    RML_CORE_URI,
     RML_URI,
+    R2RML_COLUMN,
+    R2RML_SQL_QUERY,
+    RML_EXECUTION,
+    RML_VALUE_MAP,
+    RML_OLD_URI,
 )
-from yatter.termmap import generate_rml_termmap
+from yatter.termmap import _term_for_format, generate_rml_termmap
 from yatter.cli import main
 
 
@@ -21,7 +25,7 @@ from yatter.cli import main
     ("mapping_format", "property_name", "class_name", "value", "expected"),
     [
         (
-            RML_CORE_URI,
+            RML_URI,
             R2RML_SUBJECT,
             R2RML_SUBJECT_CLASS,
             "http://example.org/$(id)",
@@ -29,7 +33,7 @@ from yatter.cli import main
             '\t\trml:template "http://example.org/{id}";\n\t];\n',
         ),
         (
-            RML_CORE_URI,
+            RML_URI,
             R2RML_OBJECT,
             R2RML_OBJECT_CLASS,
             "$(name)",
@@ -37,7 +41,7 @@ from yatter.cli import main
             '\t\trml:reference "name";\n\t];\n',
         ),
         (
-            RML_URI,
+            RML_OLD_URI,
             R2RML_SUBJECT,
             R2RML_SUBJECT_CLASS,
             "http://example.org/$(id)",
@@ -52,6 +56,24 @@ def test_termmap_format(mapping_format, property_name, class_name, value, expect
     ) == expected
 
 
+@pytest.mark.parametrize(
+    ("term", "expected"),
+    [
+        (R2RML_COLUMN, "rml:reference"),
+        (RML_EXECUTION, "rml:functionExecution"),
+        (RML_VALUE_MAP, "rml:inputValueMap"),
+    ],
+)
+def test_core_terms_with_different_names(term, expected):
+    assert _term_for_format(term, RML_URI) == expected
+    assert _term_for_format(term, RML_OLD_URI) == term
+
+
+def test_core_rejects_r2rml_only_term():
+    with pytest.raises(ValueError, match="No RML-Core term"):
+        _term_for_format(R2RML_SQL_QUERY, RML_URI)
+
+
 def test_unknown_format_is_rejected():
     with pytest.raises(ValueError, match="Unknown mapping format"):
         yatter.translate({}, mapping_format="unknown")
@@ -60,12 +82,32 @@ def test_unknown_format_is_rejected():
         yatter.inverse_translate(Graph(), mapping_format="unknown")
 
 
+@pytest.mark.parametrize(
+    ("mapping_format", "case_path"),
+    [
+        (RML_URI, "rml-core/YARRRML-CORE-TC-0001"),
+        (RML_OLD_URI, "rml-old/YARRRML-CORE_OLD-TC-0001"),
+    ],
+)
+def test_uri_constants_select_translation_profiles(mapping_format, case_path):
+    case = Path(__file__).parents[1] / case_path
+    with (case / "mapping.yml").open() as stream:
+        mapping = YAML(typ="safe", pure=True).load(stream)
+    translated = yatter.translate(mapping, mapping_format)
+    assert f"<{mapping_format}>" in translated
+    if mapping_format == RML_URI:
+        assert translated == yatter.translate(mapping)
+        assert translated == (case / "mapping.ttl").read_text()
+    graph = Graph().parse(data=translated, format="turtle")
+    assert yatter.inverse_translate(graph, mapping_format)["mappings"]
+
+
 def test_core_rejects_star_but_old_profile_still_accepts_it():
     path = Path(__file__).parents[1] / "rml-star/YARRRML-STAR-TC-0001/mapping.yml"
     with path.open() as stream:
         mapping = YAML(typ="safe", pure=True).load(stream)
     assert yatter.translate(mapping) is None
-    assert yatter.translate(mapping, RML_URI) is not None
+    assert yatter.translate(mapping, RML_OLD_URI) is not None
 
 
 @pytest.mark.parametrize("profile", [None, "RML"])

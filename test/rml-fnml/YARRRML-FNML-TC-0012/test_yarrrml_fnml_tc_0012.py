@@ -3,7 +3,7 @@ import os
 from ruamel.yaml import YAML
 
 from yatter.function import generate_function
-from yatter.constants import RML_CORE_URI
+from yatter.constants import RML_URI
 
 
 def test_yarrrml_fnml_tc_0012():
@@ -14,5 +14,5 @@ def test_yarrrml_fnml_tc_0012():
     with open(os.path.join(directory, "expected.txt")) as expected_file:
         expected = expected_file.read()
 
-    translated = generate_function(function, "function_person", {"local_id": 0}, RML_CORE_URI)
+    translated = generate_function(function, "function_person", {"local_id": 0}, RML_URI)
     assert translated == expected
