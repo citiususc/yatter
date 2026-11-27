@@ -2,7 +2,7 @@ import rdflib
 from rdflib.collection import Collection
 
 from .constants import (
-    DCAT_URI, FORMATS_URI, RDF_TYPE, RML_URI, SPARQL_SERVICE_URI, VOID_URI,
+    DCAT_NAMESPACE, FORMATS_NAMESPACE, RDF_TYPE, RML_NAMESPACE, SPARQL_SERVICE_NAMESPACE, VOID_NAMESPACE,
     YARRRML_ACCESS, YARRRML_COMPRESSION, YARRRML_CONDITION, YARRRML_DATATYPE,
     YARRRML_BLANK, YARRRML_EMPTY, YARRRML_EQUAL, YARRRML_FUNCTION, YARRRML_GATHER,
     YARRRML_GATHER_AS, YARRRML_GRAPH, YARRRML_IRI_TYPE, YARRRML_JOIN_CHILD_PARAMETER,
@@ -13,9 +13,10 @@ from .constants import (
     YARRRML_TARGET_VOID, YARRRML_TARGETS, YARRRML_TYPE, YARRRML_VALUE,
 )
 from .errors import InvalidMappingError
+from .vocabulary import turtle_term
 
 
-RML = rdflib.Namespace(RML_URI)
+RML = rdflib.Namespace(RML_NAMESPACE)
 
 
 def read_expression(graph, node):
@@ -59,9 +60,9 @@ def read_targets(graph, node):
         return []
     target = targets[0]
     destination = _single(graph, target, RML.target, required=True)
-    void = rdflib.Namespace(VOID_URI)
-    dcat = rdflib.Namespace(DCAT_URI)
-    sd = rdflib.Namespace(SPARQL_SERVICE_URI)
+    void = rdflib.Namespace(VOID_NAMESPACE)
+    dcat = rdflib.Namespace(DCAT_NAMESPACE)
+    sd = rdflib.Namespace(SPARQL_SERVICE_NAMESPACE)
     choices = [(void.dataDump, YARRRML_TARGET_VOID), (dcat.dataDump, YARRRML_TARGET_DCAT),
                (sd.endpoint, YARRRML_TARGET_SPARQL)]
     accesses = [(graph.value(destination, predicate), kind) for predicate, kind in choices]
@@ -72,16 +73,16 @@ def read_targets(graph, node):
     result = {YARRRML_ACCESS: str(access), YARRRML_TYPE: kind}
     serialization = _single(graph, target, RML.serialization)
     if serialization is not None:
-        formats = rdflib.Namespace(FORMATS_URI)
+        formats = rdflib.Namespace(FORMATS_NAMESPACE)
         names = {formats[value]: name for name, value in YARRRML_OUTPUT_FORMAT.items()}
         if serialization not in names:
             raise InvalidMappingError("Unsupported target serialization")
         result[YARRRML_SERIALIZATION] = names[serialization]
     compression = _single(graph, destination, RML.compression)
     if compression is not None:
-        if not str(compression).startswith(RML_URI):
+        if not str(compression).startswith(RML_NAMESPACE):
             raise InvalidMappingError("Unsupported target compression")
-        result[YARRRML_COMPRESSION] = str(compression).removeprefix(RML_URI)
+        result[YARRRML_COMPRESSION] = str(compression).removeprefix(RML_NAMESPACE)
     return [result]
 
 
@@ -165,7 +166,7 @@ def read_gather(graph, node):
         result[YARRRML_VALUE] = read_expression(graph, node)
     strategy = _single(graph, node, RML.strategy)
     if strategy is not None:
-        result[YARRRML_STRATEGY] = str(strategy).removeprefix(RML_URI)
+        result[YARRRML_STRATEGY] = str(strategy).removeprefix(RML_NAMESPACE)
     allow_empty = _single(graph, node, RML.allowEmptyListAndContainer)
     if allow_empty is not None:
         result[YARRRML_EMPTY] = allow_empty.toPython()
@@ -214,7 +215,7 @@ def read_object(graph, node):
 
 
 def read_predicate_object_maps(graph, triples_map, classes):
-    result = [{YARRRML_PREDICATE_SHORT: RDF_TYPE, YARRRML_OBJECT_SHORT: str(cls)} for cls in classes]
+    result = [{YARRRML_PREDICATE_SHORT: turtle_term(RDF_TYPE), YARRRML_OBJECT_SHORT: str(cls)} for cls in classes]
     for pom in graph.objects(triples_map, RML.predicateObjectMap):
         predicates = [str(value) for value in graph.objects(pom, RML.predicate)]
         for node in graph.objects(pom, RML.predicateMap):

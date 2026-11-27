@@ -61,27 +61,30 @@ yarrrml_content = yatter.inverse_translate(rml_graph)
 ```
 - for the previous RML profile, pass its namespace explicitly in either direction:
 ```python
-from yatter.constants import RML_OLD_URI
+from yatter.constants import RML_OLD_NAMESPACE
 
-rml_content = yatter.translate(yarrrml_mapping, mapping_format=RML_OLD_URI)
-yarrrml_content = yatter.inverse_translate(rml_graph, mapping_format=RML_OLD_URI)
+rml_content = yatter.translate(yarrrml_mapping, mapping_format=RML_OLD_NAMESPACE)
+yarrrml_content = yatter.inverse_translate(rml_graph, mapping_format=RML_OLD_NAMESPACE)
 ```
-`RML_URI` identifies the current vocabulary; `RML_OLD_URI` identifies the
-previous one. Code that used `RML_URI` for legacy RML must use `RML_OLD_URI`.
+`RML_NAMESPACE` identifies the current vocabulary; `RML_OLD_NAMESPACE` identifies
+the previous one. The former `_URI` namespace names remain available as aliases.
+Code that used `RML_URI` for legacy RML must use `RML_OLD_NAMESPACE`.
+Vocabulary term constants now contain full IRIs rather than prefixed names; Turtle
+output remains prefixed and human-readable.
 - for translating **YARRRML mappings** to **R2RML mappings** (and inverse):
 ```python
 import yatter
 from ruamel.yaml import YAML
+from yatter.constants import R2RML_NAMESPACE
 
-R2RML_URI = 'http://www.w3.org/ns/r2rml#'
 # YARRRML to R2RML
 yaml = YAML(typ='safe', pure=True)
 with open("path-to-yarrrml.yml") as mapping_file:
     yarrrml_mapping = yaml.load(mapping_file)
-rml_content = yatter.translate(yarrrml_mapping, mapping_format=R2RML_URI)
+rml_content = yatter.translate(yarrrml_mapping, mapping_format=R2RML_NAMESPACE)
 # R2RML to YARRRML
 r2rml_graph = Graph().parse("path-to-r2rml-mapping.ttl", format="turtle")
-yarrrml_content = yatter.inverse_translate(r2rml_graph, mapping_format=R2RML_URI)
+yarrrml_content = yatter.inverse_translate(r2rml_graph, mapping_format=R2RML_NAMESPACE)
 ```
 - for merging TriplesMap based on id:
 ```python

@@ -6,15 +6,16 @@ from .errors import InvalidMappingError
 from .graph import add_inverse_graph
 from .termmap import _term_for_format
 from .core_inverse import read_predicate_object_maps
+from .vocabulary import turtle_term
 
 
-def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes, mapping_format=RML_OLD_URI):
-    if mapping_format == RML_URI:
+def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes, mapping_format=RML_OLD_NAMESPACE):
+    if mapping_format == RML_NAMESPACE:
         return read_predicate_object_maps(rdf_mapping, mapping_id, classes)
     yarrrml_poms = []
     yaml = YAML()
     for c in classes:
-        yarrrml_pom = yaml.seq([RDF_TYPE, find_prefixes(c.toPython(), prefixes)])
+        yarrrml_pom = yaml.seq([turtle_term(RDF_TYPE), find_prefixes(c.toPython(), prefixes)])
         yarrrml_pom.fa.set_flow_style()
         yarrrml_poms.append(yarrrml_pom)
 
@@ -31,13 +32,13 @@ def add_inverse_pom(mapping_id, rdf_mapping, classes, prefixes, mapping_format=R
     return yarrrml_poms
 
 
-def _inverse_pom_query(mapping_id, mapping_format=RML_OLD_URI):
+def _inverse_pom_query(mapping_id, mapping_format=RML_OLD_NAMESPACE):
     term = lambda value: _term_for_format(value, mapping_format)
     expression_path = "|".join(dict.fromkeys(
-        [term(R2RML_TEMPLATE), term(R2RML_COLUMN), term(R2RML_CONSTANT), RML_REFERENCE]
+        [term(R2RML_TEMPLATE), term(R2RML_COLUMN), term(R2RML_CONSTANT), term(RML_REFERENCE)]
     ))
     simple_path = "|".join(dict.fromkeys(
-        [term(R2RML_TEMPLATE), term(R2RML_CONSTANT), RML_REFERENCE]
+        [term(R2RML_TEMPLATE), term(R2RML_CONSTANT), term(RML_REFERENCE)]
     ))
     query = f'SELECT ?predicate ?predicateValue ?object ?objectValue ?termtype ?datatype ?datatypeMapValue ' \
             f'?language ?languageMapValue ?parentTriplesMap ?child ?parent ?graphValue' \
@@ -56,11 +57,11 @@ def _inverse_pom_query(mapping_id, mapping_format=RML_OLD_URI):
             f'OPTIONAL {{ ?object {term(R2RML_TERMTYPE)} ?termtype . }}' \
             f'OPTIONAL {{ ?object {term(R2RML_DATATYPE)} ?datatype .}} ' \
             f'OPTIONAL {{ ' \
-            f' ?object {RML_DATATYPE_MAP} ?datatypeMap .' \
+            f' ?object {term(RML_DATATYPE_MAP)} ?datatypeMap .' \
             f' ?datatypeMap {simple_path} ?datatypeMapValue .}} ' \
             f'OPTIONAL {{ ?object {term(R2RML_LANGUAGE)} ?language .}} ' \
             f'OPTIONAL {{ ' \
-            f' ?object {RML_LANGUAGE_MAP} ?languageMap .' \
+            f' ?object {term(RML_LANGUAGE_MAP)} ?languageMap .' \
             f' ?languageMap {simple_path} ?languageMapValue .}} }} ' \
             f'OPTIONAL {{ ?object {term(R2RML_PARENT_TRIPLESMAP)} ?parentTriplesMap .' \
             f'OPTIONAL {{ ' \
@@ -101,13 +102,13 @@ def _inverse_reference_object(row, predicate, yaml):
     return {YARRRML_PREDICATE_SHORT: predicate, YARRRML_OBJECT_SHORT: obj}
 
 
-def _inverse_value_object(row, predicate, mapping_id, prefixes, mapping_format=RML_OLD_URI):
+def _inverse_value_object(row, predicate, mapping_id, prefixes, mapping_format=RML_OLD_NAMESPACE):
     value = row['objectValue'] or row['object']
     if not value:
         logger.error("There is not object for a given predicate")
         raise InvalidMappingError("Review your mapping " + str(mapping_id))
     value = _inverse_term_value(value.toPython(), prefixes)
-    iri_namespace = RML_URI if mapping_format == RML_URI else R2RML_URI
+    iri_namespace = RML_NAMESPACE if mapping_format == RML_NAMESPACE else R2RML_NAMESPACE
     if row['termtype'] == rdflib.URIRef(iri_namespace + "IRI"):
         value += YARRRML_IRI
     if row['graphValue']:

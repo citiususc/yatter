@@ -2,7 +2,7 @@ from .constants import *
 from .termmap import generate_rml_termmap, _term_for_format
 
 
-def add_functions(yarrrml_data, mapping_format=RML_OLD_URI):
+def add_functions(yarrrml_data, mapping_format=RML_OLD_NAMESPACE):
     functions = []
     for mapping, mapping_data in yarrrml_data[YARRRML_MAPPINGS].items():
         context = {"local_id": 0}
@@ -10,7 +10,7 @@ def add_functions(yarrrml_data, mapping_format=RML_OLD_URI):
     return functions
 
 
-def add_internal_function(mapping_id, mapping_data, functions, context, mapping_format=RML_OLD_URI):
+def add_internal_function(mapping_id, mapping_data, functions, context, mapping_format=RML_OLD_NAMESPACE):
     for key, value in mapping_data.items():
         if isinstance(value, list):
             for index, item in enumerate(value):
@@ -26,7 +26,7 @@ def add_internal_function(mapping_id, mapping_data, functions, context, mapping_
             mapping_data[key] = _replace_function(mapping_id, value, functions, context, mapping_format)
 
 
-def _replace_function(mapping_id, value, functions, context, mapping_format=RML_OLD_URI):
+def _replace_function(mapping_id, value, functions, context, mapping_format=RML_OLD_NAMESPACE):
     result = transform_function(mapping_id, value, functions, context, mapping_format)
     if isinstance(result, dict):
         return result
@@ -34,7 +34,7 @@ def _replace_function(mapping_id, value, functions, context, mapping_format=RML_
         value[YARRRML_FUNCTION] = result
     return value
 
-def transform_function(mapping_id, function_value, functions, context, mapping_format=RML_OLD_URI):
+def transform_function(mapping_id, function_value, functions, context, mapping_format=RML_OLD_NAMESPACE):
     function_return = None
     if function_value[YARRRML_FUNCTION].replace(" ","").startswith(YARRRML_JOIN+"("):
         function_return = generate_extended_join(function_value[YARRRML_FUNCTION])
@@ -42,12 +42,12 @@ def transform_function(mapping_id, function_value, functions, context, mapping_f
         function_id = "function_" + mapping_id
         function_return = function_id + "_" + str(context["local_id"])
         function = generate_function(function_value, function_id, context, mapping_format)
-        functions.append(function + ("\n" if mapping_format == RML_URI else ""))
+        functions.append(function + ("\n" if mapping_format == RML_NAMESPACE else ""))
         context["local_id"] += 1  # different functions in the same TM
 
     return function_return
 
-def generate_function(function_yarrrml_data, id_function, context, mapping_format=RML_OLD_URI):
+def generate_function(function_yarrrml_data, id_function, context, mapping_format=RML_OLD_NAMESPACE):
     function_name = function_yarrrml_data[YARRRML_FUNCTION]
     if YARRRML_PARAMETERS not in function_yarrrml_data:
         function_yarrrml_data, function_name = split_in_line_function(function_name)
@@ -55,7 +55,7 @@ def generate_function(function_yarrrml_data, id_function, context, mapping_forma
         "<" + id_function + "_" + str(context["local_id"]) + "> a "
         + _term_for_format(RML_EXECUTION_CLASS, mapping_format) + ";\n\t"
         + _term_for_format(RML_FUNCTION, mapping_format) + " " + function_name
-        + (" ;\n" if mapping_format == RML_URI else " ; \n")
+        + (" ;\n" if mapping_format == RML_NAMESPACE else " ; \n")
     ]
     nested_functions = []
     if YARRRML_PARAMETERS in function_yarrrml_data:
@@ -65,10 +65,10 @@ def generate_function(function_yarrrml_data, id_function, context, mapping_forma
                 _generate_function_input(param, id_function, context, nested_functions, mapping_format)
             )
     result = "".join(rml_function)[:-2] + ".\n\n" + "".join(nested_functions)
-    return result.rstrip("\n") + "\n" if mapping_format == RML_URI else result
+    return result.rstrip("\n") + "\n" if mapping_format == RML_NAMESPACE else result
 
 
-def _generate_function_input(param, id_function, context, nested_functions, mapping_format=RML_OLD_URI):
+def _generate_function_input(param, id_function, context, nested_functions, mapping_format=RML_OLD_NAMESPACE):
     if isinstance(param, list):
         param = {YARRRML_PARAMETER: param[0], YARRRML_VALUE: param[1]}
     result = "\t\t[\n\t\t\ta " + _term_for_format(RML_INPUT_CLASS, mapping_format) + ";\n"
@@ -82,7 +82,7 @@ def _generate_function_input(param, id_function, context, nested_functions, mapp
                 + id_function + "_" + str(context["local_id"]) + ">;\n\t\t\t];\n"
             )
             function = generate_function(value, id_function, context, mapping_format)
-            nested_functions.append(function + ("\n" if mapping_format == RML_URI else ""))
+            nested_functions.append(function + ("\n" if mapping_format == RML_NAMESPACE else ""))
         else:
             result += generate_rml_termmap(
                 RML_VALUE_MAP, RML_VALUE_MAP_CLASS, value, "\t\t\t\t", mapping_format

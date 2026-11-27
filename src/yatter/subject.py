@@ -11,6 +11,7 @@ from .termmap import (
 )
 from .graph import add_inverse_graph
 from .core_inverse import RML as CORE, read_expression, read_function, read_gather, read_graph_map, read_targets
+from .vocabulary import turtle_term
 import rdflib
 
 
@@ -24,7 +25,7 @@ def add_subject(data, mapping, mapping_format):
         for subject in mapping_data[YARRRML_SUBJECTS]
     ]
     if not rml_subjects:
-        if mapping_format == RML_URI:
+        if mapping_format == RML_NAMESPACE:
             rml_subjects.append(
                 f"\t{_term_for_format(R2RML_SUBJECT, mapping_format)} [\n"
                 f"\t\ta {_term_for_format(R2RML_SUBJECT_CLASS, mapping_format)};\n"
@@ -34,9 +35,9 @@ def add_subject(data, mapping, mapping_format):
         else:
             rml_subjects.append(
                 generate_rml_termmap(
-                    R2RML_SUBJECT, R2RML_SUBJECT_CLASS, R2RML_BLANK_NODE,
+                    R2RML_SUBJECT, R2RML_SUBJECT_CLASS, turtle_term(R2RML_BLANK_NODE),
                     "\t\t", mapping_format,
-                ).replace(R2RML_CONSTANT, R2RML_TERMTYPE)
+                ).replace(turtle_term(R2RML_CONSTANT), turtle_term(R2RML_TERMTYPE))
             )
 
     graphs = mapping_data.get(YARRRML_GRAPHS, [])
@@ -62,8 +63,8 @@ def _generate_subject(data, mapping, subject, mapping_format):
         key = YARRRML_NON_ASSERTED if YARRRML_NON_ASSERTED in subject else YARRRML_QUOTED
         termmap = ref_mapping(data, mapping, subject, key, STAR_QUOTED, mapping_format)
         return (
-            termmap.replace(R2RML_REFOBJECT_CLASS, STAR_CLASS)
-            .replace(STAR_OBJECT, STAR_SUBJECT)
+            termmap.replace(turtle_term(R2RML_REFOBJECT_CLASS), turtle_term(STAR_CLASS))
+            .replace(turtle_term(STAR_OBJECT), turtle_term(STAR_SUBJECT))
             .replace("\t\t\t\t", "\t\t\t\t\t")
             .replace("\t\t", "\t")
         )
@@ -94,7 +95,7 @@ def _generate_subject(data, mapping, subject, mapping_format):
         )
     if YARRRML_TARGETS in subject:
         termmap = _append_term_map_property(
-            termmap, "\t\t", RML_LOGICAL_TARGET,
+            termmap, "\t\t", turtle_term(RML_LOGICAL_TARGET),
             "<" + subject[YARRRML_TARGETS] + ">",
         )
     if isinstance(subject, dict) and YARRRML_TYPE in subject:
@@ -106,12 +107,12 @@ def _generate_subject(data, mapping, subject, mapping_format):
     return termmap
 
 
-def add_inverse_subject(tm, rdf_mapping, mapping_format=RML_OLD_URI):
-    if mapping_format == RML_URI:
+def add_inverse_subject(tm, rdf_mapping, mapping_format=RML_OLD_NAMESPACE):
+    if mapping_format == RML_NAMESPACE:
         return add_inverse_core_subject(tm, rdf_mapping)
     term = lambda value: _term_for_format(value, mapping_format)
     expression_path = "|".join(dict.fromkeys(
-        [term(R2RML_TEMPLATE), term(R2RML_COLUMN), RML_REFERENCE, term(R2RML_CONSTANT)]
+        [term(R2RML_TEMPLATE), term(R2RML_COLUMN), term(RML_REFERENCE), term(R2RML_CONSTANT)]
     ))
     query = f'SELECT ?subject_value  WHERE {{ <{tm}> {term(R2RML_SUBJECT)} ?subject . ' \
             f'?subject {expression_path} ?subject_value' \

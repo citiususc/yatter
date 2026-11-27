@@ -1,5 +1,5 @@
 import pytest
-from rdflib import Graph
+from rdflib import Graph, URIRef
 from pathlib import Path
 from ruamel.yaml import YAML
 
@@ -16,6 +16,10 @@ from yatter.constants import (
     RML_EXECUTION,
     RML_VALUE_MAP,
     RML_OLD_URI,
+    RML_FILE_PATH_CLASS,
+    RML_NAMESPACE,
+    RML_OLD_NAMESPACE,
+    R2RML_NAMESPACE,
 )
 from yatter.termmap import _term_for_format, generate_rml_termmap
 from yatter.cli import main
@@ -57,16 +61,24 @@ def test_termmap_format(mapping_format, property_name, class_name, value, expect
 
 
 @pytest.mark.parametrize(
-    ("term", "expected"),
+    ("term", "expected", "old_expected"),
     [
-        (R2RML_COLUMN, "rml:reference"),
-        (RML_EXECUTION, "rml:functionExecution"),
-        (RML_VALUE_MAP, "rml:inputValueMap"),
+        (R2RML_COLUMN, "rml:reference", "rr:column"),
+        (RML_EXECUTION, "rml:functionExecution", "fnml:execution"),
+        (RML_VALUE_MAP, "rml:inputValueMap", "fnml:valueMap"),
     ],
 )
-def test_core_terms_with_different_names(term, expected):
+def test_core_terms_with_different_names(term, expected, old_expected):
     assert _term_for_format(term, RML_URI) == expected
-    assert _term_for_format(term, RML_OLD_URI) == term
+    assert _term_for_format(term, RML_OLD_URI) == old_expected
+
+
+def test_vocabulary_constants_are_full_iris():
+    assert RML_FILE_PATH_CLASS == "http://w3id.org/rml/FilePath"
+    assert R2RML_COLUMN == "http://www.w3.org/ns/r2rml#column"
+    assert RML_EXECUTION == "http://semweb.mmlab.be/ns/fnml#execution"
+    assert (RML_URI, RML_OLD_URI) == (RML_NAMESPACE, RML_OLD_NAMESPACE)
+    assert R2RML_COLUMN.startswith(R2RML_NAMESPACE)
 
 
 def test_core_rejects_r2rml_only_term():
@@ -85,8 +97,8 @@ def test_unknown_format_is_rejected():
 @pytest.mark.parametrize(
     ("mapping_format", "case_path"),
     [
-        (RML_URI, "rml-core/YARRRML-CORE-TC-0001"),
-        (RML_OLD_URI, "rml-old/YARRRML-CORE_OLD-TC-0001"),
+        (RML_NAMESPACE, "rml-core/YARRRML-CORE-TC-0001"),
+        (RML_OLD_NAMESPACE, "rml-old/YARRRML-CORE_OLD-TC-0001"),
     ],
 )
 def test_uri_constants_select_translation_profiles(mapping_format, case_path):
@@ -99,6 +111,7 @@ def test_uri_constants_select_translation_profiles(mapping_format, case_path):
         assert translated == yatter.translate(mapping)
         assert translated == (case / "mapping.ttl").read_text()
     graph = Graph().parse(data=translated, format="turtle")
+    assert next(graph.triples((None, URIRef(mapping_format + "logicalSource"), None)), None)
     assert yatter.inverse_translate(graph, mapping_format)["mappings"]
 
 

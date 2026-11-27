@@ -2,20 +2,21 @@ import os
 import re
 import rdflib
 from .constants import *
+from .vocabulary import turtle_term
 from .errors import InvalidMappingError
 from ruamel.yaml import YAML
 
 
 
 
-def add_source(data, mapping, external_sources=None, mapping_format=RML_OLD_URI):
+def add_source(data, mapping, external_sources=None, mapping_format=RML_OLD_NAMESPACE):
     if external_sources is None:
         external_sources = {}
-    if mapping_format == RML_URI:
+    if mapping_format == RML_NAMESPACE:
         return add_core_sources(data, mapping, external_sources)
 
-    source_template = "\t" + RML_LOGICAL_SOURCE + " [\n\t\ta " + RML_LOGICAL_SOURCE_CLASS + \
-                      ";\n\t\t" + RML_SOURCE + " "
+    source_template = "\t" + turtle_term(RML_LOGICAL_SOURCE) + " [\n\t\ta " + turtle_term(RML_LOGICAL_SOURCE_CLASS) + \
+                      ";\n\t\t" + turtle_term(RML_SOURCE) + " "
     final_list = []
     sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
     external_references_list = []
@@ -61,8 +62,8 @@ def add_core_sources(data, mapping, external_sources):
         if YARRRML_STRUCTURE_DEFINER in source:
             description, reference = add_in_memory_source(mapping, source)
             results.append(
-                f"\t{RML_LOGICAL_SOURCE} [\n\t\ta {RML_LOGICAL_SOURCE_CLASS};\n"
-                f"\t\t{RML_SOURCE} "
+                f"\t{turtle_term(RML_LOGICAL_SOURCE)} [\n\t\ta {turtle_term(RML_LOGICAL_SOURCE_CLASS)};\n"
+                f"\t\t{turtle_term(RML_SOURCE)} "
                 + description
             )
             if reference is not None:
@@ -82,8 +83,8 @@ def add_core_sources(data, mapping, external_sources):
             iterator = str(source[key])
         else:
             source_value = (
-                f"[ a {RML_SOURCE_CLASS}, {RML_FILE_PATH_CLASS};\n"
-                f"\t\t\t{RML_PATH} {rdflib.Literal(access).n3()};\n\t\t]"
+                f"[ a {turtle_term(RML_SOURCE_CLASS)}, {turtle_term(RML_FILE_PATH_CLASS)};\n"
+                f"\t\t\t{turtle_term(RML_PATH)} {rdflib.Literal(access).n3()};\n\t\t]"
             )
             formulation_key = source.get(YARRRML_REFERENCE_FORMULATION)
             if formulation_key is None:
@@ -96,18 +97,18 @@ def add_core_sources(data, mapping, external_sources):
             iterator = source.get(YARRRML_ITERATOR)
 
         result = (
-            f"\t{RML_LOGICAL_SOURCE} [\n\t\ta {RML_LOGICAL_SOURCE_CLASS};\n"
-            f"\t\t{RML_SOURCE} {source_value};\n"
-            f"\t\t{RML_REFERENCE_FORMULATION} {RML_TERM_PREFIX}{formulation}"
+            f"\t{turtle_term(RML_LOGICAL_SOURCE)} [\n\t\ta {turtle_term(RML_LOGICAL_SOURCE_CLASS)};\n"
+            f"\t\t{turtle_term(RML_SOURCE)} {source_value};\n"
+            f"\t\t{turtle_term(RML_REFERENCE_FORMULATION)} {RML_TERM_PREFIX}{formulation}"
         )
         if iterator is not None:
-            result += f";\n\t\t{RML_ITERATOR} {rdflib.Literal(str(iterator)).n3()}"
+            result += f";\n\t\t{turtle_term(RML_ITERATOR)} {rdflib.Literal(str(iterator)).n3()}"
         results.append(result + "\n\t];\n")
     return results, external_references
 
 
 def add_table(data, mapping):
-    table_template = "\t" + R2RML_LOGICAL_TABLE + " [\n\t\ta " + R2RML_LOGICAL_TABLE_CLASS + \
+    table_template = "\t" + turtle_term(R2RML_LOGICAL_TABLE) + " [\n\t\ta " + turtle_term(R2RML_LOGICAL_TABLE_CLASS) + \
                      ";\n\t\t"
 
     final_list = []
@@ -119,19 +120,19 @@ def add_table(data, mapping):
             r2rml_access = database_source(mapping, source, db_identifier)
             sql_version = True
         elif YARRRML_QUERY in source:
-            r2rml_access = R2RML_SQL_QUERY + " \"" + source.get(YARRRML_QUERY).replace("\n", " ").replace("\"",
+            r2rml_access = turtle_term(R2RML_SQL_QUERY) + " \"" + source.get(YARRRML_QUERY).replace("\n", " ").replace("\"",
                                                                                                           "\\\"") + "\""
         elif YARRRML_TABLE in source:
-            r2rml_access = R2RML_TABLE_NAME + " \"" + source.get(YARRRML_TABLE) + "\""
+            r2rml_access = turtle_term(R2RML_TABLE_NAME) + " \"" + source.get(YARRRML_TABLE) + "\""
         else:
             raise InvalidMappingError(
                 f"ERROR: table or query is not provided in {source} of mapping {mapping}"
             )
         if not sql_version:
             if YARRRML_QUERY_FORMULATION in source:
-                r2rml_access += ";\n\t\t" + R2RML_SQL_VERSION + " " + R2RML_TERM_PREFIX + source.get(YARRRML_QUERY_FORMULATION).upper()
+                r2rml_access += ";\n\t\t" + turtle_term(R2RML_SQL_VERSION) + " " + R2RML_TERM_PREFIX + source.get(YARRRML_QUERY_FORMULATION).upper()
             else:
-                r2rml_access += ";\n\t\t" + R2RML_SQL_VERSION + " " + R2RML_SQL_VERSION_DEFAULT
+                r2rml_access += ";\n\t\t" + turtle_term(R2RML_SQL_VERSION) + " " + turtle_term(R2RML_SQL_VERSION_DEFAULT)
             r2rml_access += "\n\t];\n"
         final_list.append(table_template + r2rml_access)
     return final_list
@@ -153,15 +154,15 @@ def add_source_simplified(mapping, source):
     else:
         if len(source) == 1:  # do not have iterator
             if source_extension == "csv" or source_extension == R2RML_SQL_VERSION_NAME or source_extension == "xlsx":
-                source_rdf += '"' + file_path + '"' + ";\n" + "\t\t" + RML_REFERENCE_FORMULATION + " " + QL_TERM_PREFIX \
+                source_rdf += '"' + file_path + '"' + ";\n" + "\t\t" + turtle_term(RML_REFERENCE_FORMULATION) + " " + QL_TERM_PREFIX \
                               + ref_formulation_rml + "\n" + "\t];\n"
             else:
                 raise InvalidMappingError(
                     f"ERROR: source {source} in mapping {mapping} has no iterator"
                 )
         else:  # source[1] is the iterator for json and xml
-            source_rdf += "\"" + file_path + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " " + QL_TERM_PREFIX \
-                          + ref_formulation_rml + ";\n\t\t" + RML_ITERATOR + " \"" \
+            source_rdf += "\"" + file_path + "\";\n\t\t" + turtle_term(RML_REFERENCE_FORMULATION) + " " + QL_TERM_PREFIX \
+                          + ref_formulation_rml + ";\n\t\t" + turtle_term(RML_ITERATOR) + " \"" \
                           + source[1] + "\";\n\t];\n"
     return source_rdf
 
@@ -169,34 +170,34 @@ def add_in_memory_source(mapping, source):
     external_reference_formulation = None
     if type(source) is list:
         source = extend_in_memory(source)
-    source_rdf = "[\n\t\t\ta " + SD_DATASET_SPEC + ";\n\t\t\t"
+    source_rdf = "[\n\t\t\ta " + turtle_term(SD_DATASET_SPEC) + ";\n\t\t\t"
 
     access = str(source.get(YARRRML_ACCESS)).replace("$(","").replace(")","")
-    source_rdf += SD_NAME + " \"" + access + "\";\n"
+    source_rdf += turtle_term(SD_NAME) + " \"" + access + "\";\n"
 
     if YARRRML_SOFTWARE_SPECIFICATION in source:
-        source_rdf += "\t\t\t" + SD_HAS_DATA_TRANSFORMATION + "[\n\t\t\t\t"
+        source_rdf += "\t\t\t" + turtle_term(SD_HAS_DATA_TRANSFORMATION) + "[\n\t\t\t\t"
 
         if YARRRML_SOFTWARE_REQUIREMENTS in source.get(YARRRML_SOFTWARE_SPECIFICATION):
             software_requirements = str(source.get(YARRRML_SOFTWARE_SPECIFICATION)[YARRRML_SOFTWARE_REQUIREMENTS])
-            source_rdf += SD_HAS_SOFTWARE_REQUIREMENTS + " \""+ software_requirements +"\";\n\t\t\t\t"
+            source_rdf += turtle_term(SD_HAS_SOFTWARE_REQUIREMENTS) + " \""+ software_requirements +"\";\n\t\t\t\t"
 
         if YARRRML_PROGRAMMING_LANGUAGE in source.get(YARRRML_SOFTWARE_SPECIFICATION):
             programming_language = str(source.get(YARRRML_SOFTWARE_SPECIFICATION)[YARRRML_PROGRAMMING_LANGUAGE])
-            source_rdf += SD_HAS_SOURCE_CODE +"[\n\t\t\t\t\t" + SD_PROGRAMMING_LANGUAGE + " \"" + programming_language + "\";"
+            source_rdf += turtle_term(SD_HAS_SOURCE_CODE) +"[\n\t\t\t\t\t" + turtle_term(SD_PROGRAMMING_LANGUAGE) + " \"" + programming_language + "\";"
             source_rdf +="\n\t\t\t\t];\n"
 
         source_rdf += "\t\t\t];\n"
     source_rdf += "\t\t];\n"
 
     if YARRRML_ITERATOR in source:
-        source_rdf += "\t\t" + RML_ITERATOR + " \"" + source.get(YARRRML_ITERATOR) + "\";\n"
+        source_rdf += "\t\t" + turtle_term(RML_ITERATOR) + " \"" + source.get(YARRRML_ITERATOR) + "\";\n"
 
     if YARRRML_REFERENCE_FORMULATION in source:
         reference_formulation = str(source.get(YARRRML_REFERENCE_FORMULATION))
-        source_rdf += "\t\t" + RML_REFERENCE_FORMULATION + " " + QL_TERM_PREFIX + reference_formulation + ";\n"
-        external_reference_formulation = QL_TERM_PREFIX + reference_formulation + " a " + RML_REFERENCE_FORMULATION_CLASS +";\n"
-        external_reference_formulation +="\t" + KG4DI_DEFINED_BY +" \""+source.get(YARRRML_STRUCTURE_DEFINER) +"\"."
+        source_rdf += "\t\t" + turtle_term(RML_REFERENCE_FORMULATION) + " " + QL_TERM_PREFIX + reference_formulation + ";\n"
+        external_reference_formulation = QL_TERM_PREFIX + reference_formulation + " a " + turtle_term(RML_REFERENCE_FORMULATION_CLASS) +";\n"
+        external_reference_formulation +="\t" + turtle_term(KG4DI_DEFINED_BY) +" \""+source.get(YARRRML_STRUCTURE_DEFINER) +"\"."
     source_rdf += "\t];\n"
 
 
@@ -236,12 +237,12 @@ def add_source_full(mapping, source):
         if YARRRML_ITERATOR in source:
             source_iterator = str(source.get(YARRRML_ITERATOR))
 
-            source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " " + QL_TERM_PREFIX \
-                          + ref_formulation_rml + ";\n\t\t" + RML_ITERATOR + " \"" \
+            source_rdf += "\"" + access + "\";\n\t\t" + turtle_term(RML_REFERENCE_FORMULATION) + " " + QL_TERM_PREFIX \
+                          + ref_formulation_rml + ";\n\t\t" + turtle_term(RML_ITERATOR) + " \"" \
                           + source_iterator + "\";\n\t];\n"
         else:
             if extension == "csv" or extension == R2RML_SQL_VERSION_NAME:
-                source_rdf += "\"" + access + "\";\n\t\t" + RML_REFERENCE_FORMULATION + " " + QL_TERM_PREFIX \
+                source_rdf += "\"" + access + "\";\n\t\t" + turtle_term(RML_REFERENCE_FORMULATION) + " " + QL_TERM_PREFIX \
                               + ref_formulation_rml + "\n\n\t];\n"
             else:
                 raise InvalidMappingError(
@@ -266,17 +267,17 @@ def database_source(mapping, source, db_identifier):
             if YARRRML_TYPE in source:
                 source_rdf += "<DataSource_" + str(db_identifier) + ">;\n\t\t"
                 if YARRRML_QUERY in source:
-                    source_rdf += RML_QUERY + " \"" + source.get(YARRRML_QUERY).replace("\n", " ").replace("\"",
+                    source_rdf += turtle_term(RML_QUERY) + " \"" + source.get(YARRRML_QUERY).replace("\n", " ").replace("\"",
                                                                                                            "\\\"") + "\""
                 elif YARRRML_TABLE in source:
-                    source_rdf += R2RML_TABLE_NAME + " \"" + source.get(YARRRML_TABLE) + "\""
+                    source_rdf += turtle_term(R2RML_TABLE_NAME) + " \"" + source.get(YARRRML_TABLE) + "\""
                 if YARRRML_REFERENCE_FORMULATION in source:
-                    source_rdf += ";\n\t\t" + RML_REFERENCE_FORMULATION + " " + QL_TERM_PREFIX \
+                    source_rdf += ";\n\t\t" + turtle_term(RML_REFERENCE_FORMULATION) + " " + QL_TERM_PREFIX \
                                   + switch_in_reference_formulation(source.get(YARRRML_REFERENCE_FORMULATION)).upper()
                 if YARRRML_QUERY_FORMULATION in source:
-                    source_rdf += ";\n\t\t" + R2RML_SQL_VERSION + " " + R2RML_TERM_PREFIX + source.get(YARRRML_QUERY_FORMULATION).upper()
+                    source_rdf += ";\n\t\t" + turtle_term(R2RML_SQL_VERSION) + " " + R2RML_TERM_PREFIX + source.get(YARRRML_QUERY_FORMULATION).upper()
                 else:
-                    source_rdf += ";\n\t\t" + R2RML_SQL_VERSION + " " + R2RML_SQL_VERSION_DEFAULT
+                    source_rdf += ";\n\t\t" + turtle_term(R2RML_SQL_VERSION) + " " + turtle_term(R2RML_SQL_VERSION_DEFAULT)
                 source_rdf += "\n\t];\n"
         else:
             raise InvalidMappingError(
@@ -312,7 +313,7 @@ def switch_in_reference_formulation(value, source_extension=None):
     return switcher
 
 
-def generate_database_connections(data, external_sources, mapping_format=RML_OLD_URI):
+def generate_database_connections(data, external_sources, mapping_format=RML_OLD_NAMESPACE):
     database = []
     for mapping in data.get(YARRRML_MAPPINGS):
         sources = data.get(YARRRML_MAPPINGS).get(mapping).get(YARRRML_SOURCES)
@@ -324,7 +325,7 @@ def generate_database_connections(data, external_sources, mapping_format=RML_OLD
                     db_identifier = external_Source
                     break
             if (YARRRML_QUERY in source or
-                (mapping_format == RML_URI and YARRRML_TABLE in source)) and YARRRML_ACCESS in source:
+                (mapping_format == RML_NAMESPACE and YARRRML_TABLE in source)) and YARRRML_ACCESS in source:
                 db_type = source.get(YARRRML_TYPE)
                 if db_type in YARRRML_DATABASES_DRIVER:
                     driver = YARRRML_DATABASES_DRIVER[db_type]
@@ -337,32 +338,32 @@ def generate_database_connections(data, external_sources, mapping_format=RML_OLD
                 username = credentials.get(YARRRML_USERNAME)
                 password = credentials.get(YARRRML_PASSWORD)
 
-                if mapping_format == RML_URI:
-                    properties = [D2RQ_DSN + " " + rdflib.Literal(access).n3()]
+                if mapping_format == RML_NAMESPACE:
+                    properties = [turtle_term(D2RQ_DSN) + " " + rdflib.Literal(access).n3()]
                     if driver is not None:
-                        properties.append(D2RQ_DRIVER + " " + rdflib.Literal(driver).n3())
+                        properties.append(turtle_term(D2RQ_DRIVER) + " " + rdflib.Literal(driver).n3())
                     if username is not None:
-                        properties.append(D2RQ_USER + " " + rdflib.Literal(username).n3())
+                        properties.append(turtle_term(D2RQ_USER) + " " + rdflib.Literal(username).n3())
                     if password is not None:
-                        properties.append(D2RQ_PASS + " " + rdflib.Literal(password).n3())
+                        properties.append(turtle_term(D2RQ_PASS) + " " + rdflib.Literal(password).n3())
                     connection_string = ("<DataSource_" + str(db_identifier) + "> a "
-                                         + D2RQ_DATABASE_CLASS + ";\n\t"
+                                         + turtle_term(D2RQ_DATABASE_CLASS) + ";\n\t"
                                          + ";\n\t".join(properties) + ".\n\n")
                     if connection_string not in database:
                         database.append(connection_string)
                     continue
 
                 if driver is None:
-                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t" \
-                                        + D2RQ_DSN + " \"" + access + "\";\n\t" \
-                                        + D2RQ_USER + " \"" + username + "\";\n\t" \
-                                        + D2RQ_PASS + " \"" + password + "\".\n\n"
+                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + turtle_term(D2RQ_DATABASE_CLASS) + ";\n\t" \
+                                        + turtle_term(D2RQ_DSN) + " \"" + access + "\";\n\t" \
+                                        + turtle_term(D2RQ_USER) + " \"" + username + "\";\n\t" \
+                                        + turtle_term(D2RQ_PASS) + " \"" + password + "\".\n\n"
                 else:
-                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + D2RQ_DATABASE_CLASS + ";\n\t" \
-                                        + D2RQ_DSN + " \"" + access + "\";\n\t" \
-                                        + D2RQ_DRIVER + " \"" + driver + "\";\n\t" \
-                                        + D2RQ_USER + " \"" + username + "\";\n\t" \
-                                        + D2RQ_PASS + " \"" + password + "\".\n\n"
+                    connection_string = "<DataSource_" + str(db_identifier) + "> a " + turtle_term(D2RQ_DATABASE_CLASS) + ";\n\t" \
+                                        + turtle_term(D2RQ_DSN) + " \"" + access + "\";\n\t" \
+                                        + turtle_term(D2RQ_DRIVER) + " \"" + driver + "\";\n\t" \
+                                        + turtle_term(D2RQ_USER) + " \"" + username + "\";\n\t" \
+                                        + turtle_term(D2RQ_PASS) + " \"" + password + "\".\n\n"
 
                 if connection_string not in database:
                     database.append(connection_string)
@@ -371,7 +372,7 @@ def generate_database_connections(data, external_sources, mapping_format=RML_OLD
 
 
 def add_inverse_source(tm, rdf_mapping, mapping_format):
-    query = f'SELECT ?source  WHERE {{ <{tm}> {R2RML_LOGICAL_TABLE}|{RML_LOGICAL_SOURCE} ?source . }} '
+    query = f'SELECT ?source  WHERE {{ <{tm}> {turtle_term(R2RML_LOGICAL_TABLE)}|{turtle_term(RML_LOGICAL_SOURCE)} ?source . }} '
     sources = [
         result[rdflib.Variable('source')]
         for result in rdf_mapping.query(query).bindings
@@ -381,9 +382,9 @@ def add_inverse_source(tm, rdf_mapping, mapping_format):
         raise InvalidMappingError("Logical Source or Logical Table is not defined in the mapping")
     source = sources[0]
 
-    if mapping_format == R2RML_URI:
+    if mapping_format == R2RML_NAMESPACE:
         yarrrml_source = get_logical_table(source, rdf_mapping)
-    elif mapping_format == RML_URI:
+    elif mapping_format == RML_NAMESPACE:
         yarrrml_source = get_core_logical_source(source, rdf_mapping)
     else:
         yarrrml_source = get_logical_source(source, rdf_mapping)
@@ -392,7 +393,7 @@ def add_inverse_source(tm, rdf_mapping, mapping_format):
 
 
 def get_core_logical_source(logical_source_id, rdf_mapping):
-    vocabulary = rdflib.Namespace(RML_URI)
+    vocabulary = rdflib.Namespace(RML_NAMESPACE)
     source = rdf_mapping.value(logical_source_id, vocabulary.source)
     formulation = rdf_mapping.value(logical_source_id, vocabulary.referenceFormulation)
     iterator = rdf_mapping.value(logical_source_id, vocabulary.iterator)
@@ -400,22 +401,22 @@ def get_core_logical_source(logical_source_id, rdf_mapping):
         raise InvalidMappingError("RML-Core logical source requires a source resource")
     path = rdf_mapping.value(source, vocabulary.path)
     if path is not None:
-        if formulation and not str(formulation).startswith(RML_URI):
+        if formulation and not str(formulation).startswith(RML_NAMESPACE):
             raise InvalidMappingError("Unsupported RML-Core reference formulation")
         if any(rdf_mapping.value(source, predicate) is not None for predicate in (
             vocabulary.root, vocabulary.encoding, vocabulary.null, vocabulary.compression
         )):
             raise InvalidMappingError("Source path options cannot be represented in YARRRML")
-        formulation_name = str(formulation).removeprefix(RML_URI).lower() if formulation else "csv"
+        formulation_name = str(formulation).removeprefix(RML_NAMESPACE).lower() if formulation else "csv"
         result = [str(path) + "~" + formulation_name]
         if iterator is not None:
             result.append(str(iterator))
         return result
-    d2rq = rdflib.Namespace(D2RQ_URI)
+    d2rq = rdflib.Namespace(D2RQ_NAMESPACE)
     dsn = rdf_mapping.value(source, d2rq.jdbcDSN)
     if dsn is None:
-        sd = rdflib.Namespace(SD_URI)
-        kg4di = rdflib.Namespace(KG4DI_URI)
+        sd = rdflib.Namespace(SD_NAMESPACE)
+        kg4di = rdflib.Namespace(KG4DI_NAMESPACE)
         name = rdf_mapping.value(source, sd.name)
         if name is not None and (source, rdflib.RDF.type, sd.DatasetSpecification) in rdf_mapping:
             definer = rdf_mapping.value(formulation, kg4di.definedBy)
@@ -467,9 +468,9 @@ def get_core_logical_source(logical_source_id, rdf_mapping):
 
 
 def get_logical_table(logical_table_id, rdf_mapping):
-    table_name = rdf_mapping.value(subject=logical_table_id, predicate=rdflib.Namespace(R2RML_URI).tableName)
-    sql_query = rdf_mapping.value(subject=logical_table_id, predicate=rdflib.Namespace(R2RML_URI).sqlQuery)
-    sql_version = rdf_mapping.value(subject=logical_table_id, predicate=rdflib.Namespace(R2RML_URI).sqlVersion)
+    table_name = rdf_mapping.value(subject=logical_table_id, predicate=rdflib.Namespace(R2RML_NAMESPACE).tableName)
+    sql_query = rdf_mapping.value(subject=logical_table_id, predicate=rdflib.Namespace(R2RML_NAMESPACE).sqlQuery)
+    sql_version = rdf_mapping.value(subject=logical_table_id, predicate=rdflib.Namespace(R2RML_NAMESPACE).sqlVersion)
 
     if table_name is None and sql_query is None:
         logger.error("Mapping does not define neither tableName nor sqlQuery")
@@ -483,36 +484,36 @@ def get_logical_table(logical_table_id, rdf_mapping):
         yarrrml_source[YARRRML_QUERY] = sql_query.value
 
     if sql_version:
-        yarrrml_source[YARRRML_QUERY_FORMULATION] = sql_version.toPython().replace(R2RML_URI, '').lower()
+        yarrrml_source[YARRRML_QUERY_FORMULATION] = sql_version.toPython().replace(R2RML_NAMESPACE, '').lower()
 
     return yarrrml_source
 
 
 def get_logical_source(logical_source_id, rdf_mapping):
     yaml = YAML()
-    source = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(RML_OLD_URI).source)
-    iterator = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(RML_OLD_URI).iterator)
+    source = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(RML_OLD_NAMESPACE).source)
+    iterator = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(RML_OLD_NAMESPACE).iterator)
     reference_formulation = rdf_mapping.value(subject=logical_source_id,
-                                              predicate=rdflib.Namespace(RML_OLD_URI).referenceFormulation)
-    sql_query = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(R2RML_URI).sqlQuery)
-    sql_version = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(R2RML_URI).sqlVersion)
+                                              predicate=rdflib.Namespace(RML_OLD_NAMESPACE).referenceFormulation)
+    sql_query = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(R2RML_NAMESPACE).sqlQuery)
+    sql_version = rdf_mapping.value(subject=logical_source_id, predicate=rdflib.Namespace(R2RML_NAMESPACE).sqlVersion)
 
     if source is None:
         logger.error("Mapping does not define source access")
         raise InvalidMappingError("Mapping does not define source access")
 
     if source and reference_formulation and iterator:
-        yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_URI, '').lower(), iterator.value]
+        yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_NAMESPACE, '').lower(), iterator.value]
     elif source and sql_query:
         # this means a database source
         source_dict = {YARRRML_QUERY: sql_query.value, YARRRML_SOURCE: source.value}
         if reference_formulation:
-            source_dict[YARRRML_REFERENCE_FORMULATION] = reference_formulation.toPython().replace(QL_URI, '').lower()
+            source_dict[YARRRML_REFERENCE_FORMULATION] = reference_formulation.toPython().replace(QL_NAMESPACE, '').lower()
         if sql_version:
-            source_dict[YARRRML_QUERY_FORMULATION] = sql_version.toPython().replace(R2RML_URI, '').lower()
+            source_dict[YARRRML_QUERY_FORMULATION] = sql_version.toPython().replace(R2RML_NAMESPACE, '').lower()
         yarrrml_source = source_dict
     elif source and reference_formulation:
-        yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_URI, '').lower()]
+        yarrrml_source = [source.value + '~' + reference_formulation.toPython().replace(QL_NAMESPACE, '').lower()]
     else:
         if source.value.endswith(".csv"):
             yarrrml_source = [source.value + '~csv']

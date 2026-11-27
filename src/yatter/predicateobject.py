@@ -1,4 +1,5 @@
 from .constants import *
+from .vocabulary import turtle_term
 from .source import add_source, add_table
 from .subject import add_subject
 from .termmap import (
@@ -28,7 +29,7 @@ def add_predicate_object_maps(data, mapping, mapping_format):
     )
 
 
-def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_OLD_URI):
+def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_OLD_NAMESPACE):
     predicates = "".join(
         _generate_predicate_map(predicate, mapping_format)
         for predicate in predicate_object[YARRRML_PREDICATES]
@@ -43,7 +44,7 @@ def add_predicate_object(data, mapping, predicate_object, mapping_format=RML_OLD
     return predicates + objects + graphs + "\t];"
 
 
-def _generate_predicate_map(predicate, mapping_format=RML_OLD_URI):
+def _generate_predicate_map(predicate, mapping_format=RML_OLD_NAMESPACE):
     value = predicate
     execution = False
     if isinstance(predicate, dict) and YARRRML_VALUE in predicate:
@@ -53,7 +54,7 @@ def _generate_predicate_map(predicate, mapping_format=RML_OLD_URI):
         execution = True
     template = generate_rml_termmap(
         R2RML_PREDICATE, R2RML_PREDICATE_CLASS, value, "\t\t\t",
-        RML_OLD_URI if mapping_format == R2RML_URI else mapping_format
+        RML_OLD_NAMESPACE if mapping_format == R2RML_NAMESPACE else mapping_format
     )
     if execution:
         template = template.replace(
@@ -62,7 +63,7 @@ def _generate_predicate_map(predicate, mapping_format=RML_OLD_URI):
         )
     if YARRRML_TARGETS in predicate:
         template = _append_term_map_property(
-            template, "\t\t\t", RML_LOGICAL_TARGET,
+            template, "\t\t\t", turtle_term(RML_LOGICAL_TARGET),
             "<" + predicate[YARRRML_TARGETS] + ">",
         )
     return template
@@ -104,7 +105,7 @@ def _generate_collection_object(data, mapping, obj, mapping_format):
             data, mapping, gather, YARRRML_MAPPING, R2RML_PARENT_TRIPLESMAP, mapping_format
         )
         if obj[YARRRML_GATHER_AS] in YARRRML_GATHER_AS_OPTIONS:
-            template += "\t\t\t" + RML_CC_GATHER_AS + " " + RDF_TERM_PREFIX + obj[YARRRML_GATHER_AS].capitalize() + ";\n"
+            template += "\t\t\t" + turtle_term(RML_CC_GATHER_AS) + " " + RDF_TERM_PREFIX + obj[YARRRML_GATHER_AS].capitalize() + ";\n"
         if YARRRML_VALUE in obj:
             term_map, text = generate_rml_termmap_text(obj[YARRRML_VALUE], mapping_format)
             template += "\t\t\t" + _term_for_format(term_map, mapping_format) + " " + _format_term_map_value(term_map, text) + ";\n"
@@ -142,12 +143,12 @@ def _generate_value_object(obj, mapping_format):
             template = _append_term_map_property(template, "\t\t\t", _term_for_format(shortcut, mapping_format), optional_value)
     if YARRRML_TARGETS in obj:
         template = _append_term_map_property(
-            template, "\t\t\t", RML_LOGICAL_TARGET, "<" + obj[YARRRML_TARGETS] + ">"
+            template, "\t\t\t", turtle_term(RML_LOGICAL_TARGET), "<" + obj[YARRRML_TARGETS] + ">"
         )
     return _append_object_term_type(template, obj, mapping_format)
 
 
-def _append_object_term_type(template, obj, mapping_format=RML_OLD_URI):
+def _append_object_term_type(template, obj, mapping_format=RML_OLD_NAMESPACE):
     if YARRRML_TYPE in obj:
         term_type = get_rml_termtype(obj[YARRRML_TYPE])
         if term_type:
@@ -180,7 +181,7 @@ def _generate_other_object(obj, mapping_format):
         template = _append_object_term_type(template, obj, mapping_format)
         if YARRRML_TARGETS in obj:
             template = _append_term_map_property(
-                template, "\t\t\t", RML_LOGICAL_TARGET, "<" + obj[YARRRML_TARGETS] + ">"
+                template, "\t\t\t", turtle_term(RML_LOGICAL_TARGET), "<" + obj[YARRRML_TARGETS] + ">"
             )
     if YARRRML_IRI in obj:
         template = _append_term_map_property(template, "\t\t\t", _term_for_format(R2RML_TERMTYPE, mapping_format), _term_for_format(R2RML_IRI, mapping_format))
@@ -197,14 +198,14 @@ def _resolve_mapping_join(data, mapping, mapping_join):
 
 def _get_mapping_join_cardinality(data, mapping_join, mapping_format):
     subject_list = add_subject(data, mapping_join, mapping_format)
-    if mapping_format == R2RML_URI:
+    if mapping_format == R2RML_NAMESPACE:
         source_list = add_table(data, mapping_join)
     else:
         source_list, _ = add_source(data, mapping_join, mapping_format=mapping_format)
     return len(subject_list) * len(source_list)
 
 
-def _format_join_conditions(om, mapping, indentation, mapping_format=RML_OLD_URI):
+def _format_join_conditions(om, mapping, indentation, mapping_format=RML_OLD_NAMESPACE):
     if YARRRML_CONDITION not in om:
         return ""
 
@@ -267,7 +268,7 @@ def ref_cc_mapping(data, mapping, om, yarrrml_key, ref_type_property, mapping_fo
 
     for i in range(number_joins_rml):
         template += "\t\t" + _term_for_format(object_property, mapping_format) + \
-                    " [\n\t\t\ta " + _term_for_format(R2RML_OBJECT_CLASS, mapping_format) + ";\n\t\t\t" + RML_CC_GATHER + \
+                    " [\n\t\t\ta " + _term_for_format(R2RML_OBJECT_CLASS, mapping_format) + ";\n\t\t\t" + turtle_term(RML_CC_GATHER) + \
                     " (\n\t\t\t\t[\n\t\t\t\t\t" + _term_for_format(ref_type_property, mapping_format) + " <" + mapping_join + "_" + str(i) + ">;\n"
         template += _format_join_conditions(om, mapping, "\t\t\t\t\t", mapping_format)
         template += "\t\t\t\t]\n\t\t\t);\n"

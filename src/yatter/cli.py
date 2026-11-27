@@ -27,7 +27,7 @@ def write_results(args, mapping):
 
 
 def parse_inputs(args):
-    input_format = RML_URI
+    input_format = RML_NAMESPACE
     yaml = YAML(typ='safe', pure=True)
     if args.input_mapping_path and args.output_mapping_path:
         if args.input_mapping_path.endswith('.yml') or args.input_mapping_path.endswith('.yaml'):
