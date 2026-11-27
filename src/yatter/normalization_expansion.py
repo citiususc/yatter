@@ -1,19 +1,19 @@
 from .constants import *
 key_mapping = {
     YARRRML_MAPPINGS: [YARRRML_MAPPING, 'm'],
-    YARRRML_SUBJECTS: ['subject', 's'],
-    YARRRML_PREDICATES: ['predicate', 'p'],
+    YARRRML_SUBJECTS: ['subject', YARRRML_SUBJECT_SHORT],
+    YARRRML_PREDICATES: ['predicate', YARRRML_PREDICATE_SHORT],
     'inversepredicates': ['inversepredicate', 'i'],
-    YARRRML_OBJECTS: ['object', 'o'],
-    YARRRML_PREDICATEOBJECT: ['po'],
+    YARRRML_OBJECTS: ['object', YARRRML_OBJECT_SHORT],
+    YARRRML_PREDICATEOBJECT: [YARRRML_PREDICATEOBJECT_SHORT],
     YARRRML_FUNCTION: ['fn', 'f'],
     YARRRML_PARAMETERS: ['pms'],
     YARRRML_PARAMETER: ['pm'],
     YARRRML_VALUE: ['v'],
     YARRRML_AUTHORS: ['author', 'a'],
     YARRRML_TARGETS: ['target', 't'],
-    YARRRML_GRAPHS: ['graph', 'g'],
-    YARRRML_SOURCES: ['source', 'src']
+    YARRRML_GRAPHS: [YARRRML_GRAPH, 'g'],
+    YARRRML_SOURCES: [YARRRML_SOURCE, 'src']
 }
 
 
@@ -377,14 +377,14 @@ def _expand_dict_predicateobject(po):
                     _expand_explicit_object(obj) for obj in po[YARRRML_OBJECTS]
                 ],
             })
-    elif 'p' in po and 'o' in po:
-        if not isinstance(po['p'], list):
-            po['p'] = [po['p']]
-        objects = po['o'] if isinstance(po['o'], list) else [po['o']]
+    elif YARRRML_PREDICATE_SHORT in po and YARRRML_OBJECT_SHORT in po:
+        if not isinstance(po[YARRRML_PREDICATE_SHORT], list):
+            po[YARRRML_PREDICATE_SHORT] = [po[YARRRML_PREDICATE_SHORT]]
+        objects = po[YARRRML_OBJECT_SHORT] if isinstance(po[YARRRML_OBJECT_SHORT], list) else [po[YARRRML_OBJECT_SHORT]]
         predicates = []
-        for predicate in po['p']:
-            if YARRRML_FUNCTION in predicate:
-                expanded = {YARRRML_FUNCTION: predicate[YARRRML_FUNCTION]}
+        for predicate in po[YARRRML_PREDICATE_SHORT]:
+            if isinstance(predicate, dict):
+                expanded = dict(predicate)
                 if YARRRML_PARAMETERS in predicate:
                     expanded[YARRRML_PARAMETERS] = expand_parameters(
                         predicate[YARRRML_PARAMETERS]
@@ -397,8 +397,8 @@ def _expand_dict_predicateobject(po):
             YARRRML_OBJECTS: [_expand_abbreviated_object(obj) for obj in objects],
         })
     if result:
-        if 'graph' in po:
-            result[-1][YARRRML_GRAPHS] = [po['graph']]
+        if YARRRML_GRAPH in po:
+            result[-1][YARRRML_GRAPHS] = [po[YARRRML_GRAPH]]
         if YARRRML_GRAPHS in po:
             result[-1][YARRRML_GRAPHS] = [po[YARRRML_GRAPHS]]
     return result

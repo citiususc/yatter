@@ -1,7 +1,14 @@
+prefixes:
+  ex: http://example.com/
+  foaf: http://xmlns.com/foaf/0.1/
+
 mappings:
-  person:
-    subjects:
-      - value: $(id)
-        targets: output
-    graphs:
-      - value: http://example.com/graph
+  student:
+    sources:
+    - access: Student.csv
+      referenceFormulation: csv
+    s: http://example.com/$(ID)/$(Name)
+    po:
+    - [a, foaf:Person]
+    - [ex:id, $(ID)]
+    - [foaf:name, $(Name)]

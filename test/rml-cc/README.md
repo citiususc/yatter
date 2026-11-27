@@ -17,7 +17,7 @@ These cases check translation of collection and gather constructs into the expec
 | `YARRRML-CC-TC-0011` | List shorthand for subject values. |
 | `YARRRML-CC-TC-0012` | Gathering bag values for subjects. |
 | `YARRRML-CC-TC-0013` | Gathering list values from multiple references. |
-| `YARRRML-CC-TC-0014` | Compact list syntax with multiple references. |
+| `YARRRML-CC-TC-0014` | Gathering a list from multiple references. |
 | `YARRRML-CC-TC-0015` | Multiple gathered references with a list strategy. |
 | `YARRRML-CC-TC-0016` | Multiple gathered references combined with an explicit value. |
 | `YARRRML-CC-TC-0017` | Combining bag inputs into a list. |

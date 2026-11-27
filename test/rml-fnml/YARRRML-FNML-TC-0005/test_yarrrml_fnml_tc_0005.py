@@ -1,25 +1,24 @@
-__author__ = "David Chaves-Fraga"
-__credits__ = ["David Chaves-Fraga"]
+from pathlib import Path
 
-__license__ = "Apache-2.0"
-__maintainer__ = "David Chaves-Fraga"
-__email__ = "david.chaves@upm.es"
-
-
-import os
+from rdflib import Graph, Namespace, RDF
+from rdflib.compare import isomorphic
 from ruamel.yaml import YAML
+
 import yatter
-from rdflib.graph import Graph
-from rdflib import compare
 
 
 def test_yarrrml_fnml_tc_0005():
-    expected_mapping = Graph()
-    expected_mapping.parse(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping.ttl'), format="ttl")
+    directory = Path(__file__).parent
+    with (directory / "mapping.yml").open() as source:
+        mapping = YAML(typ="safe", pure=True).load(source)
+    actual = yatter.translate(mapping)
+    expected = (directory / "mapping.ttl").read_text()
 
-    translated_mapping = Graph()
-    yaml = YAML(typ='safe', pure=True)
-    mapping_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping.yml')
-    translated_mapping.parse(data=yatter.translate(yaml.load(open(mapping_path))), format="ttl")
-
-    assert compare.isomorphic(expected_mapping, translated_mapping)
+    assert actual == expected
+    assert isomorphic(
+        Graph().parse(data=actual, format="turtle"),
+        Graph().parse(data=expected, format="turtle"),
+    )
+    graph = Graph().parse(data=actual, format="turtle")
+    rml = Namespace("http://w3id.org/rml/")
+    assert list(graph.triples((None, rml.functionExecution, None))) or list(graph.triples((None, rml.joinCondition, None)))

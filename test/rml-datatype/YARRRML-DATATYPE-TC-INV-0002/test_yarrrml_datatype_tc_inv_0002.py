@@ -4,6 +4,7 @@ from rdflib import Graph, URIRef
 from ruamel.yaml import YAML
 
 from yatter.predicateobject import add_inverse_pom
+from yatter.constants import RML_URI
 
 
 def test_yarrrml_datatype_tc_inv_0002():
@@ -14,7 +15,7 @@ def test_yarrrml_datatype_tc_inv_0002():
         expected = yaml.load(expected_file)
 
     translated = add_inverse_pom(
-        URIRef("http://example.com/person"), graph, [], {"ex": "http://example.com/"}
+        URIRef("http://example.com/person"), graph, [], {"ex": "http://example.com/"}, RML_URI
     )
 
     assert translated == expected

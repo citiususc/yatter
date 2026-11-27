@@ -1,0 +1,148 @@
+@prefix mail: <http://example.com/mail#>.
+@prefix ex: <http://www.example.com/>.
+@prefix rml: <http://w3id.org/rml/>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix schema: <http://schema.org/>.
+@prefix formats: <http://www.w3.org/ns/formats/>.
+@prefix void: <http://rdfs.org/ns/void#>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
+@base <http://example.com/ns#>.
+
+
+<FromToMaps_0> a rml:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source [ a rml:Source, rml:FilePath;
+			rml:path "example.csv";
+		];
+		rml:referenceFormulation rml:CSV
+	];
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:template "http://www.example.com/note/{@id}";
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant rdf:type;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:constant mail:Note;
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant mail:when;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:template "{@year}-{@month}-{@day}";
+			rml:datatype xsd:date
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant mail:from;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "from";
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant mail:to;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "to";
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant mail:heading;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "heading";
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant mail:body;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "body";
+		];
+	].
+
+
+<DateTime_0> a rml:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source [ a rml:Source, rml:FilePath;
+			rml:path "example.csv";
+		];
+		rml:referenceFormulation rml:CSV
+	];
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:template "http://www.example.com/DateTime/{@year}{@month}{@day}";
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant rdf:type;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:constant ex:DateTime;
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant ex:day;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:template "--{@day}";
+			rml:datatype xsd:gDay
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant ex:month;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:template "--{@month}";
+			rml:datatype xsd:gMonth
+		];
+	];
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant ex:year;
+		];
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:reference "@year";
+			rml:datatype xsd:gYear
+		];
+	].

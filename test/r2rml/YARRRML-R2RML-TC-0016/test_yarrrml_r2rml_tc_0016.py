@@ -22,6 +22,4 @@ def test_yarrrml_r2rml_tc_0016():
     yaml = YAML(typ='safe', pure=True)
     mapping_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping.yml')
     translated_mapping.parse(data=yatter.translate(yaml.load(open(mapping_path)), mapping_format=R2RML_URI), format="ttl")
-    translated_mapping.serialize(destination="mapping.rml.ttl",format="ttl")
-
     assert compare.isomorphic(expected_mapping, translated_mapping)

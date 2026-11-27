@@ -1,1 +1,4 @@
-- [ex:value, $(value), "http://types.example/$(type)"]
+- p: http://example.com/value
+  o:
+    value: $(value)
+    datatype: http://types.example/$(type)

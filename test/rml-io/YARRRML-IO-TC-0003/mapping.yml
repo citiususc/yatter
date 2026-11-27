@@ -7,9 +7,9 @@ targets:
 mappings:
   student:
     sources:
-      - ['student.csv~csv']
+    - [student.csv~csv]
     s:
-     - value: http://example.com/$(Name)
-       targets: person-target
+    - value: http://example.com/$(Name)
+      targets: person-target
     po:
-      - [foaf:name, $(Name)]
+    - [foaf:name, $(Name)]

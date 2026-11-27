@@ -1,0 +1,108 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@base <http://example.com/ns#>.
+
+<student_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source "student.json";
+		rml:referenceFormulation ql:JSONPath;
+		rml:iterator "$.students[*]";
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/resource/student_{ID}";
+		rr:graphMap [
+      		a rr:GraphMap;
+      		rr:constant <http://example.com/graph/students>;
+    	];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant <http://example.com/ontology/Student>;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant foaf:name;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "Name";
+		];
+		rr:graphMap [
+      		a rr:GraphMap;
+      		rr:constant <http://example.com/graph/students>;
+    	];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant <http://example.com/ontology/practises>;
+		];
+		rr:objectMap [
+			a rr:RefObjectMap;
+			rr:parentTriplesMap <sport_0>;
+			rr:joinCondition [
+				rr:child "Sport";
+				rr:parent "Name";
+			];
+		];
+		rr:graphMap [
+      		a rr:GraphMap;
+      		rr:constant <http://example.com/graph/practise>;
+    	];
+	].
+
+
+<sport_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source "sport.json";
+		rml:referenceFormulation ql:JSONPath;
+		rml:iterator "$.sports[*]";
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://example.com/resource/sport_{ID}";
+		rr:graphMap [
+      		a rr:GraphMap;
+      		rr:constant <http://example.com/graph/sports>;
+    	];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant <http://example.com/ontology/Sport>;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdfs:label;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "Name";
+		];
+	].
+
+

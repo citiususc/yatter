@@ -1,0 +1,21 @@
+prefixes:
+  ex: http://example.org/
+  dct: http://example.org/
+
+mappings:
+  firstTM:
+    sources:
+      - [data.csv~csv]
+    s: http://example/$(c1)
+
+  secondTM:
+    po:
+      - [ex:q, $(c2)]
+      - p: ex:myProperty
+        o:
+          - mapping: firstTM
+            condition:
+              function: equal
+              parameters:
+                - [ str1, $(value1) ]
+                - [ str2, $(value2) ]

@@ -22,7 +22,7 @@ def test_write_results_roundtrip_to_ttl(tmp_path: Path):
     output_mapping_path = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'output_mapping.ttl'))
     args = _mimic_args(input_mapping_path=str(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'jelly_mapping_test_yml.yml')),
                        output_mapping_path=output_mapping_path, merge_mapping=None,
-                       format=None)
+                       format="RML-OLD")
 
     parsed_format, parsed_data = parse_inputs(args)
     mapping_content = translate(parsed_data, parsed_format)

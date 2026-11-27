@@ -1,28 +1,28 @@
 prefixes:
- ex: "http://www.semanticweb.org/tijnd/"
- ontology: "http://www.semanticweb.org/tijnd/ontology/"
- schema: "https://schema.org/"
- idlab-fn: "http://example.com/idlab/function/"
- grel: "http://users.ugent.be/~bjdmeest/function/grel.ttl#"
- owl: "http://www.w3.org/2002/07/owl#"
- rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
- rdfs: "http://www.w3.org/2000/01/rdf-schema#"
- xsd: "http://www.w3.org/2001/XMLSchema#"
+  ex: http://www.semanticweb.org/tijnd/
+  ontology: http://www.semanticweb.org/tijnd/ontology/
+  schema: https://schema.org/
+  idlab-fn: http://example.com/idlab/function/
+  grel: http://users.ugent.be/~bjdmeest/function/grel.ttl#
+  owl: http://www.w3.org/2002/07/owl#
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  xsd: http://www.w3.org/2001/XMLSchema#
 sources:
   imdb:
-   access: imdb_video_game_rating_modified.csv
-   referenceFormulation: csv
+    access: imdb_video_game_rating_modified.csv
+    referenceFormulation: csv
 
 mappings:
   director:
     sources:
-      - imdb
+    - imdb
     s: ex:Person/$(title) #Not really the correct subject, only used to simply test it
     po:
-      - [a, schema:Person]
-      - p: schema:name
-        o:
-            function: grel:string_split
-            parameters:
-              - [grel:p_string_sep, ", "]
-              - [grel:valueParameter, $(directors)]
+    - [a, schema:Person]
+    - p: schema:name
+      o:
+        function: grel:string_split
+        parameters:
+        - [grel:p_string_sep, ', ']
+        - [grel:valueParameter, $(directors)]

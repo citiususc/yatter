@@ -1,15 +1,21 @@
 @prefix insta: <http://instagram.com/data/>.
-@prefix rr: <http://www.w3.org/ns/r2rml#>.
-@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
 @prefix sd: <https://w3id.org/okn/o/sd#>.
 @prefix kg4di: <https://w3id.org/kg4di/>.
+@prefix rml: <http://w3id.org/rml/>.
 @prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix schema: <http://schema.org/>.
+@prefix formats: <http://www.w3.org/ns/formats/>.
+@prefix void: <http://rdfs.org/ns/void#>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
 @base <http://example.com/ns#>.
 
-<dict_map_0> a rr:TriplesMap;
+
+<dict_map_0> a rml:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
@@ -17,23 +23,24 @@
 			a sd:DatasetSpecification;
 			sd:name "output_dict";
 		];
-		rml:referenceFormulation ql:Dictionary;
 		rml:iterator "$.users[*]";
+		rml:referenceFormulation ql:Dictionary;
 	];
-	rr:subjectMap [
-		a rr:SubjectMap;
-		rr:template "http://instagram.com/data/user{id}";
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:template "http://instagram.com/data/user{id}";
 	];
-	rr:predicateObjectMap [
-		rr:predicateMap [
-			a rr:PredicateMap;
-			rr:constant rdf:type;
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant rdf:type;
 		];
-		rr:objectMap [
-			a rr:ObjectMap;
-			rr:constant insta:User;
+		rml:objectMap [
+			a rml:ObjectMap;
+			rml:constant insta:User;
 		];
 	].
+
 
 ql:Dictionary a rml:ReferenceFormulation;
 	kg4di:definedBy "Python".

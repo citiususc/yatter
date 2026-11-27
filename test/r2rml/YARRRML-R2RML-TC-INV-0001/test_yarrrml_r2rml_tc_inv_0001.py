@@ -13,7 +13,7 @@ import yatter
 from rdflib.graph import Graph
 import rdflib
 from deepdiff import DeepDiff
-from yatter.constants import RML_URI
+from yatter.constants import RML_OLD_URI
 from yatter.source import get_logical_source
 R2RML_URI = 'http://www.w3.org/ns/r2rml#'
 
@@ -46,7 +46,7 @@ def test_inverse_csv_source():
     logical_source = rdflib.URIRef("http://example.com/LogicalSource")
     graph.add((
         logical_source,
-        rdflib.Namespace(RML_URI).source,
+        rdflib.Namespace(RML_OLD_URI).source,
         rdflib.Literal("data.csv"),
     ))
 

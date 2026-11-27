@@ -1,0 +1,16 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+
+mappings:
+  TriplesMap1:
+    sources:
+    - access: Student.csv
+      referenceFormulation: csv
+    s: http://example.com/Student$(ID)
+    po:
+    - p: foaf:Name
+      o:
+        value: $(FirstName) $(LastName)
+        type: literal
+
+

@@ -1,6 +1,5 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-@prefix rr: <http://www.w3.org/ns/r2rml#>.
-@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rml: <http://w3id.org/rml/>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
@@ -8,40 +7,40 @@
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
 @prefix schema: <http://schema.org/>.
 @prefix formats: <http://www.w3.org/ns/formats/>.
-@prefix comp: <http://semweb.mmlab.be/ns/rml-compression#>.
 @prefix void: <http://rdfs.org/ns/void#>.
+@prefix grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>.
 @base <http://example.com/ns#>.
 
 
 <person-target> a rml:LogicalTarget;
 	 rml:target [
 		a void:Dataset;
-		void:dataDump <data/dump.ttl.gz>
+		void:dataDump <data/dump.ttl.gz>;
+		rml:compression rml:gzip
 	];
-	 rml:serialization formats:Turtle;
-	 rml:compression comp:gzip.
+	 rml:serialization formats:Turtle.
 
-<student_0> a rr:TriplesMap;
+<student_0> a rml:TriplesMap;
 
 	rml:logicalSource [
 		a rml:LogicalSource;
-		rml:source "student.csv";
-		rml:referenceFormulation ql:CSV
+		rml:source [ a rml:Source, rml:FilePath;
+			rml:path "student.csv";
+		];
+		rml:referenceFormulation rml:CSV
 	];
-	rr:subjectMap [
-		a rr:SubjectMap;
-		rr:template "http://example.com/{Name}";
+	rml:subjectMap [
+		a rml:SubjectMap;
+		rml:template "http://example.com/{Name}";
 		rml:logicalTarget <person-target>
 	];
-	rr:predicateObjectMap [
-		rr:predicateMap [
-			a rr:PredicateMap;
-			rr:constant foaf:name;
+	rml:predicateObjectMap [
+		rml:predicateMap [
+			a rml:PredicateMap;
+			rml:constant foaf:name;
 		];
-		rr:objectMap [
-			a rr:ObjectMap;
+		rml:objectMap [
+			a rml:ObjectMap;
 			rml:reference "Name";
 		];
 	].
-
-

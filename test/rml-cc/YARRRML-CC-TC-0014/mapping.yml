@@ -10,4 +10,8 @@ mappings:
     sources:
       - ["data.json~jsonpath","$.*"]
     s: e/$($.id)
-    po: [ ex:with, [$($.v1.*), $($.v2.*)]~list]
+    po:
+      - p: ex:with
+        o:
+          gather: ["$($.v1.*)", "$($.v2.*)"]
+          gatherAs: list

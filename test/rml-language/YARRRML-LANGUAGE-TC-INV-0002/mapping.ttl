@@ -1,11 +1,10 @@
 @prefix ex: <http://example.com/>.
-@prefix rr: <http://www.w3.org/ns/r2rml#>.
-@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rml: <http://w3id.org/rml/>.
 
-ex:person rr:predicateObjectMap [
-    rr:predicate ex:name;
-    rr:objectMap [
+ex:person rml:predicateObjectMap [
+    rml:predicate ex:name;
+    rml:objectMap [
         rml:reference "name";
-        rml:languageMap [ rr:template "http://languages.example/{lang}" ]
+        rml:languageMap [ rml:template "http://languages.example/{lang}" ]
     ]
 ].

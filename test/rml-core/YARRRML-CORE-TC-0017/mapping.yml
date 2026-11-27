@@ -1,0 +1,26 @@
+prefixes:
+  foaf: http://xmlns.com/foaf/0.1/
+
+mappings:
+  student:
+    sources:
+    - access: Student.csv
+      referenceFormulation: csv
+    s: http://example.com/resource/student_$(ID)
+    po:
+    - [foaf:name, $(Name)]
+    - p: http://example.com/ontology/practises
+      o:
+        mapping: sport
+        condition:
+          function: equal
+          parameters:
+          - [str1, $(Sport)]
+          - [str2, $(Name)]
+  sport:
+    sources:
+    - access: Sport.csv
+      referenceFormulation: csv
+    s: http://example.com/resource/sport_$(ID)
+    po:
+    - [rdfs:label, $(Name)]

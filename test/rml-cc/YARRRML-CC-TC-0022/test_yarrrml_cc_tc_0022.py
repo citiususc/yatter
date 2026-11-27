@@ -1,17 +1,22 @@
-import os
+from pathlib import Path
+
+from rdflib import Graph, Namespace, RDF
+from rdflib.compare import isomorphic
 from ruamel.yaml import YAML
+
 import yatter
-from rdflib.graph import Graph
-from rdflib import compare
-RML_URI = 'http://semweb.mmlab.be/ns/rml#'
+
 
 def test_yarrrml_cc_tc_0022():
-    expected_mapping = Graph()
-    expected_mapping.parse(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping2.ttl'), format="ttl")
+    directory = Path(__file__).parent
+    with (directory / "mapping.yml").open() as source:
+        mapping = YAML(typ="safe", pure=True).load(source)
+    actual = yatter.translate(mapping)
+    expected = (directory / "mapping.ttl").read_text()
 
-    translated_mapping = Graph()
-    yaml = YAML(typ='safe', pure=True)
-    mapping_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mapping.yml')
-    translated_mapping.parse(data=yatter.translate(yaml.load(open(mapping_path)), mapping_format=RML_URI), format="ttl")
-
-    assert compare.isomorphic(expected_mapping, translated_mapping)
+    assert actual == expected
+    assert isomorphic(
+        Graph().parse(data=actual, format="turtle"),
+        Graph().parse(data=expected, format="turtle"),
+    )
+    assert list(Graph().parse(data=actual, format="turtle").triples((None, Namespace("http://w3id.org/rml/").gather, None)))

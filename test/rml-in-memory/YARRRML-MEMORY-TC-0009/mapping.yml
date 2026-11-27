@@ -1,24 +1,24 @@
 prefixes:
-  ex: "http://example.com/"
-  sd: "https://w3id.org/okn/o/sd#"
-  kg4di: "https://w3id.org/kg4di/"
+  ex: http://example.com/
+  sd: https://w3id.org/okn/o/sd#
+  kg4di: https://w3id.org/kg4di/
 
 mappings:
   json:
     sources:
-      - access: $(json_data)
-        referenceFormulation: JSONPath
-        structureDefiner: JSON
-        iterator: $
+    - access: $(json_data)
+      referenceFormulation: JSONPath
+      structureDefiner: JSON
+      iterator: $
     s: ex:$(id)
     po:
-      - [ex:value, $(value)]
+    - [ex:value, $(value)]
   xml:
     sources:
-      - access: $(xml_data)
-        referenceFormulation: XPath
-        structureDefiner: XML
-        iterator: /
+    - access: $(xml_data)
+      referenceFormulation: XPath
+      structureDefiner: XML
+      iterator: /
     s: ex:$(id)
     po:
-      - [ex:value, $(value)]
+    - [ex:value, $(value)]

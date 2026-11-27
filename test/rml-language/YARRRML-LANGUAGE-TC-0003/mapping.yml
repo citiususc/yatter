@@ -4,7 +4,7 @@ prefixes:
 mappings:
   student:
     sources:
-      - ['student.csv~csv']
+    - [student.csv~csv]
     s: http://example.com/$(Name)
     po:
-      - [foaf:name, $(Name),"$(language1)$(language2)~lang"]
+    - [foaf:name, $(Name), $(language1)$(language2)~lang]

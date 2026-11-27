@@ -1,8 +1,4 @@
-
-
-
-
-
+from .constants import YARRRML_GRAPH, YARRRML_GRAPHS
 
 def add_inverse_graph(graph_values):
     graphs = []
@@ -15,8 +11,8 @@ def add_inverse_graph(graph_values):
         graphs.append(graph.toPython())
 
     if len(graphs) == 1:
-        yarrrml_graphs = {'graph': graphs[0]}
+        yarrrml_graphs = {YARRRML_GRAPH: graphs[0]}
     else:
-        yarrrml_graphs = {'graphs': graphs}
+        yarrrml_graphs = {YARRRML_GRAPHS: graphs}
 
     return yarrrml_graphs

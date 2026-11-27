@@ -1,0 +1,84 @@
+@prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
+@prefix gn: <http://www.geonames.org/ontology#>.
+@prefix geosp: <http://www.telegraphis.net/ontology/geography/geography#>.
+@prefix schema: <http://schema.org/>.
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@base <http://example.com/ns#>.
+
+
+<venue_0> a rr:TriplesMap;
+
+	rml:logicalSource [
+		a rml:LogicalSource;
+		rml:source <DataSource_venue>;
+		rml:query "Select * from \"Venue4\" ";
+		rr:sqlVersion rr:MYSQL;
+        rml:referenceFormulation ql:CSV
+	];
+	rr:subjectMap [
+		a rr:SubjectMap;
+		rr:template "http://loc.example.com/city/{city}";
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant rdf:type;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rr:constant schema:City;
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant wgs84_pos:lat;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "latitude";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant wgs84_pos:long;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "longtitude";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant geosp:onContinent;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "continent";
+		];
+	];
+	rr:predicateObjectMap [
+		rr:predicateMap [
+			a rr:PredicateMap;
+			rr:constant gn:countryCode;
+		];
+		rr:objectMap [
+			a rr:ObjectMap;
+			rml:reference "country";
+		];
+	].
+
+<DataSource_venue> a d2rq:Database;
+	d2rq:jdbcDSN "http://localhost/example";
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:username "root";
+	d2rq:password "root".
